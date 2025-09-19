@@ -1,0 +1,8 @@
+# lock files (for linux/kate)
+*.~lock.
+*-swp
+# .docx files (preemptive to make things clean)
+*.docx
+
+# don't ignore meeting_minutes_template
+!meeting_minutes_template.docx
