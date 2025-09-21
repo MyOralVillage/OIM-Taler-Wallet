@@ -1,0 +1,11 @@
+# Ignore any intermediate document/text files
+*.docx
+*.txt
+*.odt
+*.ods
+*.odp
+*.rtf
+
+# track readme, doc template
+!README.txt
+!meeting_minutes_template.docx
