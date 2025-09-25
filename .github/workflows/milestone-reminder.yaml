@@ -1,0 +1,167 @@
+name: Milestone Reminder
+on:
+  schedule:
+    - cron: '30 16 * * *' # Every day at 16:30 UTC
+  workflow_dispatch:
+jobs:
+  milestone-reminder:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+      repository-projects: read
+    steps:
+      - name: Get open milestones and notify repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Determine what day of the week it is (0=Sunday, 1=Monday, ..., 6=Saturday)
+          day_of_week=$(date +%w)
+          is_regular_post_day=false
+          
+          # Check if today is Sunday (0) or Wednesday (3)
+          if [ "$day_of_week" -eq 0 ] || [ "$day_of_week" -eq 3 ]; then
+            is_regular_post_day=true
+            echo "Today is a regular posting day (Sunday/Wednesday)"
+          else
+            echo "Today is not a regular posting day - checking for urgent milestones only"
+          fi
+          # Get all open milestones
+          milestones=$(gh api repos/${GITHUB_REPOSITORY}/milestones --jq '.[] | select(.state=="open")')
+          today=$(date +%Y-%m-%d)
+          today_epoch=$(date -d "$today" +%s)
+          
+          # Check if we have any milestones
+          if [ -z "$milestones" ] || [ "$milestones" = "null" ]; then
+            echo "No open milestones found"
+            exit 0
+          fi
+          
+          # Build the message
+          msg="## :calendar: Milestone Reminder\n\n"
+          found=false
+          has_urgent_milestones=false
+          
+          # Get repository admins/owners
+          admins=$(gh api repos/${GITHUB_REPOSITORY}/collaborators --jq '.[] | select(.permissions.admin==true) | .login' | tr '\n' ' ')
+          
+          # Build admin mentions
+          admin_mentions=""
+          for admin in $admins; do
+            admin_mentions="$admin_mentions@$admin "
+          done
+          admin_mentions=$(echo "$admin_mentions" | sed 's/ $//')  # Remove trailing space
+          
+          echo "$milestones" | jq -c '.' | while read -r ms; do
+            title=$(echo "$ms" | jq -r '.title')
+            due_on=$(echo "$ms" | jq -r '.due_on // empty' | cut -d'T' -f1)
+            open_issues=$(echo "$ms" | jq -r '.open_issues // 0')
+            
+            if [ -n "$due_on" ]; then
+              due_epoch=$(date -d "$due_on" +%s 2>/dev/null)
+              
+              if [ -n "$due_epoch" ]; then
+                days_left=$(( (due_epoch - today_epoch) / 86400 ))
+                is_urgent=false
+                
+                # Determine if this milestone is urgent (needs immediate attention)
+                if [ "$days_left" -le 2 ] || [ "$days_left" -lt 0 ]; then
+                  is_urgent=true
+                  has_urgent_milestones=true
+                fi
+                
+                # On regular posting days, show everything
+                # On other days, only show urgent milestones
+                if [ "$is_regular_post_day" = true ] || [ "$is_urgent" = true ]; then
+                  if [ "$days_left" -lt 0 ]; then
+                    # OVERDUE - especially bug the admins with escalating urgency
+                    if [ "$days_left" -lt -14 ]; then
+                      msg="$msg:bangbang::fire::bangbang: **SEVERELY OVERDUE: Milestone \"$title\" was due $((-days_left)) days ago ($due_on)** - $open_issues open issues remaining. **URGENT ACTION REQUIRED** $admin_mentions :bangbang::fire::bangbang:\n"
+                    elif [ "$days_left" -lt -7 ]; then
+                      msg="$msg:bangbang: **CRITICALLY OVERDUE: Milestone \"$title\" was due $((-days_left)) days ago ($due_on)** - $open_issues open issues remaining. **IMMEDIATE ATTENTION NEEDED** $admin_mentions\n"
+                    else
+                      msg="$msg:warning::exclamation: **OVERDUE: Milestone \"$title\" was due $((-days_left)) days ago ($due_on)** - $open_issues open issues remaining. $admin_mentions\n"
+                    fi
+                  elif [ "$days_left" -eq 0 ]; then
+                    # Due today - bug admins
+                    msg="$msg:rotating_light: **Milestone \"$title\" is due TODAY! ($due_on)** - $open_issues open issues remaining. $admin_mentions\n"
+                  elif [ "$days_left" -eq 1 ]; then
+                    # Due in 1 day - bug admins
+                    msg="$msg:bell: **Milestone \"$title\" is due TOMORROW! ($due_on)** - $open_issues open issues remaining. $admin_mentions\n"
+                  elif [ "$days_left" -eq 2 ]; then
+                    # Due in 2 days - bug admins
+                    msg="$msg:hourglass: **Milestone \"$title\" is due in 2 days ($due_on)** - $open_issues open issues remaining. $admin_mentions\n"
+                  elif [ "$days_left" -le 7 ]; then
+                    # Due within a week - just inform repo (only on regular days)
+                    msg="$msg:calendar: Milestone \"$title\" is due in $days_left day(s) ($due_on) - $open_issues open issues remaining\n"
+                  else
+                    # More than a week away - just informational (only on regular days)
+                    msg="$msg:white_check_mark: Milestone \"$title\" is due in $days_left day(s) ($due_on) - $open_issues open issues remaining\n"
+                  fi
+                  found=true
+                fi
+              else
+                echo "Warning: Invalid due date format for milestone '$title': $due_on"
+              fi
+            else
+              # Milestone without due date (only show on regular posting days)
+              if [ "$is_regular_post_day" = true ]; then
+                msg="$msg:grey_question: Milestone \"$title\" has no due date set - $open_issues open issues remaining\n"
+                found=true
+              fi
+            fi
+          done > /tmp/milestone_output.txt
+          
+          # Read the accumulated message
+          msg=$(cat /tmp/milestone_output.txt)
+          
+          # Only post if we have content to show
+          should_post=false
+          
+          if [ "$is_regular_post_day" = true ]; then
+            # Always post on regular days if we have any milestones
+            if [ "$found" = true ]; then
+              should_post=true
+            fi
+          else
+            # Only post on non-regular days if we have urgent milestones
+            if [ "$has_urgent_milestones" = true ]; then
+              should_post=true
+              msg="$msg\n\n⚠️ *Urgent milestone alert - posted outside regular schedule*\n"
+            fi
+          fi
+          
+          if [ "$should_post" = true ]; then
+            if [ "$found" = false ]; then
+              msg="$msg\nNo open milestones with due dates found."
+            fi
+            
+            # Add appropriate footer
+            if [ "$is_regular_post_day" = true ]; then
+              msg="$msg\n\n---\n*Regular milestone reminder (posted Sunday & Wednesday). Admins are mentioned when milestones are due within 2 days or overdue.*"
+            else
+              msg="$msg\n\n---\n*Urgent milestone alert - admins mentioned for immediate attention required.*"
+            fi
+            
+            echo "Posting milestone reminder:"
+            echo -e "$msg"
+            
+            # Create or update a dedicated milestone tracking issue
+            milestone_issue_title="📅 Milestone Tracking & Reminders"
+            
+            # Try to find existing milestone tracking issue
+            existing_issue=$(gh issue list --state open --search "in:title $milestone_issue_title" --json number --jq '.[0].number // empty')
+            
+            if [ -n "$existing_issue" ]; then
+              echo "Updating existing milestone tracking issue #$existing_issue"
+              gh issue comment "$existing_issue" --body "$(echo -e "$msg")"
+            else
+              echo "Creating new milestone tracking issue"
+              gh issue create \
+                --title "$milestone_issue_title" \
+                --body "$(echo -e "This issue tracks milestone progress and sends automated reminders.\n\n$msg")" \
+                --label "milestone-tracking,automated"
+            fi
+          else
+            echo "No urgent milestones found and today is not a regular posting day - skipping notification"
+          fi
