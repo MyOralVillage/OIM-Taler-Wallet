@@ -11,10 +11,10 @@
  * Be clear - Describe the problem you are solving in simple terms.
  * Specify if you have a partner, who they are (role/title), and the organization information.
  * Be concrete. For example:
-    * What are you planning to build? Is it a website, mobile app, browser extension, command-line app, etc.?      
+    * What are you planning to build? Is it a website, mobile app, browser extension, command-line app, etc.?
     * When describing the problem/need, give concrete examples of common use cases.
     * Assume the reader knows nothing about the partner or the problem domain and provide the necessary context. 
- * Focus on *what* your product does, and avoid discussing *how* you're going to implement it.      
+ * Focus on *what* your product does, and avoid discussing *how* you're going to implement it.
    For example: This is not the time or the place to talk about which programming language and/or framework you are planning to use.
  * **Feel free (and very much encouraged) to include useful diagrams, mock-ups and/or links**.
 
