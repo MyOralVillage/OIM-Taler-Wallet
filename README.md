@@ -1,9 +1,5 @@
 # Orali Money for Android
 
-> _Note:_ This document is intended to be relatively short. Be concise and precise. Assume the reader has no prior knowledge of your application and is non-technical. 
-
----
-
 ## Partner Intro
 Our partners are **My Oral Village** and **Taler Systems**.  
 
