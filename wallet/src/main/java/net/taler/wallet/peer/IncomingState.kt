@@ -1,0 +1,77 @@
+/*
+ * This file is part of GNU Taler
+ * (C) 2022 Taler Systems S.A.
+ *
+ * GNU Taler is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3, or (at your option) any later version.
+ *
+ * GNU Taler is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+package net.taler.wallet.peer
+
+import kotlinx.serialization.Serializable
+import net.taler.common.Amount
+import net.taler.wallet.backend.TalerErrorInfo
+
+sealed class IncomingState
+
+data object IncomingChecking : IncomingState()
+
+open class IncomingTerms(
+    open val amountRaw: Amount,
+    open val amountEffective: Amount,
+    open val contractTerms: PeerContractTerms,
+    open val id: String,
+) : IncomingState()
+
+class IncomingTosReview(
+    override val amountRaw: Amount,
+    override val amountEffective: Amount,
+    override val contractTerms: PeerContractTerms,
+    val exchangeBaseUrl: String,
+    override val id: String,
+) : IncomingTerms(
+    amountRaw = amountRaw,
+    amountEffective = amountEffective,
+    contractTerms = contractTerms,
+    id = id,
+)
+
+class IncomingAccepting(s: IncomingTerms) :
+    IncomingTerms(s.amountRaw, s.amountEffective, s.contractTerms, s.id)
+
+data object IncomingAccepted : IncomingState()
+
+data class IncomingError(
+    val info: TalerErrorInfo,
+) : IncomingState()
+
+@Serializable
+data class PeerContractTerms(
+    val summary: String,
+    val amount: Amount,
+)
+
+@Serializable
+data class PreparePeerPullDebitResponse(
+    val contractTerms: PeerContractTerms,
+    val amountRaw: Amount,
+    val amountEffective: Amount,
+    val transactionId: String,
+)
+
+@Serializable
+data class PreparePeerPushCreditResponse(
+    val contractTerms: PeerContractTerms,
+    val amountRaw: Amount,
+    val amountEffective: Amount,
+    val transactionId: String,
+    val exchangeBaseUrl: String,
+)

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ This file is part of GNU Taler
+  ~ (C) 2020 Taler Systems S.A.
+  ~
+  ~ GNU Taler is free software; you can redistribute it and/or modify it under the
+  ~ terms of the GNU General Public License as published by the Free Software
+  ~ Foundation; either version 3, or (at your option) any later version.
+  ~
+  ~ GNU Taler is distributed in the hope that it will be useful, but WITHOUT ANY
+  ~ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  ~ A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with
+  ~ GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
+  -->
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_manual_withdrawal"
+        android:title="@string/exchange_menu_manual_withdraw" />
+    <item
+        android:id="@+id/action_receive_peer"
+        android:title="@string/receive_peer" />
+    <item
+        android:id="@+id/action_reload"
+        android:title="@string/exchange_reload" />
+    <item
+        android:id="@+id/action_view_tos"
+        android:title="@string/exchange_tos_view" />
+    <item
+        android:id="@+id/action_accept_tos"
+        android:title="@string/exchange_tos_accept" />
+    <item
+        android:id="@+id/action_forget_tos"
+        android:title="@string/exchange_tos_forget" />
+    <item
+        android:id="@+id/action_global_add"
+        android:title="@string/exchange_global_add" />
+    <item
+        android:id="@+id/action_global_delete"
+        android:title="@string/exchange_global_delete" />
+    <item
+        android:id="@+id/action_delete"
+        android:title="@string/transactions_delete" />
+</menu>

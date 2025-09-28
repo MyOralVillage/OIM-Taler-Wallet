@@ -1,0 +1,15 @@
+image: registry.gitlab.com/fdroid/ci-images-client:latest
+
+cashier_test:
+  stage: test
+  only:
+    changes:
+      - cashier/**/*
+      - taler-kotlin-common/**/*
+      - taler-kotlin-android/**/*
+      - build.gradle
+  script: ./gradlew :cashier:check :cashier:assembleRelease
+  artifacts:
+    paths:
+      - cashier/build/reports/lint-results.html
+    expire_in: 1 week

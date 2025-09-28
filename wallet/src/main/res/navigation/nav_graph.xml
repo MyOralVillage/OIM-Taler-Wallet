@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ This file is part of GNU Taler
+  ~ (C) 2020 Taler Systems S.A.
+  ~
+  ~ GNU Taler is free software; you can redistribute it and/or modify it under the
+  ~ terms of the GNU General Public License as published by the Free Software
+  ~ Foundation; either version 3, or (at your option) any later version.
+  ~
+  ~ GNU Taler is distributed in the hope that it will be useful, but WITHOUT ANY
+  ~ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  ~ A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with
+  ~ GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
+  -->
+
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_main">
+
+    <fragment
+        android:id="@+id/nav_main"
+        android:name="net.taler.wallet.MainFragment"
+        android:label="@string/balances_title">
+        <action
+            android:id="@+id/action_nav_main_to_nav_uri_input"
+            app:destination="@id/nav_uri_input" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/handleUri"
+        android:name="net.taler.wallet.HandleUriFragment"
+        android:label="@string/loading">
+        <argument
+            android:name="uri"
+            app:argType="string"
+            app:nullable="false" />
+        <argument
+            android:name="from"
+            app:argType="string"
+            app:nullable="false" />
+
+        <action
+            android:id="@+id/action_handleUri_to_promptPayment"
+            app:destination="@id/promptPayment"
+            app:popUpTo="@id/nav_main" />
+
+        <action
+            android:id="@+id/action_handleUri_to_promptPullPayment"
+            app:destination="@id/promptPullPayment"
+            app:popUpTo="@id/nav_main" />
+
+        <action
+            android:id="@+id/action_handleUri_to_promptPushPayment"
+            app:destination="@id/promptPushPayment"
+            app:popUpTo="@id/nav_main" />
+
+        <action
+            android:id="@+id/action_handleUri_to_promptPayTemplate"
+            app:destination="@id/promptPayTemplate"
+            app:popUpTo="@id/nav_main" />
+
+        <action
+            android:id="@+id/action_handleUri_to_nav_payto_uri"
+            app:destination="@id/nav_payto_uri"
+            app:popUpTo="@id/nav_main" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_payto_uri"
+        android:name="net.taler.wallet.deposit.PayToUriFragment"
+        android:label="@string/transactions_send_funds">
+        <argument
+            android:name="uri"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_nav_payto_uri_to_nav_deposit"
+            app:destination="@id/nav_deposit" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/promptPayment"
+        android:name="net.taler.wallet.payment.PromptPaymentFragment"
+        android:label="@string/payment_prompt_title"
+        tools:layout="@layout/fragment_prompt_payment">
+        <action
+            android:id="@+id/action_promptPayment_to_nav_main"
+            app:destination="@id/nav_main"
+            app:popUpTo="@id/nav_main" />
+        <action
+            android:id="@+id/action_promptPayment_to_nav_transactions_detail_payment"
+            app:destination="@id/nav_transactions_detail_payment"
+            app:popUpTo="@id/nav_main" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_settings_exchanges"
+        android:name="net.taler.wallet.exchanges.ExchangeListFragment"
+        android:label="@string/exchange_list_title" />
+
+    <fragment
+        android:id="@+id/nav_exchange_manual_withdrawal_success"
+        android:name="net.taler.wallet.withdraw.manual.ManualWithdrawSuccessFragment"
+        android:label="@string/withdraw_manual_ready_details_intro">
+        <action
+            android:id="@+id/action_nav_exchange_manual_withdrawal_success_to_nav_main"
+            app:destination="@id/nav_main"
+            app:popUpTo="@id/nav_main" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_deposit"
+        android:name="net.taler.wallet.deposit.DepositFragment"
+        android:label="@string/send_deposit_title">
+        <argument
+            android:name="amount"
+            app:argType="string"
+            app:nullable="false" />
+        <argument
+            android:name="IBAN"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="receiverName"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+        <action
+            android:id="@+id/action_nav_deposit_to_nav_main"
+            app:destination="@id/nav_main"
+            app:popUpTo="@id/nav_main" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_peer_pull"
+        android:name="net.taler.wallet.peer.OutgoingPullFragment"
+        android:label="@string/receive_peer_title">
+        <argument
+            android:name="amount"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+        <action
+            android:id="@+id/action_nav_peer_pull_to_nav_main"
+            app:destination="@id/nav_main"
+            app:popUpTo="@id/nav_main" />
+        <action
+            android:id="@+id/action_nav_peer_pull_to_nav_transactions_detail_peer"
+            app:destination="@id/nav_transactions_detail_peer"
+            app:popUpTo="@id/nav_main" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_peer_push"
+        android:name="net.taler.wallet.peer.OutgoingPushFragment"
+        android:label="@string/send_peer_title">
+        <argument
+            android:name="amount"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+        <action
+            android:id="@+id/action_nav_peer_push_to_nav_main"
+            app:destination="@id/nav_main"
+            app:popUpTo="@id/nav_main" />
+        <action
+            android:id="@+id/action_nav_peer_push_to_nav_transactions_detail_peer"
+            app:destination="@id/nav_transactions_detail_peer"
+            app:popUpTo="@id/nav_main" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/promptPullPayment"
+        android:name="net.taler.wallet.peer.IncomingPullPaymentFragment"
+        android:label="@string/pay_peer_title">
+        <action
+            android:id="@+id/action_promptPullPayment_to_nav_main"
+            app:destination="@id/nav_main"
+            app:popUpTo="@id/nav_main" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/promptPushPayment"
+        android:name="net.taler.wallet.peer.IncomingPushPaymentFragment"
+        android:label="@string/receive_peer_payment_title">
+        <action
+            android:id="@+id/action_promptPushPayment_to_nav_main"
+            app:destination="@id/nav_main"
+            app:popUpTo="@id/nav_main" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/promptPayTemplate"
+        android:name="net.taler.wallet.payment.PayTemplateFragment"
+        android:label="@string/payment_pay_template_title">
+        <action
+            android:id="@+id/action_promptPayTemplate_to_promptPayment"
+            app:destination="@+id/promptPayment"
+            app:popUpTo="@id/nav_main" />
+        <argument
+            android:name="uri"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_transactions_detail_withdrawal"
+        android:name="net.taler.wallet.transactions.TransactionWithdrawalFragment"
+        android:label="@string/withdraw_title">
+        <action
+            android:id="@+id/action_nav_transactions_detail_withdrawal_to_nav_exchange_manual_withdrawal_success"
+            app:destination="@id/nav_exchange_manual_withdrawal_success" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_transactions_detail_payment"
+        android:name="net.taler.wallet.transactions.TransactionPaymentFragment"
+        android:label="@string/payment_title" />
+
+    <fragment
+        android:id="@+id/nav_transactions_detail_refund"
+        android:name="net.taler.wallet.transactions.TransactionRefundFragment"
+        android:label="@string/refund_title" />
+
+    <fragment
+        android:id="@+id/nav_transactions_detail_refresh"
+        android:name="net.taler.wallet.transactions.TransactionRefreshFragment"
+        android:label="@string/transaction_refresh" />
+
+    <fragment
+        android:id="@+id/nav_transactions_detail_deposit"
+        android:name="net.taler.wallet.transactions.TransactionDepositFragment"
+        android:label="@string/transaction_deposit" />
+
+    <fragment
+        android:id="@+id/nav_transactions_detail_peer"
+        android:name="net.taler.wallet.transactions.TransactionPeerFragment"
+        android:label="@string/transactions_detail_title" />
+
+    <fragment
+        android:id="@+id/nav_transactions_detail_loss"
+        android:name="net.taler.wallet.transactions.TransactionLossFragment"
+        android:label="@string/transaction_denom_loss" />
+
+    <fragment
+        android:id="@+id/nav_transactions_detail_dummy"
+        android:name="net.taler.wallet.transactions.TransactionDummyFragment"
+        android:label="@string/transaction_dummy_title" />
+
+    <fragment
+        android:id="@+id/promptWithdraw"
+        android:name="net.taler.wallet.withdraw.PromptWithdrawFragment"
+        android:label="@string/nav_prompt_withdraw">
+        <argument
+            android:name="withdrawUri"
+            app:nullable="true"
+            app:argType="string" />
+        <argument
+            android:name="withdrawExchangeUri"
+            app:nullable="true"
+            app:argType="string" />
+        <argument
+            android:name="editableCurrency"
+            android:defaultValue="true"
+            app:argType="boolean" />
+        <argument
+            android:name="exchangeBaseUrl"
+            app:nullable="true"
+            app:argType="string" />
+        <argument
+            android:name="amount"
+            app:nullable="true"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_promptWithdraw_to_nav_main"
+            app:destination="@id/nav_main"
+            app:popUpTo="@id/nav_main" />
+        <action
+            android:id="@+id/action_promptWithdraw_to_nav_exchange_manual_withdrawal_success"
+            app:destination="@id/nav_exchange_manual_withdrawal_success"
+            app:popUpTo="@id/nav_main" />
+        <action
+            android:id="@+id/action_promptWithdraw_to_nav_transactions_detail_withdrawal"
+            app:destination="@id/nav_transactions_detail_withdrawal"
+            app:popUpTo="@id/nav_main" />
+        <action
+            android:id="@+id/action_promptWithdraw_to_errorFragment"
+            app:destination="@id/errorFragment"
+            app:popUpTo="@id/nav_main" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/reviewExchangeTOS"
+        android:name="net.taler.wallet.withdraw.ReviewExchangeTosFragment"
+        android:label="@string/nav_exchange_tos"
+        tools:layout="@layout/fragment_review_exchange_tos">
+        <action
+            android:id="@+id/action_reviewExchangeTOS_to_promptWithdraw"
+            app:destination="@id/promptWithdraw"
+            app:popUpTo="@id/nav_main" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_uri_input"
+        android:name="net.taler.wallet.UriInputFragment"
+        android:label="@string/enter_uri"
+        tools:layout="@layout/fragment_uri_input" />
+
+    <fragment
+        android:id="@+id/errorFragment"
+        android:name="net.taler.wallet.withdraw.ErrorFragment"
+        android:label="@string/nav_error"
+        tools:layout="@layout/fragment_error" />
+
+    <action
+        android:id="@+id/action_global_handle_uri"
+        app:destination="@id/handleUri" />
+
+    <action
+        android:id="@+id/action_handleUri_to_promptWithdraw"
+        app:destination="@id/promptWithdraw"
+        app:popUpTo="@id/nav_main" />
+
+    <action
+        android:id="@+id/action_global_promptPayment"
+        app:destination="@id/promptPayment" />
+
+    <action
+        android:id="@+id/action_nav_transactions_detail_withdrawal"
+        app:destination="@id/nav_transactions_detail_withdrawal" />
+
+    <action
+        android:id="@+id/action_nav_transactions_detail_payment"
+        app:destination="@id/nav_transactions_detail_payment" />
+
+    <action
+        android:id="@+id/action_nav_transactions_detail_refund"
+        app:destination="@id/nav_transactions_detail_refund" />
+
+    <action
+        android:id="@+id/action_nav_transactions_detail_refresh"
+        app:destination="@id/nav_transactions_detail_refresh" />
+
+    <action
+        android:id="@+id/action_nav_transactions_detail_deposit"
+        app:destination="@id/nav_transactions_detail_deposit" />
+
+    <action
+        android:id="@+id/action_nav_payto_uri"
+        app:destination="@id/nav_payto_uri" />
+
+    <action
+        android:id="@+id/action_global_reviewExchangeTos"
+        app:destination="@id/reviewExchangeTOS" />
+
+</navigation>
