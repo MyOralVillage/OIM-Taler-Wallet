@@ -52,12 +52,19 @@ import net.taler.wallet.transactions.WithdrawalDetails.ManualTransfer
 import net.taler.wallet.transactions.WithdrawalDetails.TalerBankIntegrationApi
 import java.util.UUID
 
+/** represents a list of GNU Taler transactions */
 @Serializable
 data class Transactions(
     @Serializable(with = TransactionListSerializer::class)
     val transactions: List<Transaction>,
 )
 
+
+/**
+ * Serializer for a list of transactions.
+ * Handles deserialization of the transaction list.
+ * Serialization is not implemented.
+ */
 class TransactionListSerializer : KSerializer<List<Transaction>> {
     private val serializer = ListSerializer(TransactionSerializer())
     override val descriptor: SerialDescriptor = serializer.descriptor
@@ -71,6 +78,11 @@ class TransactionListSerializer : KSerializer<List<Transaction>> {
     }
 }
 
+/**
+ * Serializer for a single transactions
+ * Handles deserialization of the transaction list.
+ * Serialization is not implemented.
+ */
 class TransactionSerializer : KSerializer<Transaction> {
 
     private val serializer = Transaction.serializer()

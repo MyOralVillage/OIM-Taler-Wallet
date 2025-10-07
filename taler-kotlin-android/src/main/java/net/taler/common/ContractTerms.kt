@@ -16,6 +16,7 @@
 
 package net.taler.common
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory.decodeByteArray
 import android.os.Build
@@ -26,6 +27,7 @@ import net.taler.common.TalerUtils.getLocalizedString
 
 val REGEX_PRODUCT_IMAGE = Regex("^data:image/(jpeg|png);base64,([A-Za-z0-9+/=]+)$")
 
+@SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class ContractTerms(
     val summary: String,
