@@ -23,8 +23,8 @@ import kotlinx.serialization.Serializable
  *
  * Example usage:
  * ```
- * val iconPath = EXPN_GRCR.asset_path
- * val label = EXPN_GRCR.asset_label
+ * val iconPath = EXPN_GRCR.assetPath
+ * val label = EXPN_GRCR.assetLabel
  * val inputStream = context.assets.open(iconPath)
  * ```
  */
@@ -35,10 +35,10 @@ sealed interface TranxPurp : Comparable<TranxPurp> {
     val cmp: String
 
     /** Path to the asset for this purpose */
-    val asset_path: String
+    val assetPath: String
 
     /** Label of the asset */
-    val asset_label: String
+    val assetLabel: String
 
     companion object {
         /** Base path of transaction purpose assets */
@@ -52,142 +52,142 @@ sealed interface TranxPurp : Comparable<TranxPurp> {
 @Serializable
 object EDUC_CLTH : TranxPurp {
     override val cmp = "EDUC_CLTH"
-    override val asset_path = TranxPurp.BASE + "school_uniforms.png"
-    override val asset_label = "school_uniforms"
+    override val assetPath = TranxPurp.BASE + "school_uniforms.png"
+    override val assetLabel = "school_uniforms"
 }
 
 /** Tuition or general schooling fees */
 @Serializable
 object EDUC_SCHL : TranxPurp {
     override val cmp = "EDUC_SCHL"
-    override val asset_path = TranxPurp.BASE + "schooling.png"
-    override val asset_label = "tuition_fees"
+    override val assetPath = TranxPurp.BASE + "schooling.png"
+    override val assetLabel = "tuition_fees"
 }
 
 /** School supplies */
 @Serializable
 object EDUC_SUPL : TranxPurp {
     override val cmp = "EDUC_SUPL"
-    override val asset_path = TranxPurp.BASE + "school_supplies.png"
-    override val asset_label = "school_supplies"
+    override val assetPath = TranxPurp.BASE + "school_supplies.png"
+    override val assetLabel = "school_supplies"
 }
 
 /** Phone expenses */
 @Serializable
 object EXPN_CELL : TranxPurp {
     override val cmp = "EXPN_CELL"
-    override val asset_path = TranxPurp.BASE + "phone.png"
-    override val asset_label = "phone_bill"
+    override val assetPath = TranxPurp.BASE + "phone.png"
+    override val assetLabel = "phone_bill"
 }
 
 /** Loan repayment / debt expenses */
 @Serializable
 object EXPN_DEBT : TranxPurp {
     override val cmp = "EXPN_DEBT"
-    override val asset_path = TranxPurp.BASE + "loan.png"
-    override val asset_label = "debt"
+    override val assetPath = TranxPurp.BASE + "loan.png"
+    override val assetLabel = "debt"
 }
 
 /** Farming expenses (tools, seeds, maintenance) */
 @Serializable
 object EXPN_FARM : TranxPurp {
     override val cmp = "EXPN_FARM"
-    override val asset_path = TranxPurp.BASE + "farming.png"
-    override val asset_label = "farming"
+    override val assetPath = TranxPurp.BASE + "farming.png"
+    override val assetLabel = "farming"
 }
 
 /** Grocery expenses */
 @Serializable
 object EXPN_GRCR : TranxPurp {
     override val cmp = "EXPN_GRCR"
-    override val asset_path = TranxPurp.BASE + "groceries.png"
-    override val asset_label = "groceries"
+    override val assetPath = TranxPurp.BASE + "groceries.png"
+    override val assetLabel = "groceries"
 }
 
 /** Market fee expenses */
 @Serializable
 object EXP_MRKT : TranxPurp {
     override val cmp = "EXP_MRKT"
-    override val asset_path = TranxPurp.BASE + "market_stall.png"
-    override val asset_label = "market_fees"
+    override val assetPath = TranxPurp.BASE + "market_stall.png"
+    override val assetLabel = "market_fees"
 }
 
 /** Gas/petrol expenses */
 @Serializable
 object EXPN_PTRL : TranxPurp {
     override val cmp = "EXPN_PTRL"
-    override val asset_path = TranxPurp.BASE + "gas.png"
-    override val asset_label = "gas"
+    override val assetPath = TranxPurp.BASE + "gas.png"
+    override val assetLabel = "gas"
 }
 
 /** Housing expenses */
 @Serializable
 object EXPN_RENT : TranxPurp {
     override val cmp = "EXPN_RENT"
-    override val asset_path = TranxPurp.BASE + "housing.png"
-    override val asset_label = "housing_expenses"
+    override val assetPath = TranxPurp.BASE + "housing.png"
+    override val assetLabel = "housing_expenses"
 }
 
 /** Tool/equipment expenses */
 @Serializable
 object EXPN_TOOL : TranxPurp {
     override val cmp = "EXPN_TOOL"
-    override val asset_path = TranxPurp.BASE + "tools.png"
-    override val asset_label = "tools_and_equipment"
+    override val assetPath = TranxPurp.BASE + "tools.png"
+    override val assetLabel = "tools_and_equipment"
 }
 
 /** Transportation-related expenses */
 @Serializable
 object EXPN_TRPT : TranxPurp {
     override val cmp = "EXPN_TRPT"
-    override val asset_path = TranxPurp.BASE + "transportation.png"
-    override val asset_label = "transportation"
+    override val assetPath = TranxPurp.BASE + "transportation.png"
+    override val assetLabel = "transportation"
 }
 
 /** Doctor/clinic visits */
 @Serializable
 object HLTH_DOCT : TranxPurp {
     override val cmp = "HLTH_DOCT"
-    override val asset_path = TranxPurp.BASE + "doctor_appointment.png"
-    override val asset_label = "doctors_appointment"
+    override val assetPath = TranxPurp.BASE + "doctor_appointment.png"
+    override val assetLabel = "doctors_appointment"
 }
 
 /** Medicine */
 @Serializable
 object HLTH_MEDS : TranxPurp {
     override val cmp = "HLTH_MEDS"
-    override val asset_path = TranxPurp.BASE + "medicine.png"
-    override val asset_label = "medicine"
+    override val assetPath = TranxPurp.BASE + "medicine.png"
+    override val assetLabel = "medicine"
 }
 
 /** Receive money via transaction */
 @Serializable
 object TRNS_RECV : TranxPurp {
     override val cmp = "TRNS_RECV"
-    override val asset_path = TranxPurp.BASE + "receive.png"
-    override val asset_label = "receive_money"
+    override val assetPath = TranxPurp.BASE + "receive.png"
+    override val assetLabel = "receive_money"
 }
 
 /** Send money via transaction */
 @Serializable
 object TRNS_SEND : TranxPurp {
     override val cmp = "TRNS_SEND"
-    override val asset_path = TranxPurp.BASE + "send.png"
-    override val asset_label = "send_money"
+    override val assetPath = TranxPurp.BASE + "send.png"
+    override val assetLabel = "send_money"
 }
 
 /** Electricity/power utilities */
 @Serializable
 object UTIL_ELEC : TranxPurp {
     override val cmp = "UTIL_ELEC"
-    override val asset_path = TranxPurp.BASE + "electricity.png"
-    override val asset_label = "electricity_and_power"
+    override val assetPath = TranxPurp.BASE + "electricity.png"
+    override val assetLabel = "electricity_and_power"
 }
 
 /** Water utilities */
 @Serializable
 object UTIL_WATR : TranxPurp {
     override val cmp = "UTIL_WATR"
-    override val asset_path = TranxPurp.BASE + "water.png"
-    override val asset_label = "water"
+    override val assetPath = TranxPurp.BASE + "water.png"
+    override val assetLabel = "water"
 }

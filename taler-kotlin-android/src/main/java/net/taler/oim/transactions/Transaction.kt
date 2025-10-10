@@ -25,7 +25,6 @@ import java.time.*
 
 /**
  * Represents a financial transaction with a timestamp, purpose, and amount.
- * Is comparable based off of  timestamp.
  * @property datetime The UTC timestamp of the transaction.
  * @property purpose The purpose of the transaction, represented by a [TranxPurp].
  * @property amount The amount involved in the transaction as an [Amount].
@@ -37,17 +36,12 @@ import java.time.*
  * @param dir true is incoming to wallet, false is outgoing from wallet
  */
 @RequiresApi(Build.VERSION_CODES.O)
-data class Transaction(
+data class Transaction (
     val dateTimeUTC: LocalDateTime,
     val purpose: TranxPurp,
     val amount: Amount,
     val direction: Boolean
-    ) : Comparable<Transaction> {
-    override fun compareTo(other: Transaction): Int {
-        return this.dateTimeUTC.compareTo(other.dateTimeUTC)
-    }
-}
-
+    )
 // loads transaction history indexes
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 object TransactionHistory {
@@ -56,7 +50,7 @@ object TransactionHistory {
     private var state : Boolean = false
 
     /** transactions organized by purpose */
-    private lateinit var indexedTranxPurpose :  MutableMap<TranxPurp, Transaction>
+    private lateinit var indexedTranxPurp :  MutableMap<TranxPurp, Transaction>
 
     /** transactions organized by UTC date */
     private lateinit var indexedDatetime : MutableMap<LocalDateTime, Transaction>
@@ -86,7 +80,7 @@ object TransactionHistory {
         if(state) throw IllegalStateException("Cannot reinitialize transaction history!")
 
         // initialize directions
-        indexedTranxPurpose = byPurpose
+        indexedTranxPurp = byPurpose
         indexedDatetime = byDateTime
         indexedAmount = byAmount
         indexedDirection = byDirection
@@ -97,7 +91,7 @@ object TransactionHistory {
 
     /** updates indices of transactions */
     private fun updateIndices(trxn: Transaction) {
-        indexedTranxPurpose.put(trxn.purpose, trxn)
+        indexedTranxPurp.put(trxn.purpose, trxn)
         indexedDatetime.put(trxn.dateTimeUTC, trxn)
         indexedAmount.put(trxn.amount, trxn)
         indexedDirection.put(trxn.direction, trxn)
@@ -110,6 +104,7 @@ object TransactionHistory {
      * @param dir boolean false represents outgoing, true represents incoming
      */
     fun newTransaction(purpose: TranxPurp, amnt: Amount, dir: Boolean) {
+        if (!state) throw IllegalStateException("Transaction history is not initialized!");
 
         // create new time instance (in epoch)
         val time = Timestamp.now().ms
@@ -125,6 +120,6 @@ object TransactionHistory {
         // add to indices
         updateIndices(trxn)
     }
+
+    // add method for serializing updated transactions and saving to disk
 }
-// TODO: implement transaction history
-// TODO: how do I get the actual date from the timestamp class

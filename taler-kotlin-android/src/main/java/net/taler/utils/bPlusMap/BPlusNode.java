@@ -14,7 +14,7 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.utils.BPlusMap;
+package net.taler.utils.bPlusMap;
 
 /**
  * Abstract base class for all nodes in a B+ tree (internal and leaf nodes).
@@ -25,8 +25,8 @@ package net.taler.utils.BPlusMap;
  * @param <K> the type of keys, which must be comparable
  * @param <V> the type of values stored in the leaf nodes
  */
-public abstract class BPlusNode<K extends Comparable<K>, V> {
-
+public abstract class
+BPlusNode<K extends Comparable<K>, V> {
 
     /** The parent node of this node. */
     BPlusNode<K, V> parent;

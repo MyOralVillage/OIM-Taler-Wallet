@@ -14,7 +14,7 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.utils.BPlusMap;
+package net.taler.utils.bPlusMap;
 
 import java.util.*;
 

@@ -14,7 +14,7 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.utils.BPlusMap;
+package net.taler.utils.bPlusMap;
 
 import java.util.*;
 
@@ -24,7 +24,7 @@ import java.util.*;
  * @param <K> the type of keys, which must be comparable
  * @param <V> the type of values stored in the tree
  */
-public class BPlusNodeLeaf<K extends Comparable<K>, V> extends BPlusNode<K,V> {
+public class BPlusNodeLeaf<K extends Comparable<K>,V> extends BPlusNode<K,V> {
 
     // leafs form linked list; initialized to nul.
     private BPlusNodeLeaf<K,V> next = null;
@@ -52,9 +52,9 @@ public class BPlusNodeLeaf<K extends Comparable<K>, V> extends BPlusNode<K,V> {
      * Keys must remain in sorted order (caller is responsible for maintaining order).
      * @param k the key to add
      * @throws IllegalStateException if the node already has the maximum number of entries
-     * @throws IllegalArgumentException if k or v is null
+     * @throws IllegalArgumentException if k or v is null or k is a duplicate
      */
-    public void addEntry(K k, V v) throws IllegalStateException {
+    public void addEntry(K k, V v) {
         if (isFull()) throw new IllegalStateException("Cannot add entry to full node");
         if (k==null||v ==null) throw new IllegalArgumentException("Entry cannot be null!");
         BPlusEntry<K,V> bpe = new BPlusEntry<>(k,v);
@@ -62,22 +62,42 @@ public class BPlusNodeLeaf<K extends Comparable<K>, V> extends BPlusNode<K,V> {
         // do binary search to find insertion point
         int idx = Collections.binarySearch(entries, bpe);
 
-        // idx is -ve if exact value not found (idx = -(insertion_point) - 1);
-        // it therefore must be flipped and incr. to find correct idx
-        if (idx < 0) idx = -idx - 1;
+        // idx is +ve if key found (illegal in maps);
+        // idx is -ve if value not found (idx = -(insertion_point) - 1);
+        if (idx < 0) throw new IllegalArgumentException("Cannot add duplicate key");
 
         // shift all elements to right from idx and inserts; worst case is O(n)
-        entries.add(idx, bpe);
+        entries.add( ~idx, bpe);
     }
 
     /**
      * This method performs a binary search over the sorted list of entries
-     * to find the entry with the matching key. If no such entry exists, {@code null} is returned.
-     * @param k the key to search for; must not be {@code null}
-     * @return the {@link BPlusEntry} with the specified key, or {@code null} if no such entry exists
+     * to find the first entry with the matching key.
+     * If no such entry exists, {@code null} is returned.
+     * @param v the value to search for; must not be {@code null}
+     * @return list of {@link BPlusEntry} with the value, or {@code null} if no such entry exists
+     */
+    public BPlusEntry<K,V> getByValue(V v) throws IllegalStateException {
+        if (v==null) throw new IllegalStateException("Value cannot be null!");
+
+        // search through entries for value
+        for (BPlusEntry<K,V> bpe : entries) {
+            if (Objects.equals(v, bpe.getValue())) {
+                return bpe;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * This method performs a binary search over the sorted list of entries
+     * to find the first entry with the matching key.
+     * If no such entry exists, {@code null} is returned.
+     * @param o the key to search for; must not be {@code null}
+     * @return the {@link BPlusEntry} with the key, or {@code null} if no such entry exists
      * @throws IllegalArgumentException if {@code k} is {@code null}
      */
-    public BPlusEntry<K,V> getEntry(K k) {
+    public BPlusEntry<K,V> getByKey(K k) {
         if (k==null) throw new IllegalArgumentException("Key cannot be null!");
 
         // if no entry exists in leaf, return null

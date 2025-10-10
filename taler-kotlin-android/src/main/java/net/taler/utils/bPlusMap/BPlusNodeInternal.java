@@ -14,7 +14,7 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.utils.BPlusMap;
+package net.taler.utils.bPlusMap;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +25,7 @@ import java.util.Collections;
  * @param <K> the type of keys, which must be comparable
  * @param <V> the type of values stored in the tree
  */
-public class BPlusNodeInternal<K extends Comparable<K>, V> extends BPlusNode<K, V> {
+public class BPlusNodeInternal<K extends Comparable<K>, V> extends BPlusNode<K,V>  {
 
     /** static method to assert a node is not null */
     private static <K extends Comparable<K>, V> BPlusNode<K, V>
@@ -57,6 +57,20 @@ public class BPlusNodeInternal<K extends Comparable<K>, V> extends BPlusNode<K, 
     }
 
     /**
+     * Returns the next child based on a key value
+     * @param k the key to search for
+     * @return the next child node
+     */
+    public BPlusNode<K,V> next(K k) {
+
+        // do binary search to find "position" of key
+       int pos = Collections.binarySearch(keys, k);
+
+       // return the next node
+       return (pos>=0) ? children.get(pos + 1) : children.get(-pos-1);
+    }
+
+    /**
      * Constructs a new internal node with the same degree as its parent.
      * Use this constructor when adding a child node to an existing tree.
      * @param parent the parent internal node; must not be null
@@ -75,7 +89,9 @@ public class BPlusNodeInternal<K extends Comparable<K>, V> extends BPlusNode<K, 
      */
     public void addKeyChild(K k, BPlusNode<K,V> c) throws IllegalStateException {
         if (isFull()) throw new IllegalStateException("Cannot add to full node");
-        if (k==null||c==null) throw new IllegalArgumentException("Key and/or child cannot be null!");
+        if (k==null||c==null) throw new IllegalArgumentException(
+                "Key and/or child cannot be null!"
+        );
 
         // find insertion point in keys
         int pos = Collections.binarySearch(keys, k);
@@ -95,29 +111,7 @@ public class BPlusNodeInternal<K extends Comparable<K>, V> extends BPlusNode<K, 
      */
     public boolean containsKey(K k) {
         if (k == null) throw new IllegalArgumentException ("Key cannot be null!");
-        return 0 >= Collections.binarySearch(keys, k);
-    }
-
-    /**
-     * Returns the appropriate child node to descend into for a given search key.
-     * This method assumes the keys are in sorted order and follows B+ tree routing rules.
-     * @param k the key to search for
-     * @return the child node where the key would belong
-     * @throws IllegalArgumentException if k is null
-     */
-    public BPlusNode<K, V> getChild(K k) {
-
-        // throw error if null passed
-        if (k == null) throw new IllegalArgumentException("Key cannot be null!");
-
-        for (int i = 0; i < keys.size(); i++) {
-            if (k.compareTo(keys.get(i)) < 0) {
-                return children.get(i);
-            }
-        }
-
-        // If key is greater than or equal to all stored keys, return rightmost child
-        return children.get(children.size() - 1);
+        return 0 <= Collections.binarySearch(keys, k);
     }
 
     /**

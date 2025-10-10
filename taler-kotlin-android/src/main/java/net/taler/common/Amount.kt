@@ -30,6 +30,8 @@ import java.text.NumberFormat
 import kotlin.math.floor
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import net.taler.utils.filterable.Filterable
+import java.util.logging.Filter
 
 /**
  * Exception thrown when parsing or constructing an [Amount] fails due to invalid format,
@@ -64,6 +66,7 @@ class AmountOverflowException(msg: String? = null, cause: Throwable? = null) :
  */
 @Serializable(with = KotlinXAmountSerializer::class)
 data class Amount(
+
     /**
      * name of the currency using either a three-character ISO 4217 currency code,
      * or a regional currency identifier starting with a "*" followed by at most 10 characters.
@@ -90,7 +93,7 @@ data class Amount(
      * Currency specification for amount
      */
     val spec: CurrencySpecification? = null,
-) : Comparable<Amount> {
+) : Filterable<Amount> {
 
     companion object {
 
