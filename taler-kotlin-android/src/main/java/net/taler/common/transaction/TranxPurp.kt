@@ -13,9 +13,10 @@
  * You should have received a copy of the GNU General Public License along with
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
-package net.taler.oim.transactions
+package net.taler.common.transaction
 
 import kotlinx.serialization.Serializable
+import net.taler.common.utils.Filterable
 
 /**
  * Marker interface for representing transaction purposes
@@ -29,7 +30,7 @@ import kotlinx.serialization.Serializable
  * ```
  */
 @Serializable
-sealed interface TranxPurp : Comparable<TranxPurp> {
+sealed interface TranxPurp : Filterable<TranxPurp> {
 
     /** Comparison key (alphabetical) */
     val cmp: String
@@ -45,7 +46,8 @@ sealed interface TranxPurp : Comparable<TranxPurp> {
         const val BASE: String = "OIM/transaction-purposes/"
     }
 
-    override fun compareTo(other: TranxPurp): Int = cmp.compareTo(other.cmp)
+    override fun compareTo(other: TranxPurp):
+            Int = cmp.compareTo(other.cmp)
 }
 
 /** School uniforms */

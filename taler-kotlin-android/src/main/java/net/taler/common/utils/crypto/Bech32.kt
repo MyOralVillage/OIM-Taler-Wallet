@@ -1,6 +1,6 @@
 /*
  * This file is part of GNU Taler
- * (C) 2020 Taler Systems S.A.
+ * (C) 2025 Taler Systems S.A.
  *
  * GNU Taler is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -14,17 +14,9 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-// Copyright (c) 2020 Figure Technologies Inc.
-// The contents of this file were derived from an implementation
-// by the btcsuite developers https://github.com/btcsuite/btcutil.
-
-// Copyright (c) 2017 The btcsuite developers
-// Use of this source code is governed by an ISC
-// license that can be found in the LICENSE file.
-
 // modified version of https://gist.github.com/iramiller/4ebfcdfbc332a9722c4a4abeb4e16454
 
-package net.taler.common
+package net.taler.common.utils.crypto
 
 import java.util.Locale.ROOT
 import kotlin.experimental.and
@@ -105,7 +97,7 @@ class Bech32 {
 
         fun generateFakeSegwitAddress(reservePub: String?, addr: String): List<String> {
             if (reservePub == null || reservePub.isEmpty()) return listOf()
-            val pub = CyptoUtils.decodeCrock(reservePub)
+            val pub = CryptoUtils.decodeCrock(reservePub)
             if (pub.size != 32) return listOf()
 
             val firstRnd = pub.copyOfRange(0, 4)

@@ -1,6 +1,6 @@
 /*
  * This file is part of GNU Taler
- * (C) 2020 Taler Systems S.A.
+ * (C) 2025 Taler Systems S.A.
  *
  * GNU Taler is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -14,7 +14,7 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.common
+package net.taler.common.transaction
 
 import android.os.Build
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -30,8 +30,7 @@ import java.text.NumberFormat
 import kotlin.math.floor
 import kotlin.math.pow
 import kotlin.math.roundToInt
-import net.taler.utils.filterable.Filterable
-import java.util.logging.Filter
+import net.taler.common.utils.Filterable
 
 /**
  * Exception thrown when parsing or constructing an [Amount] fails due to invalid format,
@@ -249,8 +248,7 @@ data class Amount(
         // adds the integer values (value) and the integer components
         // of the addition of the fractional components (fraction),
         // rounded to the nearest hundred millionth
-        val resultValue =
-            value + other.value
+        val resultValue = value + other.value
             + floor(
                 (fraction + other.fraction).toDouble() / FRACTIONAL_BASE
             ).toLong()

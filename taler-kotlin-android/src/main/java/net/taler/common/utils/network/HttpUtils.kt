@@ -1,6 +1,6 @@
 /*
  * This file is part of GNU Taler
- * (C) 2024 Taler Systems S.A.
+ * (C) 2025 Taler Systems S.A.
  *
  * GNU Taler is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -14,7 +14,7 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.common
+package net.taler.common.utils.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -29,6 +29,16 @@ import io.ktor.http.HttpMethod
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
+/**
+ * Creates a default [HttpClient] using the OkHttp engine with optional JSON support, timeout,
+ * redirect behavior, and logging.
+ *
+ * @param withJson Whether to install [ContentNegotiation]  (default `true`).
+ * @param timeoutMs Optional request timeout in ms. If `null` or <= 0, uses infinite timeout.
+ * @param followRedirect Whether to automatically follow HTTP redirects (default `false`).
+ * @param logging Whether to enable logging at [LogLevel.INFO] (default `true`).
+ * @return Configured [HttpClient] instance.
+ */
 fun getDefaultHttpClient(
     withJson: Boolean = true,
     timeoutMs: Long? = null,
@@ -37,11 +47,13 @@ fun getDefaultHttpClient(
 ): HttpClient = HttpClient(OkHttp) {
     expectSuccess = true
     followRedirects = followRedirect
+
     engine {
         config {
             retryOnConnectionFailure(true)
         }
     }
+
     install(ContentNegotiation) {
         if (withJson) {
             json(Json {
@@ -50,26 +62,34 @@ fun getDefaultHttpClient(
             })
         }
     }
+
     install(HttpTimeout) {
         requestTimeoutMillis = if (timeoutMs != null && timeoutMs > 0) {
             timeoutMs
         } else {
             HttpTimeout.INFINITE_TIMEOUT_MS
         }
-
         socketTimeoutMillis = HttpTimeout.INFINITE_TIMEOUT_MS
         connectTimeoutMillis = HttpTimeout.INFINITE_TIMEOUT_MS
     }
+
     install(HttpRedirect) {
         checkHttpMethod = !followRedirect
     }
+
     install(Logging) {
         logger = Logger.ANDROID
         level = if (logging) LogLevel.INFO else LogLevel.NONE
     }
 }
 
-fun String.toHttpMethod(): HttpMethod? = when(this) {
+/**
+ * Converts a string to an [HttpMethod] if it matches a standard HTTP method.
+ *
+ * @receiver The string to convert (e.g., "GET", "POST").
+ * @return Corresponding [HttpMethod], or `null` if the string is not a recognized HTTP method.
+ */
+fun String.toHttpMethod(): HttpMethod? = when (this.uppercase()) {
     "GET" -> HttpMethod.Get
     "POST" -> HttpMethod.Post
     "PUT" -> HttpMethod.Put

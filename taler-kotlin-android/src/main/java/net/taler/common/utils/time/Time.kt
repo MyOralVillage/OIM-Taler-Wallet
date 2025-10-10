@@ -1,6 +1,6 @@
 /*
  * This file is part of GNU Taler
- * (C) 2020 Taler Systems S.A.
+ * (C) 2025 Taler Systems S.A.
  *
  * GNU Taler is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -14,8 +14,9 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.common
+package net.taler.common.utils.time
 
+import android.annotation.SuppressLint
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
@@ -25,6 +26,7 @@ import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
+import kotlin.math.max
 
 /**
  * Represents a point in time, internally stored in seconds.
@@ -35,7 +37,8 @@ import kotlinx.serialization.json.longOrNull
  * @property ms Milliseconds representation of the timestamp. Derived from internal seconds.
  */
 @Serializable
-data class Timestamp(
+@SuppressLint("UnsafeOptInUsageError")
+data class Timestamp constructor(
     /**
      * Internal representation of the timestamp in seconds.
      * Serialized as `"t_s"` and supports `"never"` as a sentinel value via [NeverSerializer].
@@ -49,7 +52,7 @@ data class Timestamp(
         private const val NEVER: Long = -1
 
         /**
-         * Returns the current system time as a [Timestamp].
+         * Returns the current system time as a [Timestamp] in epoch time.
          */
         fun now(): Timestamp = fromMillis(System.currentTimeMillis())
 
@@ -118,7 +121,7 @@ data class Timestamp(
     operator fun minus(other: RelativeTime): Timestamp = when {
         ms == NEVER -> this
         other.ms == RelativeTime.FOREVER -> fromMillis(0)
-        else -> fromMillis(kotlin.math.max(0, ms - other.ms))
+        else -> fromMillis(max(0, ms - other.ms))
     }
 
     /**
@@ -147,6 +150,7 @@ data class Timestamp(
  *
  * @property ms Duration in milliseconds, derived from microseconds.
  */
+@SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class RelativeTime(
     /**

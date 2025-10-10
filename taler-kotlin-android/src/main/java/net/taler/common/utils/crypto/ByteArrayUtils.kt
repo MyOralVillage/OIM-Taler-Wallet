@@ -1,6 +1,6 @@
 /*
  * This file is part of GNU Taler
- * (C) 2020 Taler Systems S.A.
+ * (C) 2025 Taler Systems S.A.
  *
  * GNU Taler is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -14,40 +14,39 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.common
+package net.taler.utils.crypto
 
+/**
+ * Utility functions for working with byte arrays.
+ */
 object ByteArrayUtils {
 
+    /** Hexadecimal characters used for conversion. */
     private const val HEX_CHARS = "0123456789ABCDEF"
 
+    /**
+     * Converts a hexadecimal string to a [ByteArray].
+     *
+     * The input string must contain an even number of characters, each representing a hex digit
+     * (0–9, A–F). Lowercase letters are not supported in this version.
+     *
+     * @param data Hexadecimal string (e.g., "4A6F686E").
+     * @return ByteArray corresponding to the hex string.
+     * @throws IllegalArgumentException if the input contains invalid hex.
+     */
     fun hexStringToByteArray(data: String): ByteArray {
+        require(data.length % 2 == 0) { "Hex string must have even length" }
+
         val result = ByteArray(data.length / 2)
 
         for (i in data.indices step 2) {
             val firstIndex = HEX_CHARS.indexOf(data[i])
             val secondIndex = HEX_CHARS.indexOf(data[i + 1])
+            require(firstIndex >= 0 && secondIndex >= 0) { "Invalid hex character at position $i" }
 
             val octet = firstIndex.shl(4).or(secondIndex)
             result[i.shr(1)] = octet.toByte()
         }
         return result
     }
-
-
-    private val HEX_CHARS_ARRAY = HEX_CHARS.toCharArray()
-
-    @Suppress("unused")
-    fun toHex(byteArray: ByteArray): String {
-        val result = StringBuffer()
-
-        byteArray.forEach {
-            val octet = it.toInt()
-            val firstIndex = (octet and 0xF0).ushr(4)
-            val secondIndex = octet and 0x0F
-            result.append(HEX_CHARS_ARRAY[firstIndex])
-            result.append(HEX_CHARS_ARRAY[secondIndex])
-        }
-        return result.toString()
-    }
-
 }

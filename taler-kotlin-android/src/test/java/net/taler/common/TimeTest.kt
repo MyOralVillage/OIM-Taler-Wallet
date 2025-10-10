@@ -18,6 +18,7 @@ package net.taler.common
 
 import kotlinx.serialization.json.Json.Default.decodeFromString
 import kotlinx.serialization.json.Json.Default.encodeToString
+import net.taler.common.utils.time.Timestamp
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import kotlin.random.Random

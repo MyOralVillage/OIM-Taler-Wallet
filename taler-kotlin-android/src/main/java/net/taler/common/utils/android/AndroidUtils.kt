@@ -1,6 +1,6 @@
 /*
  * This file is part of GNU Taler
- * (C) 2020 Taler Systems S.A.
+ * (C) 2025 Taler Systems S.A.
  *
  * GNU Taler is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -14,7 +14,7 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.common
+package net.taler.utils.android
 
 import android.Manifest.permission.ACCESS_NETWORK_STATE
 import android.content.ActivityNotFoundException
@@ -26,20 +26,9 @@ import android.content.Intent
 import android.content.Intent.EXTRA_INITIAL_INTENTS
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET
-import android.net.Uri
 import android.os.Build.VERSION.SDK_INT
 import android.os.Looper
-import android.text.format.DateUtils.DAY_IN_MILLIS
-import android.text.format.DateUtils.FORMAT_ABBREV_ALL
-import android.text.format.DateUtils.FORMAT_ABBREV_MONTH
-import android.text.format.DateUtils.FORMAT_ABBREV_RELATIVE
-import android.text.format.DateUtils.FORMAT_NO_YEAR
-import android.text.format.DateUtils.FORMAT_SHOW_DATE
-import android.text.format.DateUtils.FORMAT_SHOW_TIME
-import android.text.format.DateUtils.FORMAT_SHOW_YEAR
-import android.text.format.DateUtils.MINUTE_IN_MILLIS
-import android.text.format.DateUtils.formatDateTime
-import android.text.format.DateUtils.getRelativeTimeSpanString
+import android.text.format.DateUtils.*
 import android.util.Log
 import android.view.View
 import android.view.View.INVISIBLE
@@ -47,48 +36,67 @@ import android.view.View.VISIBLE
 import android.view.inputmethod.InputMethodManager
 import androidx.annotation.RequiresPermission
 import androidx.annotation.StringRes
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.getSystemService
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
+import net.taler.common.R
+import net.taler.common.utils.model.Version
 import net.taler.lib.android.ErrorBottomSheet
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 
+/**
+ * Fades the view in using an alpha animation.
+ * @param endAction optional lambda to invoke when animation ends
+ */
 fun View.fadeIn(endAction: () -> Unit = {}) {
-    if (visibility == VISIBLE && alpha == 1f) return
+    if (isVisible && alpha == 1f) return
     alpha = 0f
     visibility = VISIBLE
     animate().alpha(1f).withEndAction {
-        if (context != null) endAction.invoke()
+        if (context != null) endAction()
     }.start()
 }
 
+/**
+ * Fades the view out using an alpha animation.
+ * @param endAction optional lambda to invoke when animation ends
+ */
 fun View.fadeOut(endAction: () -> Unit = {}) {
-    if (visibility == INVISIBLE) return
+    if (isInvisible) return
     animate().alpha(0f).withEndAction {
         if (context == null) return@withEndAction
         visibility = INVISIBLE
         alpha = 1f
-        endAction.invoke()
+        endAction()
     }.start()
 }
 
+/** Hides the soft keyboard from the view. */
 fun View.hideKeyboard() {
-    getSystemService(context, InputMethodManager::class.java)
+    context.getSystemService<InputMethodManager>()
         ?.hideSoftInputFromWindow(windowToken, 0)
 }
 
+/** Ensures the current thread is the main (UI) thread. */
 fun assertUiThread() {
     check(Looper.getMainLooper().thread == Thread.currentThread())
 }
 
 /**
- * Use this with 'when' expressions when you need it to handle all possibilities/branches.
+ * Marks an expression as exhaustive for 'when' usage.
+ * Useful to force handling all branches of a sealed class or enum.
  */
 val <T> T.exhaustive: T
     get() = this
 
+/**
+ * Checks if the device is online (has internet connectivity).
+ * Requires [ACCESS_NETWORK_STATE] permission.
+ */
 @RequiresPermission(ACCESS_NETWORK_STATE)
 fun Context.isOnline(): Boolean {
     val cm = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -101,22 +109,24 @@ fun Context.isOnline(): Boolean {
     }
 }
 
-fun FragmentActivity.showError(mainText: String, detailText: String = "") = ErrorBottomSheet
-    .newInstance(mainText, detailText)
-    .show(supportFragmentManager, "ERROR_BOTTOM_SHEET")
+/**
+ * Shows an error using [ErrorBottomSheet].
+ */
+fun FragmentActivity.showError(mainText: String, detailText: String = "") =
+    ErrorBottomSheet.newInstance(mainText, detailText)
+        .show(supportFragmentManager, "ERROR_BOTTOM_SHEET")
 
-fun FragmentActivity.showError(@StringRes mainId: Int, detailText: String = "") {
+fun FragmentActivity.showError(@StringRes mainId: Int, detailText: String = "") =
     showError(getString(mainId), detailText)
-}
 
-fun Fragment.showError(mainText: String, detailText: String = "") = ErrorBottomSheet
-    .newInstance(mainText, detailText)
-    .show(parentFragmentManager, "ERROR_BOTTOM_SHEET")
+fun Fragment.showError(mainText: String, detailText: String = "") =
+    ErrorBottomSheet.newInstance(mainText, detailText)
+        .show(parentFragmentManager, "ERROR_BOTTOM_SHEET")
 
-fun Fragment.showError(@StringRes mainId: Int, detailText: String = "") {
+fun Fragment.showError(@StringRes mainId: Int, detailText: String = "") =
     showError(getString(mainId), detailText)
-}
 
+/** Safely starts an activity, catching [ActivityNotFoundException]. */
 fun Context.startActivitySafe(intent: Intent) {
     try {
         startActivity(intent)
@@ -125,77 +135,86 @@ fun Context.startActivitySafe(intent: Intent) {
     }
 }
 
+/** Returns true if any app can handle the given URI. */
 fun Context.canAppHandleUri(uri: String): Boolean {
-    val intent = Intent(Intent.ACTION_VIEW).apply {
-        data = Uri.parse(uri)
-    }
-
+    val intent = Intent(Intent.ACTION_VIEW, uri.toUri())
     return packageManager.queryIntentActivities(intent, 0).any {
         it.activityInfo.packageName != packageName
     }
 }
 
+/**
+ * Opens a URI in a safe manner using available apps.
+ * @param uri the URI to open
+ * @param title chooser dialog title
+ * @param excludeOwn if true, excludes this app from the chooser
+ */
 fun Context.openUri(uri: String, title: String, excludeOwn: Boolean = true) {
-    val intent = Intent(Intent.ACTION_VIEW).apply {
-        data = Uri.parse(uri)
-    }
-
+    val intent = Intent(Intent.ACTION_VIEW, uri.toUri())
     if (excludeOwn) {
-        val possiblePackageNames = mutableListOf<String>()
-        val possibleIntents = packageManager.queryIntentActivities(intent, 0).filter {
-            it.activityInfo.packageName != packageName
-        }.map {
-            val possibleIntent = Intent(intent)
-            possibleIntent.`package` = it.activityInfo.packageName
-            possiblePackageNames.add(it.activityInfo.packageName)
-            return@map possibleIntent
-        }
+        val possibleIntents = packageManager.queryIntentActivities(intent, 0)
+            .filter { it.activityInfo.packageName != packageName }
+            .map { possible ->
+                Intent(intent).apply { `package` = possible.activityInfo.packageName }
+            }
+        if (possibleIntents.isEmpty()) return
 
         val defaultResolveInfo = packageManager.resolveActivity(intent, 0)
-        if (defaultResolveInfo == null || possiblePackageNames.isEmpty()) return
-
-        // If there is a default app to handle the intent (which is not the app), use it.
-        if (possiblePackageNames.contains(defaultResolveInfo.activityInfo.packageName)) {
-            startActivitySafe(intent)
+        val chooser = if (defaultResolveInfo == null || !possibleIntents.any { it.`package` == defaultResolveInfo.activityInfo.packageName }) {
+            Intent.createChooser(possibleIntents[0], title).apply {
+                putExtra(EXTRA_INITIAL_INTENTS, possibleIntents.drop(1).toTypedArray())
+            }
         } else {
-            val chooser = Intent.createChooser(possibleIntents[0], title)
-            chooser.putExtra(EXTRA_INITIAL_INTENTS, possibleIntents.drop(1).toTypedArray())
-            startActivitySafe(chooser)
+            intent
         }
+        startActivitySafe(chooser)
     } else {
         startActivitySafe(Intent.createChooser(intent, title))
     }
 }
 
+/** Shares a text string via available apps. */
 fun Context.shareText(text: String) {
     val intent = Intent(Intent.ACTION_SEND).apply {
         putExtra(Intent.EXTRA_TEXT, text)
         type = "text/plain"
     }
-
     startActivitySafe(Intent.createChooser(intent, null))
 }
 
+/** Navigates using NavDirections from a Fragment. */
 fun Fragment.navigate(directions: NavDirections) = findNavController().navigate(directions)
 
+/**
+ * Converts a timestamp to relative time for UI display.
+ * e.g., "5 minutes ago" or formatted date if older than 2 days.
+ */
 fun Long.toRelativeTime(context: Context): CharSequence {
     val now = System.currentTimeMillis()
     return if (now - this > DAY_IN_MILLIS * 2) {
         val flags = FORMAT_SHOW_TIME or FORMAT_SHOW_DATE or FORMAT_ABBREV_MONTH or FORMAT_NO_YEAR
         formatDateTime(context, this, flags)
-    } else getRelativeTimeSpanString(this, now, MINUTE_IN_MILLIS, FORMAT_ABBREV_RELATIVE)
+    } else {
+        getRelativeTimeSpanString(this, now, MINUTE_IN_MILLIS, FORMAT_ABBREV_RELATIVE)
+    }
 }
 
+/** Converts a timestamp to an absolute time string. */
 fun Long.toAbsoluteTime(context: Context): CharSequence {
     val flags = FORMAT_SHOW_TIME or FORMAT_SHOW_DATE or FORMAT_SHOW_YEAR
     return formatDateTime(context, this, flags)
 }
 
+/** Converts a timestamp to a short date string. */
 fun Long.toShortDate(context: Context): CharSequence {
     val flags = FORMAT_SHOW_DATE or FORMAT_SHOW_YEAR or FORMAT_ABBREV_ALL
     return formatDateTime(context, this, flags)
 }
 
+/**
+ * Returns a user-friendly message if the [otherVersion] is incompatible with this version.
+ * Returns null if compatible.
+ */
 fun Version.getIncompatibleStringOrNull(context: Context, otherVersion: String): String? {
     val other = Version.parse(otherVersion) ?: return context.getString(R.string.version_invalid)
     val match = compare(other) ?: return context.getString(R.string.version_invalid)
@@ -205,6 +224,7 @@ fun Version.getIncompatibleStringOrNull(context: Context, otherVersion: String):
     throw AssertionError("$this == $other")
 }
 
+/** Copies a string to the clipboard. */
 fun copyToClipBoard(context: Context, label: String, str: String) {
     val clipboard = context.getSystemService<ClipboardManager>()
     val clip = ClipData.newPlainText(label, str)

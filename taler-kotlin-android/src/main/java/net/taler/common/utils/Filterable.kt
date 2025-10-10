@@ -14,11 +14,11 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.utils.filterable;
+package net.taler.common.utils
 
 /**
  * Defines a marker interface for data types which can be
  * filtered in transaction history. Essentially a wrapper
  * for the comparable interface.
  */
-public interface Filterable<T extends Filterable<T>> extends Comparable<T> {}
+interface Filterable<T : Filterable<T>> : Comparable<T>

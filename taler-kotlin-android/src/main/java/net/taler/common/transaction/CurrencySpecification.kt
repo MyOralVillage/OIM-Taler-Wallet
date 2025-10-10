@@ -1,6 +1,6 @@
 /*
  * This file is part of GNU Taler
- * (C) 2024 Taler Systems S.A.
+ * (C) 2025 Taler Systems S.A.
  *
  * GNU Taler is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -14,12 +14,23 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.common
+package net.taler.common.transaction
 
 import android.annotation.SuppressLint
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents the specification of a currency, including formatting rules
+ * and alternative unit names.
+ *
+ * @property name The canonical name of the currency (e.g., "Euro").
+ * @property numFractionalInputDigits Number of fractional digits allowed for user input.
+ * @property numFractionalNormalDigits Number of fractional digits normally displayed.
+ * @property numFractionalTrailingZeroDigits Number of trailing zero digits displayed, if any.
+ * @property altUnitNames Map of alternative unit names keyed by index
+ *                        (0 = primary unit, 1+ = secondary units).
+ */
 @SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class CurrencySpecification(
@@ -33,6 +44,11 @@ data class CurrencySpecification(
     @SerialName("alt_unit_names")
     val altUnitNames: Map<Int, String>,
 ) {
-    // TODO: add support for alt units
+    /**
+     * Returns the primary symbol for the currency, if available.
+     *
+     * Currently this returns the unit at index 0 in [altUnitNames].
+     * TODO: add support for additional alternative units.
+     */
     val symbol: String? get() = altUnitNames[0]
 }

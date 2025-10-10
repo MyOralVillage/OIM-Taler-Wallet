@@ -15,6 +15,7 @@
  */
 
 package net.taler.common
+import net.taler.common.utils.model.Version
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
