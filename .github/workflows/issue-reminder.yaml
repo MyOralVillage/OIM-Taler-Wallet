@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: write
-      contents: read # Added: needed for checkout action
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,7 +45,9 @@ jobs:
               fi
               
               days_overdue=$(( (today_epoch - due_epoch) / 86400 ))
+              days_until_due=$(( (due_epoch - today_epoch) / 86400 ))
               
+              # Remind if due date is today or earlier (overdue)
               if [ "$due_epoch" -le "$today_epoch" ]; then
                 if [ -n "$assignees" ]; then
                   # Build a space-separated @mentions string for all assignees
@@ -70,8 +72,24 @@ jobs:
                 else
                   echo "Issue #$number is due $due_date but has no assignee"
                 fi
+              # Also remind if due within next 3 days
+              elif [ "$days_until_due" -le 3 ]; then
+                if [ -n "$assignees" ]; then
+                  mentions=""
+                  for a in $assignees; do
+                    mentions="$mentions@$a "
+                  done
+                  mentions=$(echo "$mentions" | sed 's/ $//')
+                  
+                  msg=":calendar: Reminder: This issue is due in $days_until_due day(s) on $due_date. $mentions"
+                  
+                  echo "Reminding $assignees about issue #$number due in $days_until_due days ($due_date)"
+                  gh issue comment "$number" --body "$msg"
+                else
+                  echo "Issue #$number is due in $days_until_due days ($due_date) but has no assignee"
+                fi
               else
-                echo "Issue #$number due $due_date is not yet due (in $(( (due_epoch - today_epoch) / 86400 )) days)"
+                echo "Issue #$number due $due_date is not yet due (in $days_until_due days)"
               fi
             fi
           done
