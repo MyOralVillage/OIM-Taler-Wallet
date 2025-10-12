@@ -18,7 +18,6 @@
 
 package net.taler.common.utils.time
 
-
 import android.os.Build
 import androidx.annotation.RequiresApi
 import java.io.Serializable
@@ -32,7 +31,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import net.taler.common.utils.Filterable
 
-
 /**
  * Wrapper class for [LocalDateTime] which
  * implements the [Filterable] interface.
@@ -42,7 +40,9 @@ import net.taler.common.utils.Filterable
 class FilterableLocalDateTime : Filterable<FilterableLocalDateTime>, Serializable {
 
     /** The LocalDateTime instance being wrapped. */
-    private val dt: LocalDateTime
+    private val _dt: LocalDateTime
+    private val _tz: ZoneId
+    private val _ms: Long // in epoch
 
     /**
      * Constructs a new `FilterableLocalDateTime` initialized to
@@ -50,37 +50,53 @@ class FilterableLocalDateTime : Filterable<FilterableLocalDateTime>, Serializabl
      * @param tz the time zone to use for the current date-time
      */
     constructor(tz: ZoneId) {
-        dt = LocalDateTime.now(tz)
+        _dt = LocalDateTime.now()
+        _tz = tz
+        _ms = _dt.toInstant(_tz.rules.getOffset(_dt)).toEpochMilli()
     }
 
     /**
      * Constructs a new `FilterableLocalDateTime` initialized
      * to the current date-time in the system default time zone.
      */
-    constructor() : this(ZoneId.systemDefault())
+    constructor() {
+        _dt = LocalDateTime.now()
+        _tz = ZoneId.systemDefault()
+        _ms = _dt.toInstant(_tz.rules.getOffset(_dt)).toEpochMilli()
+    }
 
     /**
      * Constructs a new `FilterableLocalDateTime` wrapping
      * an existing [LocalDateTime].
      * @param dateTime the [LocalDateTime] to wrap
+     * @param timeZone the [ZoneId] to wrap
      */
-    constructor(dateTime: LocalDateTime) {
-        dt = dateTime
+    constructor(dateTime: LocalDateTime, timeZone: ZoneId) {
+        _dt = dateTime
+        _tz = timeZone
+        _ms = _dt.toInstant(_tz.rules.getOffset(_dt)).toEpochMilli()
     }
 
     /**
      * Constructs a new `FilterableLocalDateTime` from a [Timestamp].
      * @param timeStamp the [Timestamp] to wrap
-     * @param tz the [ZoneId] for the timestamp
      */
-    constructor(timeStamp: Timestamp, tz: ZoneId) {
-        dt = LocalDateTime.ofInstant(Instant.ofEpochMilli(timeStamp.ms), tz)
+    constructor(timeStamp: Timestamp) {
+        _tz = ZoneId.of("UTC")
+        _dt = LocalDateTime.ofInstant(Instant.ofEpochMilli(timeStamp.ms), _tz)
+        _ms = timeStamp.ms
     }
 
     /** @return the wrapped [LocalDateTime] */
-    fun unwrap(): LocalDateTime = dt
+    fun unwrap(): LocalDateTime = _dt
 
-    /**
+    /** @return the [ZoneId] of the wrapped [LocalDateTime] */
+    fun timeZone(): ZoneId = _tz
+
+    /** @return the epoch milliseconds of the wrapped [LocalDateTime] */
+    fun epochMillis(): Long = _ms
+
+            /**
      * Compares this `FilterableLocalDateTime` with another.
      * @param other the other `FilterableLocalDateTime` to compare against
      * @return a negative integer, zero, or a positive integer if this
@@ -105,10 +121,10 @@ class FilterableLocalDateTime : Filterable<FilterableLocalDateTime>, Serializabl
 }
 
 /**
- * Kotlinx serializer for [FilterableLocalDateTime].
- *
- * Serializes to an ISO-8601 string (e.g., `"2025-10-11T14:35:00"`)
- * and deserializes back into a [FilterableLocalDateTime].
+ * Kotlinx serializer for [FilterableLocalDateTime] that
+ * includes the time zone in the serialized form.
+ * Serializes to an ISO-8601 string with offset (e.g., "2025-10-11T14:35:00+02:00")
+ * and deserializes back into a [FilterableLocalDateTime] preserving the time zone.
  */
 object FilterableLocalDateTimeSerializer : KSerializer<FilterableLocalDateTime> {
 
@@ -117,13 +133,14 @@ object FilterableLocalDateTimeSerializer : KSerializer<FilterableLocalDateTime> 
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun serialize(encoder: Encoder, value: FilterableLocalDateTime) {
-        encoder.encodeString(value.unwrap().toString())
+        val zoned = value.unwrap().atZone(value.timeZone())
+        encoder.encodeString(zoned.toString()) // ISO-8601 string with offset
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun deserialize(decoder: Decoder): FilterableLocalDateTime {
         val isoString = decoder.decodeString()
-        return FilterableLocalDateTime(LocalDateTime.parse(isoString))
+        val zoned = ZonedDateTime.parse(isoString) // Parse ISO-8601 with offset
+        return FilterableLocalDateTime(zoned.toLocalDateTime(), zoned.zone)
     }
 }
-

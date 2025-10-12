@@ -20,6 +20,7 @@ import net.taler.common.transaction.Amount
 import net.taler.common.transaction.TranxPurp
 import net.taler.common.utils.directionality.FilterableDirection
 import net.taler.common.utils.time.FilterableLocalDateTime
+import android.database.sqlite.*
 
 /**
  * Represents a composite transaction filter with optional criteria.
@@ -43,7 +44,7 @@ import net.taler.common.utils.time.FilterableLocalDateTime
  * val filter3 = TranxFilter(
  *     amount = AmountFilter.Exact(someAmount),
  *     direction = DirectionFilter.Both,
- *     purpose = PurposeFilter.OneOf(setOf(TranxPurp.RENT, TranxPurp.GROCERIES))
+ *     purpose = PurposeFilter.OneOrMoreOf(setOf(TranxPurp.RENT, TranxPurp.GROCERIES))
  * )
  * ```
  */
@@ -115,7 +116,7 @@ sealed class AmountFilter {
      * Matches any of the given amounts.
      * @throws IllegalArgumentException if [amounts] is empty
      */
-    data class OneOf(val amounts: Set<Amount>) : AmountFilter() {
+    data class OneOrMoreOf(val amounts: Set<Amount>) : AmountFilter() {
         init {
             require(amounts.isNotEmpty()) { "Must have at least one amount" }
         }
@@ -132,7 +133,7 @@ sealed class PurposeFilter {
      * Matches any of the given purposes.
      * @throws IllegalArgumentException if [purposes] is empty
      */
-    data class OneOf(val purposes: Set<TranxPurp>) : PurposeFilter() {
+    data class OneOrMoreOf(val purposes: Set<TranxPurp>) : PurposeFilter() {
         init {
             require(purposes.isNotEmpty()) { "Must have at least one purpose" }
         }

@@ -193,3 +193,24 @@ object UTIL_WATR : TranxPurp {
     override val assetPath = TranxPurp.BASE + "water.png"
     override val assetLabel = "water"
 }
+
+/**
+ * Lookup table for all [TranxPurp] objects.
+ *
+ * This table allows fast access to a transaction purpose object based on its
+ * [TranxPurp.cmp] string.
+ *
+ * Example usage:
+ * ```
+ * val purpose = tranxPurpLookup["EXPN_GRCR"]
+ * println(purpose?.assetLabel) // prints "groceries"
+ * ```
+ */
+val tranxPurpLookup: Map<String, TranxPurp> = mapOf(
+    EDUC_CLTH.cmp to EDUC_CLTH,EDUC_SCHL.cmp to EDUC_SCHL,EDUC_SUPL.cmp to EDUC_SUPL,
+    EXPN_CELL.cmp to EXPN_CELL,EXPN_DEBT.cmp to EXPN_DEBT,EXPN_FARM.cmp to EXPN_FARM,
+    EXPN_GRCR.cmp to EXPN_GRCR,EXP_MRKT.cmp to EXP_MRKT,EXPN_PTRL.cmp to EXPN_PTRL,
+    EXPN_RENT.cmp to EXPN_RENT,EXPN_TOOL.cmp to EXPN_TOOL,EXPN_TRPT.cmp to EXPN_TRPT,
+    HLTH_DOCT.cmp to HLTH_DOCT,HLTH_MEDS.cmp to HLTH_MEDS,TRNS_RECV.cmp to TRNS_RECV,
+    TRNS_SEND.cmp to TRNS_SEND,UTIL_ELEC.cmp to UTIL_ELEC,UTIL_WATR.cmp to UTIL_WATR
+)

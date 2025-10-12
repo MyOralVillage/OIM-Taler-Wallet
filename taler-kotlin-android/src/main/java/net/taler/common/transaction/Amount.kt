@@ -65,7 +65,6 @@ class AmountOverflowException(msg: String? = null, cause: Throwable? = null) :
  */
 @Serializable(with = KotlinXAmountSerializer::class)
 data class Amount(
-
     /**
      * name of the currency using either a three-character ISO 4217 currency code,
      * or a regional currency identifier starting with a "*" followed by at most 10 characters.
@@ -248,8 +247,7 @@ data class Amount(
         // adds the integer values (value) and the integer components
         // of the addition of the fractional components (fraction),
         // rounded to the nearest hundred millionth
-        val resultValue = value + other.value
-            + floor(
+        val resultValue = value + other.value + floor(
                 (fraction + other.fraction).toDouble() / FRACTIONAL_BASE
             ).toLong()
 
