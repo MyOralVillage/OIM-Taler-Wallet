@@ -24,13 +24,14 @@ plugins {
 
 android {
     namespace 'net.taler.merchantlib'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 24
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+        missingDimensionStrategy 'distributionChannel', 'google'
     }
 
     buildTypes {
@@ -64,7 +65,7 @@ dependencies {
 
     testImplementation "junit:junit:$junit_version"
     testImplementation "io.ktor:ktor-client-mock-jvm:$ktor_version"
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2'
 }
 
 tasks.withType(KotlinCompile).configureEach {
