@@ -35,11 +35,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_LONG
 import kotlinx.coroutines.launch
-import net.taler.common.Amount
-import net.taler.common.ContractTerms
-import net.taler.common.fadeIn
-import net.taler.common.fadeOut
-import net.taler.common.showError
+import net.taler.common.utils.model.ContractTerms
+import net.taler.database.data_models.*
+import net.taler.utils.android.fadeIn
+import net.taler.utils.android.fadeOut
+import net.taler.utils.android.showError
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
 import net.taler.wallet.TAG

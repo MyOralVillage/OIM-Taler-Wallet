@@ -16,7 +16,6 @@
 
 package net.taler.merchantpos.config
 
-import android.net.Uri
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
@@ -29,11 +28,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
 import com.google.android.material.snackbar.Snackbar
-import net.taler.common.navigate
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
 import net.taler.merchantpos.config.ConfigFragmentDirections.Companion.actionSettingsToOrder
 import net.taler.merchantpos.databinding.FragmentMerchantConfigBinding
+import androidx.core.net.toUri
+import net.taler.utils.android.navigate
 
 /**
  * Fragment that displays merchant settings.
@@ -48,7 +48,7 @@ class ConfigFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         ui = FragmentMerchantConfigBinding.inflate(inflater, container, false)
         return ui.root
@@ -205,7 +205,7 @@ class ConfigFragment : Fragment() {
 
     private fun checkForUrlCredentials() {
         val text = ui.configUrlView.editText!!.text.toString()
-        Uri.parse(text)?.userInfo?.let { userInfo ->
+        text.toUri().userInfo?.let { userInfo ->
             if (userInfo.contains(':')) {
                 val (user, pass) = userInfo.split(':')
                 val strippedUrl = text.replace("${userInfo}@", "")

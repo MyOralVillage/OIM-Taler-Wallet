@@ -16,6 +16,7 @@
 
 package net.taler.merchantpos
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.Intent.ACTION_MAIN
 import android.content.Intent.CATEGORY_HOME
@@ -103,6 +104,7 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
         return true
     }
 
+    @SuppressLint("GestureBackNavigation")
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         val currentDestination = nav.currentDestination?.id

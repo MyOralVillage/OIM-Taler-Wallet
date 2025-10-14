@@ -49,12 +49,12 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.common.Amount
-import net.taler.common.CurrencySpecification
+import net.taler.database.data_models.Amount
 import net.taler.wallet.CURRENCY_BTC
 import net.taler.wallet.R
-import net.taler.common.canAppHandleUri
-import net.taler.common.copyToClipBoard
+import net.taler.database.data_models.CurrencySpecification
+import net.taler.utils.android.canAppHandleUri
+import net.taler.utils.android.copyToClipBoard
 import net.taler.wallet.BottomInsetsSpacer
 import net.taler.wallet.balances.ScopeInfo
 import net.taler.wallet.compose.ShareButton
@@ -68,6 +68,7 @@ import net.taler.wallet.withdraw.QrCodeSpec.Type.SPC
 import net.taler.wallet.withdraw.TransferData
 import net.taler.wallet.withdraw.WithdrawStatus
 import net.taler.wallet.withdraw.WithdrawalDetailsForAmount
+import java.lang.Exception
 
 @Composable
 fun ScreenTransfer(
@@ -300,13 +301,13 @@ fun TransferAccountChooser(
                 text = {
                     if (!account.bankLabel.isNullOrEmpty()) {
                         Text(account.bankLabel)
-                    } else if (account.currencySpecification?.name != null) {
+                    } else if (account.currencySpecification is CurrencySpecification) {
                         Text(stringResource(
                             R.string.withdraw_account_currency,
                             index + 1,
                             account.currencySpecification.name,
                         ))
-                    } else if (account.transferAmount?.currency != null) {
+                    } else if (account.transferAmount is Amount) {
                         Text(stringResource(
                             R.string.withdraw_account_currency,
                             index + 1,

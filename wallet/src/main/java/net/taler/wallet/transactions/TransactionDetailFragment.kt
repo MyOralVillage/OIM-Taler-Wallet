@@ -27,7 +27,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
-import net.taler.common.showError
+import net.taler.utils.android.showError
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
 import net.taler.wallet.TAG
@@ -38,12 +38,12 @@ import net.taler.wallet.transactions.TransactionAction.Fail
 import net.taler.wallet.transactions.TransactionAction.Resume
 import net.taler.wallet.transactions.TransactionAction.Retry
 import net.taler.wallet.transactions.TransactionAction.Suspend
-
+import net.taler.wallet.balances.BalanceManager
 abstract class TransactionDetailFragment : Fragment() {
 
     private val model: MainViewModel by activityViewModels()
     protected val transactionManager by lazy { model.transactionManager }
-    protected val balanceManager by lazy { model.balanceManager }
+    protected val balanceManager: BalanceManager by lazy { model.balanceManager }
     protected val devMode get() = model.devMode.value == true
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

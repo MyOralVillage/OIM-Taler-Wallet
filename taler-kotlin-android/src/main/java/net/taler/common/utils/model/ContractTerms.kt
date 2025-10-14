@@ -24,8 +24,8 @@ import android.util.Base64
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.taler.common.utils.TalerUtils.getLocalizedString
-import net.taler.common.transaction.Amount
-import net.taler.common.utils.time.Timestamp
+import net.taler.database.data_models.Timestamp
+import net.taler.database.data_models.Amount
 
 /**
  * Regex to match base64-encoded product images.
@@ -95,11 +95,8 @@ abstract class Product {
      * otherwise returns the default description.
      */
     val localizedDescription: String
-        get() = if (Build.VERSION.SDK_INT >= 26) {
+        get() =
             getLocalizedString(descriptionI18n, description)
-        } else {
-            description
-        }
 
     /**
      * Converts the base64-encoded image (data URI) to a [Bitmap] if possible.

@@ -33,8 +33,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.launch
-import net.taler.common.openUri
-import net.taler.common.shareText
+import net.taler.utils.android.openUri
+import net.taler.utils.android.shareText
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
 import net.taler.wallet.compose.TalerSurface
@@ -42,12 +42,13 @@ import net.taler.wallet.compose.collectAsStateLifecycleAware
 import net.taler.wallet.transactions.Transaction
 import net.taler.wallet.transactions.TransactionMajorState.Done
 import net.taler.wallet.withdraw.TransferData
+import net.taler.wallet.balances.BalanceManager
 
 class ManualWithdrawSuccessFragment : Fragment() {
     private val model: MainViewModel by activityViewModels()
     private val withdrawManager by lazy { model.withdrawManager }
     private val transactionManager by lazy { model.transactionManager }
-    private val balanceManager by lazy { model.balanceManager }
+    private val balanceManager : BalanceManager by lazy { model.balanceManager }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

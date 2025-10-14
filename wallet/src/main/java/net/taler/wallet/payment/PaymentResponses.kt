@@ -20,8 +20,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
-import net.taler.common.Amount
-import net.taler.common.ContractTerms
+import net.taler.database.data_models.*
+import net.taler.common.utils.model.*
 import net.taler.wallet.backend.TalerErrorInfo
 
 @OptIn(ExperimentalSerializationApi::class)

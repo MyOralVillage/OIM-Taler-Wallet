@@ -25,18 +25,18 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
 import com.google.android.material.snackbar.Snackbar
-import net.taler.common.QrCodeManager.makeQrCode
-import net.taler.common.copyToClipBoard
-import net.taler.common.fadeIn
-import net.taler.common.fadeOut
-import net.taler.common.navigate
-import net.taler.common.shareText
-import net.taler.common.showError
+import net.taler.common.utils.network.QrCodeManager.makeQrCode
 import net.taler.lib.android.TalerNfcService.Companion.hasNfc
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
 import net.taler.merchantpos.databinding.FragmentProcessPaymentBinding
 import net.taler.merchantpos.payment.ProcessPaymentFragmentDirections.Companion.actionProcessPaymentToPaymentSuccess
+import net.taler.utils.android.copyToClipBoard
+import net.taler.utils.android.fadeIn
+import net.taler.utils.android.fadeOut
+import net.taler.utils.android.navigate
+import net.taler.utils.android.shareText
+import net.taler.utils.android.showError
 
 class ProcessPaymentFragment : Fragment() {
 

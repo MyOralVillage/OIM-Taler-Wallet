@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License along with
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
-package net.taler.common.utils.directionality
+package net.taler.database.data_models
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -22,7 +22,6 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import net.taler.common.utils.Filterable
 
 /**
  * Filterable "direction" enum, where

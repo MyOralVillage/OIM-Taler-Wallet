@@ -80,6 +80,7 @@ import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import net.taler.database.data_models.CurrencySpecification
 import net.taler.wallet.balances.BalanceState
 import net.taler.wallet.balances.BalancesComposable
 import net.taler.wallet.balances.ScopeInfo
@@ -114,10 +115,17 @@ class MainFragment: Fragment() {
                 val context = LocalContext.current
                 val balanceState by model.balanceManager.state.observeAsState(BalanceState.None)
                 val selectedScope by model.transactionManager.selectedScope.collectAsStateLifecycleAware()
-                val txResult by remember(selectedScope) { model.transactionManager.transactionsFlow(selectedScope) }.collectAsStateLifecycleAware()
-                val selectedSpec = remember(selectedScope) { selectedScope?.let { model.balanceManager.getSpecForScopeInfo(it) } }
-                val actionButtonUsed by remember { model.getActionButtonUsed(context) }.collectAsStateLifecycleAware(true)
-
+                val txResult by remember(selectedScope) {
+                    model.transactionManager.transactionsFlow(selectedScope)
+                }.collectAsStateLifecycleAware()
+                val selectedSpec : R? = remember(selectedScope) {
+                    selectedScope?.let {
+                        model.balanceManager.getSpecForScopeInfo(it)
+                    } as R?
+                }
+                val actionButtonUsed by model
+                    .getActionButtonUsed(context)   // Flow<Boolean>
+                    .collectAsStateLifecycleAware(initial = true)
                 Scaffold(
                     bottomBar = {
                         NavigationBar {
@@ -174,7 +182,7 @@ class MainFragment: Fragment() {
                             state = balanceState,
                             txResult = txResult,
                             selectedScope = selectedScope,
-                            selectedCurrencySpec = selectedSpec,
+                            selectedCurrencySpec = selectedSpec as CurrencySpecification?,
                             onGetDemoMoneyClicked = {
                                 model.withdrawManager.withdrawTestkudos()
                                 Snackbar.make(requireView(), getString(R.string.settings_test_withdrawal), LENGTH_LONG).show()

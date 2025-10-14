@@ -41,8 +41,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.serialization.json.JsonPrimitive
-import net.taler.common.Amount
-import net.taler.common.CurrencySpecification
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.CurrencySpecification
 import net.taler.wallet.BottomInsetsSpacer
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorCode
@@ -110,7 +110,7 @@ fun OutgoingPushIntroComposable(
         }
 
         AnimatedVisibility(feeResult.maxDepositAmountEffective != null) {
-            feeResult.maxDepositAmountEffective?.let {
+            (feeResult.maxDepositAmountEffective as Amount?)?.let {
                 Text(
                     modifier = Modifier.padding(
                         start = 16.dp,
@@ -130,17 +130,17 @@ fun OutgoingPushIntroComposable(
             amount = amount.withSpec(selectedSpec),
             currencies = currencies,
             readOnly = false,
-            onAmountChanged = { amount = it },
+            onAmountChanged = { it : Amount -> amount = it},
             label = { Text(stringResource(R.string.amount_send)) },
             isError = amount.isZero() || feeResult is InsufficientBalance,
             supportingText = {
                 when (val res = feeResult) {
-                    is Success -> if (res.amountEffective > res.amountRaw) {
+                    is Success -> if (res.amountEffective.compareTo(res.amountRaw) > 0) {
                         val fee = res.amountEffective - res.amountRaw
                         Text(
                             text = stringResource(
                                 id = R.string.payment_fee,
-                                fee.withSpec(selectedSpec)
+                                (fee as Amount).withSpec(selectedSpec)
                             ),
                             softWrap = false,
                             color = MaterialTheme.colorScheme.error,

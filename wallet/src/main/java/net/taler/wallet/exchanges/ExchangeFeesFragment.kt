@@ -16,6 +16,7 @@
 
 package net.taler.wallet.exchanges
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -26,15 +27,15 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import net.taler.common.Amount
-import net.taler.common.toRelativeTime
-import net.taler.common.toShortDate
+import net.taler.database.data_models.*
+import net.taler.utils.android.toRelativeTime
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
 import net.taler.wallet.databinding.FragmentExchangeFeesBinding
 import net.taler.wallet.exchanges.CoinFeeAdapter.CoinFeeViewHolder
 import net.taler.wallet.exchanges.WireFeeAdapter.WireFeeViewHolder
 import net.taler.wallet.getAttrColor
+import net.taler.utils.android.*
 
 class ExchangeFeesFragment : Fragment() {
 
@@ -96,6 +97,7 @@ private class CoinFeeAdapter(private val items: List<CoinFee>) : Adapter<CoinFee
         private val depositFeeView: TextView = v.findViewById(R.id.depositFeeView)
         private val refreshFeeView: TextView = v.findViewById(R.id.refreshFeeView)
         private val refundFeeView: TextView = v.findViewById(R.id.refundFeeView)
+        @SuppressLint("StringFormatInvalid")
         fun bind(item: CoinFee) {
             coinView.text = res.getQuantityString(
                 R.plurals.exchange_fee_coin,
@@ -131,6 +133,7 @@ private class WireFeeAdapter(private val items: List<WireFee>) : Adapter<WireFee
         private val validityView: TextView = v.findViewById(R.id.validityView)
         private val wireFeeView: TextView = v.findViewById(R.id.wireFeeView)
         private val closingFeeView: TextView = v.findViewById(R.id.closingFeeView)
+        @SuppressLint("StringFormatInvalid")
         fun bind(item: WireFee) {
             validityView.text = v.context.getString(
                 R.string.exchange_fee_wire_fee_timespan,

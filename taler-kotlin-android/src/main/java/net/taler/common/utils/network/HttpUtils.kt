@@ -29,6 +29,9 @@ import io.ktor.http.HttpMethod
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
+private val INFINITE_TIMEOUT_MS: Long
+    get() = Long.MAX_VALUE
+
 /**
  * Creates a default [HttpClient] using the OkHttp engine with optional JSON support, timeout,
  * redirect behavior, and logging.
@@ -67,10 +70,10 @@ fun getDefaultHttpClient(
         requestTimeoutMillis = if (timeoutMs != null && timeoutMs > 0) {
             timeoutMs
         } else {
-            HttpTimeout.INFINITE_TIMEOUT_MS
+            INFINITE_TIMEOUT_MS
         }
-        socketTimeoutMillis = HttpTimeout.INFINITE_TIMEOUT_MS
-        connectTimeoutMillis = HttpTimeout.INFINITE_TIMEOUT_MS
+        socketTimeoutMillis = INFINITE_TIMEOUT_MS
+        connectTimeoutMillis = INFINITE_TIMEOUT_MS
     }
 
     install(HttpRedirect) {

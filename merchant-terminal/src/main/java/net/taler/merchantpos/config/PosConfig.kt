@@ -19,11 +19,11 @@ package net.taler.merchantpos.config
 import android.os.Build.VERSION.SDK_INT
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.taler.common.Amount
-import net.taler.common.ContractProduct
-import net.taler.common.Product
-import net.taler.common.TalerUtils
-import net.taler.common.Tax
+import net.taler.common.utils.TalerUtils
+import net.taler.common.utils.model.ContractProduct
+import net.taler.common.utils.model.Product
+import net.taler.common.utils.model.Tax
+import net.taler.database.data_models.Amount
 import net.taler.merchantlib.MerchantConfig
 import java.util.UUID
 

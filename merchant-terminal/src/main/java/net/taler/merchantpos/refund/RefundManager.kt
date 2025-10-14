@@ -21,12 +21,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import net.taler.common.Amount
-import net.taler.common.assertUiThread
+import net.taler.database.data_models.Amount
 import net.taler.merchantlib.MerchantApi
 import net.taler.merchantlib.OrderHistoryEntry
 import net.taler.merchantlib.RefundRequest
 import net.taler.merchantpos.config.ConfigManager
+import net.taler.utils.android.assertUiThread
 
 sealed class RefundResult {
     class Error(val msg: String) : RefundResult()

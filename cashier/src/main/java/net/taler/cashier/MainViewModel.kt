@@ -32,9 +32,9 @@ import kotlinx.serialization.json.Json
 import net.taler.cashier.HttpHelper.makeJsonGetRequest
 import net.taler.cashier.config.ConfigManager
 import net.taler.cashier.withdraw.WithdrawManager
-import net.taler.common.Amount
-import net.taler.common.AmountParserException
-import net.taler.common.isOnline
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.AmountParserException
+import net.taler.utils.android.isOnline
 
 private val TAG = MainViewModel::class.java.simpleName
 

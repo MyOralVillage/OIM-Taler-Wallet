@@ -33,7 +33,7 @@
         }
 
         defaultConfig {
-            minSdkVersion 24
+            minSdkVersion 26
             testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
             consumerProguardFiles 'consumer-rules.pro'
         }
@@ -68,6 +68,7 @@
 
 
     dependencies {
+        implementation project(":transaction-database")
         implementation 'androidx.appcompat:appcompat:1.7.1'
         implementation 'androidx.core:core-ktx:1.17.0'
         implementation "androidx.constraintlayout:constraintlayout:2.2.1"

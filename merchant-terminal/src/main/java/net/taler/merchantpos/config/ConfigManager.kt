@@ -18,7 +18,6 @@ package net.taler.merchantpos.config
 
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
-import android.net.Uri
 import android.util.Base64.NO_WRAP
 import android.util.Base64.encodeToString
 import android.util.Log
@@ -36,13 +35,14 @@ import io.ktor.http.HttpStatusCode.Companion.Unauthorized
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import net.taler.common.Version
-import net.taler.common.getIncompatibleStringOrNull
+import net.taler.common.utils.model.*
 import net.taler.merchantlib.ConfigResponse
 import net.taler.merchantlib.MerchantApi
 import net.taler.merchantlib.MerchantConfig
-import net.taler.merchantpos.BuildConfig
 import net.taler.merchantpos.R
+import androidx.core.net.toUri
+import net.taler.utils.android.getIncompatibleStringOrNull
+import androidx.core.content.edit
 
 private const val SETTINGS_NAME = "taler-merchant-terminal"
 
@@ -69,7 +69,8 @@ private const val SETTINGS_ACCESS_TOKEN = "accessToken"
 
 internal const val NEW_CONFIG_URL_DEMO = "https://backend.demo.taler.net/instances/pos"
 
-private val VERSION = Version.parse(BuildConfig.BACKEND_API_VERSION)!!
+// TODO: gradle won't fkn import this ffs
+private val VERSION = Version.parse("5:0:3")!!
 
 private val TAG = ConfigManager::class.java.simpleName
 
@@ -84,7 +85,7 @@ class ConfigManager(
     private val context: Context,
     private val scope: CoroutineScope,
     private val httpClient: HttpClient,
-    private val api: MerchantApi
+    private val api: MerchantApi,
 ) {
 
     private val prefs = context.getSharedPreferences(SETTINGS_NAME, MODE_PRIVATE)
@@ -139,7 +140,7 @@ class ConfigManager(
             try {
                 val url = when(val c = config) {
                     is Config.Old -> c.configUrl
-                    is Config.New -> Uri.parse(c.merchantUrl)
+                    is Config.New -> c.merchantUrl.toUri()
                         .buildUpon()
                         .appendPath("private/pos")
                         .build()
@@ -191,10 +192,10 @@ class ConfigManager(
         newConfig: Config?,
         posConfig: PosConfig,
         merchantConfig: MerchantConfig,
-        configResponse: ConfigResponse
+        configResponse: ConfigResponse,
     ) {
         val versionIncompatible =
-            VERSION.getIncompatibleStringOrNull(context, configResponse.version)
+            VERSION?.getIncompatibleStringOrNull(context, configResponse.version)
         if (versionIncompatible != null) {
             Log.e(TAG, "Versions incompatible $configResponse")
             mConfigUpdateResult.postValue(ConfigUpdateResult.Error(versionIncompatible))
@@ -234,19 +235,19 @@ class ConfigManager(
     @UiThread
     private fun saveConfig(config: Config) {
         when (val c = config) {
-            is Config.Old -> prefs.edit()
-                .putInt(SETTINGS_CONFIG_VERSION, CONFIG_VERSION_OLD)
-                .putString(SETTINGS_CONFIG_URL, c.configUrl)
-                .putString(SETTINGS_USERNAME, c.username)
-                .putString(SETTINGS_PASSWORD, c.password)
-                .putBoolean(SETTINGS_SAVE_PASSWORD, c.savePassword)
-                .apply()
-            is Config.New -> prefs.edit()
-                .putInt(SETTINGS_CONFIG_VERSION, CONFIG_VERSION_NEW)
-                .putString(SETTINGS_MERCHANT_URL, c.merchantUrl)
-                .putString(SETTINGS_ACCESS_TOKEN, c.accessToken)
-                .putBoolean(SETTINGS_SAVE_PASSWORD, c.savePassword)
-                .apply()
+            is Config.Old -> prefs.edit {
+                putInt(SETTINGS_CONFIG_VERSION, CONFIG_VERSION_OLD)
+                    .putString(SETTINGS_CONFIG_URL, c.configUrl)
+                    .putString(SETTINGS_USERNAME, c.username)
+                    .putString(SETTINGS_PASSWORD, c.password)
+                    .putBoolean(SETTINGS_SAVE_PASSWORD, c.savePassword)
+            }
+            is Config.New -> prefs.edit {
+                putInt(SETTINGS_CONFIG_VERSION, CONFIG_VERSION_NEW)
+                    .putString(SETTINGS_MERCHANT_URL, c.merchantUrl)
+                    .putString(SETTINGS_ACCESS_TOKEN, c.accessToken)
+                    .putBoolean(SETTINGS_SAVE_PASSWORD, c.savePassword)
+            }
         }
     }
 

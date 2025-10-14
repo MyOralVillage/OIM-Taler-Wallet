@@ -16,23 +16,25 @@
 
 package net.taler.merchantpos.order
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.selection.SelectionPredicates
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.LinearLayoutManager
-import net.taler.common.Amount
-import net.taler.common.fadeIn
-import net.taler.common.fadeOut
+import net.taler.database.data_models.Amount
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
 import net.taler.merchantpos.databinding.FragmentOrderStateBinding
 import net.taler.merchantpos.order.OrderAdapter.OrderLineLookup
+import net.taler.utils.android.fadeIn
+import net.taler.utils.android.fadeOut
 
 class OrderStateFragment : Fragment() {
 

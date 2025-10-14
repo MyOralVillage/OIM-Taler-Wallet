@@ -30,7 +30,7 @@ import io.ktor.http.contentType
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.taler.common.getDefaultHttpClient
+import net.taler.common.utils.network.getDefaultHttpClient
 import net.taler.merchantlib.Response.Companion.response
 
 class MerchantApi(

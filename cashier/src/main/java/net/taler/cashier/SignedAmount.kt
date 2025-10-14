@@ -16,7 +16,7 @@
 
 package net.taler.cashier
 
-import net.taler.common.Amount
+import net.taler.database.data_models.Amount
 
 data class SignedAmount(
     val positive: Boolean,

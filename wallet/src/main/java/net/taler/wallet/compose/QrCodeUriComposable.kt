@@ -16,9 +16,6 @@
 
 package net.taler.wallet.compose
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -51,8 +48,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
-import net.taler.common.QrCodeManager
-import net.taler.common.copyToClipBoard
+import net.taler.common.utils.network.QrCodeManager
+import net.taler.utils.android.copyToClipBoard
 import net.taler.wallet.R
 
 @Composable

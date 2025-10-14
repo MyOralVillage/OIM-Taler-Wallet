@@ -37,10 +37,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.common.Amount
-import net.taler.common.CurrencySpecification
-import net.taler.common.Timestamp
-import net.taler.common.toAbsoluteTime
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.CurrencySpecification
+import net.taler.database.data_models.Timestamp
+import net.taler.utils.android.toAbsoluteTime
 import net.taler.wallet.BottomInsetsSpacer
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorCode

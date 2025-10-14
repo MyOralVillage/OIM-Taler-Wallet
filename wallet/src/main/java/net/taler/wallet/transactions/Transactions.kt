@@ -34,16 +34,11 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonElement
-import net.taler.common.Amount
-import net.taler.common.ContractMerchant
-import net.taler.common.ContractProduct
-import net.taler.common.Timestamp
+import net.taler.database.data_models.*
 import net.taler.wallet.R
 import net.taler.wallet.TAG
 import net.taler.wallet.backend.TalerErrorCode
 import net.taler.wallet.backend.TalerErrorInfo
-import net.taler.common.CurrencySpecification
-import net.taler.common.RelativeTime
 import net.taler.wallet.refund.RefundPaymentInfo
 import net.taler.wallet.transactions.TransactionMajorState.Done
 import net.taler.wallet.transactions.TransactionMajorState.None
@@ -51,6 +46,9 @@ import net.taler.wallet.transactions.TransactionMajorState.Pending
 import net.taler.wallet.transactions.WithdrawalDetails.ManualTransfer
 import net.taler.wallet.transactions.WithdrawalDetails.TalerBankIntegrationApi
 import java.util.UUID
+import net.taler.common.utils.model.ContractMerchant
+import net.taler.common.utils.model.ContractProduct
+import androidx.core.net.toUri
 
 /** represents a list of GNU Taler transactions */
 @Serializable
@@ -416,7 +414,7 @@ class TransactionDeposit(
     @Transient
     override val amountType = AmountType.Negative
     override fun getTitle(context: Context): String {
-        val uri = Uri.parse(targetPaytoUri)
+        val uri = targetPaytoUri.toUri()
         return uri.getQueryParameter("receiver-name")?.let { receiverName ->
             context.getString(R.string.transaction_deposit_to, receiverName)
         } ?: context.getString(R.string.transaction_deposit)

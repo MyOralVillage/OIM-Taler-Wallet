@@ -14,7 +14,7 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.common.utils.time
+package net.taler.database.data_models
 
 import android.annotation.SuppressLint
 import kotlinx.serialization.SerialName
@@ -46,7 +46,7 @@ data class Timestamp constructor(
     @SerialName("t_s")
     @Serializable(NeverSerializer::class)
     private val s: Long,
-) : Comparable<Timestamp> {
+) : Filterable<Timestamp> {
 
     companion object {
         private const val NEVER: Long = -1

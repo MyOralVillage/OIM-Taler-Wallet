@@ -46,7 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.common.Amount
+import net.taler.database.data_models.Amount
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorCode.WALLET_PEER_PULL_PAYMENT_INSUFFICIENT_BALANCE
 import net.taler.wallet.backend.TalerErrorCode.WALLET_PEER_PUSH_PAYMENT_INSUFFICIENT_BALANCE
@@ -146,12 +146,14 @@ fun ColumnScope.PeerPullTermsComposable(
                     fontWeight = FontWeight.Bold,
                 )
             }
-            // this gets used for credit and debit, so fee calculation differs
-            val fee = if (data.isCredit && terms.amountRaw > terms.amountEffective) {
+            val fee = if (data.isCredit && (terms.amountRaw.compareTo(terms.amountEffective) > 0)) {
                 terms.amountRaw - terms.amountEffective
-            } else if (terms.amountEffective > terms.amountRaw) {
-                terms.amountEffective - terms.amountRaw
-            } else null
+            } else {
+                val effectiveAmount = terms.amountEffective as? Amount
+                if (effectiveAmount != null && effectiveAmount > terms.amountRaw) {
+                    effectiveAmount - terms.amountRaw
+                } else null
+            }
 
             if (fee != null) {
                 val feeStr = if (data.isCredit) {

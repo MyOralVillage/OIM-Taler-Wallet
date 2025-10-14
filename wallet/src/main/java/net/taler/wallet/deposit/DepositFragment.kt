@@ -28,8 +28,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import net.taler.common.Amount
-import net.taler.common.showError
+import net.taler.database.data_models.*
+import net.taler.utils.android.showError
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
 import net.taler.wallet.compose.LoadingScreen

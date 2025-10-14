@@ -34,11 +34,11 @@ import net.taler.cashier.HttpJsonResult.Error
 import net.taler.cashier.HttpJsonResult.Success
 import net.taler.cashier.MainViewModel
 import net.taler.cashier.R
-import net.taler.common.Amount
-import net.taler.common.QrCodeManager.makeQrCode
-import net.taler.common.isOnline
+import net.taler.common.utils.network.QrCodeManager.makeQrCode
+import net.taler.utils.android.isOnline
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit.SECONDS
+import net.taler.database.data_models.Amount
 
 private val TAG = WithdrawManager::class.java.simpleName
 
@@ -80,8 +80,10 @@ class WithdrawManager(
         val balanceResult = viewModel.balance.value
         if (balanceResult !is BalanceResult.Success) return false
         return try {
-            (balanceResult.amount.positive && amount <= (balanceResult.debitThreshold + balanceResult.amount.amount)) ||
-                    (!balanceResult.amount.positive && amount <= (balanceResult.debitThreshold - balanceResult.amount.amount))
+            (balanceResult.amount.positive && amount <=
+                    (balanceResult.debitThreshold + balanceResult.amount.amount)) ||
+                    (!balanceResult.amount.positive && amount
+                            <= (balanceResult.debitThreshold - balanceResult.amount.amount))
 
         } catch (e: IllegalStateException) {
             Log.e(TAG, "Error comparing amounts", e)

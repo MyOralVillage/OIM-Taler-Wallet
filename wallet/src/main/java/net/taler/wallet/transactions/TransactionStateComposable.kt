@@ -32,10 +32,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.common.Amount
-import net.taler.common.RelativeTime
-import net.taler.common.Timestamp
-import net.taler.common.toAbsoluteTime
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.RelativeTime
+import net.taler.database.data_models.Timestamp
+import net.taler.utils.android.toAbsoluteTime
 import net.taler.wallet.R
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.transactions.TransactionMajorState.Aborted
@@ -67,7 +67,9 @@ fun TransactionStateComposable(
         TransactionState(Aborted) -> if (tx is TransactionWithdrawal && tx.withdrawalDetails is ManualTransfer) {
             stringResource(
                 R.string.transaction_state_aborted_manual,
-                (tx.timestamp + tx.withdrawalDetails.reserveClosingDelay).ms.toAbsoluteTime(context).toString(),
+                (
+                    (tx.timestamp + tx.withdrawalDetails.reserveClosingDelay) as Timestamp
+                ).ms.toAbsoluteTime(context).toString(),
             )
         } else stringResource(R.string.transaction_state_aborted)
         TransactionState(Aborting) -> stringResource(R.string.transaction_state_aborting)
@@ -131,7 +133,7 @@ fun TransactionStateComposablePreview() {
 
             TransactionStateComposable(modifier, state = TransactionState(Aborted), tx = TransactionWithdrawal(
                 transactionId = "1234",
-                timestamp = Timestamp.fromMillis(1722629432000L),
+                timestamp = net.taler.database.data_models.Timestamp.fromMillis(1722629432000L),
                 txState = TransactionState(Aborted),
                 txActions = emptyList(),
                 exchangeBaseUrl = "exchange.demo.taler.net",

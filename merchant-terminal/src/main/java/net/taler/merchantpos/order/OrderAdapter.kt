@@ -88,7 +88,7 @@ internal class OrderAdapter : Adapter<OrderViewHolder>() {
             v.isActivated = selected
             quantity.text = product.quantity.toString()
             name.text = product.localizedDescription
-            price.text = product.totalPrice.amountStr
+            price.text = product.totalPrice.toString()
 
             // base64 encoded image
             val bitmap = product.imageBitmap

@@ -18,7 +18,7 @@ package net.taler.common
 
 import kotlinx.serialization.json.Json
 import net.taler.common.utils.model.ContractTerms
-import net.taler.common.utils.time.Timestamp
+import net.taler.database.data_models.Timestamp
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

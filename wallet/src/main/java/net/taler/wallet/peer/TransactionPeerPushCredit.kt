@@ -20,9 +20,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import net.taler.common.Amount
-import net.taler.common.CurrencySpecification
-import net.taler.common.Timestamp
+import net.taler.database.data_models.*
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorCode.EXCHANGE_GENERIC_KYC_REQUIRED
 import net.taler.wallet.backend.TalerErrorInfo

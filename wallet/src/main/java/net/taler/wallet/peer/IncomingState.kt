@@ -17,7 +17,7 @@
 package net.taler.wallet.peer
 
 import kotlinx.serialization.Serializable
-import net.taler.common.Amount
+import net.taler.database.data_models.Amount
 import net.taler.wallet.backend.TalerErrorInfo
 
 sealed class IncomingState

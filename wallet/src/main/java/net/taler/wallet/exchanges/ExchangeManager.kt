@@ -26,8 +26,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import net.taler.common.Event
-import net.taler.common.toEvent
+import net.taler.common.liveData.Event
+import net.taler.common.liveData.toEvent
 import net.taler.wallet.TAG
 import net.taler.wallet.backend.TalerErrorInfo
 import net.taler.wallet.backend.WalletBackendApi

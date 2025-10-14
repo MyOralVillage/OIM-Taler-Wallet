@@ -45,11 +45,13 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_LONG
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import net.taler.common.Amount
-import net.taler.common.EventObserver
+import net.taler.common.liveData.EventObserver
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.CurrencySpecification
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorInfo
+import net.taler.wallet.balances.BalanceManager
 import net.taler.wallet.balances.ScopeInfo
 import net.taler.wallet.compose.LoadingScreen
 import net.taler.wallet.compose.TalerSurface
@@ -71,7 +73,7 @@ class PromptWithdrawFragment: Fragment() {
     private val withdrawManager by lazy { model.withdrawManager }
     private val transactionManager by lazy { model.transactionManager }
     private val exchangeManager by lazy { model.exchangeManager }
-    private val balanceManager by lazy { model.balanceManager }
+    private val balanceManager : BalanceManager by lazy { model.balanceManager }
 
     private val selectExchangeDialog = SelectExchangeDialogFragment()
 
@@ -123,14 +125,13 @@ class PromptWithdrawFragment: Fragment() {
                 }
             }
 
-            val currencySpec = remember(exchange?.scopeInfo) {
+            val currencySpec: CurrencySpecification? = remember(exchange?.scopeInfo) {
                 exchange?.scopeInfo?.let { scopeInfo ->
                     balanceManager.getSpecForScopeInfo(scopeInfo)
                 } ?: status.currency?.let {
                     balanceManager.getSpecForCurrency(it)
                 }
             }
-
             TalerSurface {
                 status.let { s ->
                     if (s.error != null) {
@@ -224,9 +225,11 @@ class PromptWithdrawFragment: Fragment() {
             }
         }
 
-        selectExchangeDialog.exchangeSelection.observe(viewLifecycleOwner, EventObserver {
-            onExchangeSelected(it)
-        })
+        selectExchangeDialog.exchangeSelection.observe(
+            viewLifecycleOwner, EventObserver {
+                    exchange: ExchangeItem -> onExchangeSelected(exchange)
+            }
+        )
 
         exchangeManager.exchanges.observe(viewLifecycleOwner) { exchanges ->
             // detect ToS acceptation

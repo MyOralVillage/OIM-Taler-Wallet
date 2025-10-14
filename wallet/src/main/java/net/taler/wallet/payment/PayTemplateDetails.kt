@@ -18,8 +18,7 @@ package net.taler.wallet.payment
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.taler.common.Amount
-import net.taler.common.RelativeTime
+import net.taler.database.data_models.*
 
 @Serializable
 data class TemplateContractDetails(

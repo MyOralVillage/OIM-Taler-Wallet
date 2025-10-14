@@ -31,11 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.common.Amount
-import net.taler.common.CurrencySpecification
-import net.taler.common.RelativeTime
-import net.taler.common.Timestamp
-import net.taler.common.toAbsoluteTime
+import net.taler.database.data_models.CurrencySpecification
 import net.taler.wallet.BottomInsetsSpacer
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorCode
@@ -59,6 +55,8 @@ import net.taler.wallet.transactions.TransactionWithdrawal
 import net.taler.wallet.transactions.TransitionsComposable
 import net.taler.wallet.transactions.WithdrawalDetails.ManualTransfer
 import net.taler.wallet.transactions.WithdrawalExchangeAccountDetails
+import net.taler.database.data_models.*
+import net.taler.utils.android.toAbsoluteTime
 
 @Composable
 fun TransactionWithdrawalComposable(
@@ -95,8 +93,8 @@ fun TransactionWithdrawalComposable(
             )
         }
 
-        if (t.amountRaw > t.amountEffective) {
-            val fee = t.amountRaw - t.amountEffective
+        if (t.amountRaw.compareTo(t.amountEffective) > 0) {
+            val fee : Amount= t.amountRaw - t.amountEffective
             TransactionAmountComposable(
                 label = stringResource(id = R.string.amount_fee),
                 amount = fee.withSpec(spec),

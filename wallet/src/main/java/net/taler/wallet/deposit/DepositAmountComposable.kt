@@ -39,8 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.taler.common.Amount
-import net.taler.common.CurrencySpecification
+import net.taler.database.data_models.*
 import net.taler.wallet.BottomInsetsSpacer
 import net.taler.wallet.R
 import net.taler.wallet.compose.AmountCurrencyField
@@ -75,7 +74,7 @@ fun DepositAmountComposable(
         }
 
         AnimatedVisibility(checkResult.maxDepositAmountEffective != null) {
-            checkResult.maxDepositAmountEffective?.let {
+            (checkResult.maxDepositAmountEffective as Amount?)?.let {
                 Text(
                     modifier = Modifier.padding(
                         start = 16.dp,
@@ -106,7 +105,7 @@ fun DepositAmountComposable(
                     Text(
                         stringResource(
                             R.string.payment_balance_insufficient_max,
-                            res.maxAmountEffective.withSpec(currencySpec),
+                            (res.maxAmountEffective as Amount).withSpec(currencySpec),
                         )
                     )
                 }
@@ -122,8 +121,8 @@ fun DepositAmountComposable(
             ) {
                 val totalAmount = res.totalDepositCost
                 val effectiveAmount = res.effectiveDepositAmount
-                if (totalAmount > effectiveAmount) {
-                    val fee = totalAmount - effectiveAmount
+                if (totalAmount.compareTo(effectiveAmount) > 0) {
+                    val fee : Amount = totalAmount - effectiveAmount
 
                     TransactionAmountComposable(
                         label = stringResource(R.string.amount_fee),
@@ -134,7 +133,7 @@ fun DepositAmountComposable(
 
                 TransactionAmountComposable(
                     label = stringResource(R.string.amount_send),
-                    amount = effectiveAmount.withSpec(amount.spec),
+                    amount = (effectiveAmount as Amount).withSpec(amount.spec),
                     amountType = Positive,
                 )
             }

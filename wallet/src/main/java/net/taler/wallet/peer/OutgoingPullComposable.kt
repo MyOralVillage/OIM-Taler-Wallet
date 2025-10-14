@@ -47,8 +47,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.serialization.json.JsonPrimitive
-import net.taler.common.Amount
-import net.taler.common.CurrencySpecification
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.CurrencySpecification
 import net.taler.wallet.BottomInsetsSpacer
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorCode
@@ -137,7 +137,7 @@ fun OutgoingPullIntroComposable(
             amount = amount.withSpec(selectedSpec),
             currencies = currencies,
             readOnly = false,
-            onAmountChanged = { amount = it },
+            onAmountChanged = {it: Amount -> amount = it},
             isError = amount.isZero(),
             label = { Text(stringResource(R.string.amount_receive)) },
         )
@@ -172,11 +172,11 @@ fun OutgoingPullIntroComposable(
 
         val res = checkResult
         if (res != null) {
-            if (res.amountEffective > res.amountRaw) {
+            if (res.amountEffective.compareTo(res.amountRaw) > 0) {
                 val fee = res.amountEffective - res.amountRaw
                 Text(
                     modifier = Modifier.padding(vertical = 16.dp),
-                    text = stringResource(id = R.string.payment_fee, fee.withSpec(selectedSpec)),
+                    text = stringResource(id = R.string.payment_fee, (fee as Amount).withSpec(selectedSpec)),
                     softWrap = false,
                     color = MaterialTheme.colorScheme.error,
                 )

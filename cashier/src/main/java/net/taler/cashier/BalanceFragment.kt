@@ -32,10 +32,10 @@ import net.taler.cashier.BalanceFragmentDirections.Companion.actionBalanceFragme
 import net.taler.cashier.databinding.FragmentBalanceBinding
 import net.taler.cashier.withdraw.LastTransaction
 import net.taler.cashier.withdraw.WithdrawStatus
-import net.taler.common.Amount
-import net.taler.common.exhaustive
-import net.taler.common.fadeIn
-import net.taler.common.fadeOut
+import net.taler.database.data_models.Amount
+import net.taler.utils.android.exhaustive
+import net.taler.utils.android.fadeIn
+import net.taler.utils.android.fadeOut
 
 sealed class BalanceResult {
     data class Error(val msg: String) : BalanceResult()

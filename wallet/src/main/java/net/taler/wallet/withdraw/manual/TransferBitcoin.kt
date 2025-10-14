@@ -28,7 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import net.taler.common.Amount
+import net.taler.database.data_models.Amount
 import net.taler.wallet.R
 import net.taler.wallet.compose.CopyToClipboardButton
 import net.taler.wallet.withdraw.TransferData

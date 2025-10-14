@@ -19,7 +19,7 @@ package net.taler.merchantpos
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import net.taler.common.getDefaultHttpClient
+import net.taler.common.utils.network.getDefaultHttpClient
 import net.taler.merchantlib.MerchantApi
 import net.taler.merchantpos.config.ConfigManager
 import net.taler.merchantpos.history.HistoryManager

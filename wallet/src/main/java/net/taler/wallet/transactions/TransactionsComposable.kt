@@ -68,10 +68,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.common.Amount
-import net.taler.common.CurrencySpecification
-import net.taler.common.Timestamp
-import net.taler.common.toRelativeTime
+import net.taler.database.data_models.*
+import net.taler.database.data_models.CurrencySpecification
+import net.taler.utils.android.toRelativeTime
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorCode
 import net.taler.wallet.backend.TalerErrorInfo
@@ -307,13 +306,14 @@ fun TransactionsHeader(
             )
 
             Text(
-                balance.available.withSpec(spec).toString(showSymbol = false),
+                (balance.available as Amount).withSpec(spec).toString(showSymbol = false),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
             )
         }
     }
 }
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -379,7 +379,7 @@ fun TransactionRow(
             supportingContent = {
                 TransactionExtraInfo(tx)
             },
-            overlineContent = { Text(tx.timestamp.ms.toRelativeTime(context).toString()) },
+            overlineContent = { Text((tx.timestamp as Timestamp).ms.toRelativeTime(context).toString()) },
             colors = ListItemDefaults.colors(
                 containerColor = if (isSelected) {
                     MaterialTheme.colorScheme.secondaryContainer
@@ -400,7 +400,7 @@ fun TransactionAmountInfo(
 ) {
     Column(horizontalAlignment = Alignment.End) {
         ProvideTextStyle(MaterialTheme.typography.titleLarge) {
-            val amountStr = tx.amountEffective.withSpec(spec).toString(showSymbol = false)
+            val amountStr = (tx.amountEffective as Amount).withSpec(spec).toString(showSymbol = false)
             when (tx.amountType) {
                 Positive -> Text(
                     stringResource(R.string.amount_positive, amountStr),

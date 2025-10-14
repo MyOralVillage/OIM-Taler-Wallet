@@ -25,7 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import net.taler.common.Amount
+import net.taler.database.data_models.Amount
 import net.taler.wallet.R
 import net.taler.wallet.cleanExchange
 import net.taler.wallet.compose.WarningLabel

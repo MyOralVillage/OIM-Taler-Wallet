@@ -16,6 +16,7 @@
 
 package net.taler.cashier
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.Intent.ACTION_MAIN
 import android.content.Intent.CATEGORY_HOME
@@ -63,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         TalerNfcService.unsetDefaultHandler(this)
     }
 
+    @SuppressLint("GestureBackNavigation")
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         if (!configManager.hasConfig() && nav.currentDestination?.id == R.id.configFragment) {

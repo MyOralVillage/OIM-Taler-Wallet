@@ -27,11 +27,15 @@ android {
     compileSdk 36
 
     defaultConfig {
-        minSdkVersion 24
-
+        minSdkVersion 26
+        buildConfigField "String", "BACKEND_API_VERSION", "\"1.0.0\""
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
         missingDimensionStrategy 'distributionChannel', 'google'
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -55,6 +59,7 @@ android {
 
 dependencies {
     api project(":taler-kotlin-android")
+    implementation project(":transaction-database")
 
     api "io.ktor:ktor-client:$ktor_version"
     api "io.ktor:ktor-client-okhttp:$ktor_version"

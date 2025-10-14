@@ -25,10 +25,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
+import net.taler.database.data_models.*
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import net.taler.common.Amount
 import net.taler.wallet.TAG
 import net.taler.wallet.accounts.PaytoUriBitcoin
 import net.taler.wallet.accounts.PaytoUriIban

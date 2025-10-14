@@ -16,7 +16,6 @@
 
 package net.taler.wallet.withdraw
 
-import android.net.Uri
 import android.util.Log
 import androidx.annotation.UiThread
 import androidx.lifecycle.MutableLiveData
@@ -30,8 +29,8 @@ import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.taler.common.Amount
-import net.taler.common.Bech32
+import net.taler.common.utils.crypto.Bech32
+import net.taler.database.data_models.Amount
 import net.taler.wallet.TAG
 import net.taler.wallet.backend.TalerErrorInfo
 import net.taler.wallet.backend.WalletBackendApi
@@ -42,6 +41,7 @@ import net.taler.wallet.exchanges.ExchangeManager
 import net.taler.wallet.exchanges.ExchangeTosStatus
 import net.taler.wallet.transactions.WithdrawalExchangeAccountDetails
 import net.taler.wallet.withdraw.WithdrawStatus.Status.*
+import androidx.core.net.toUri
 
 sealed class TestWithdrawStatus {
     data object None : TestWithdrawStatus()
@@ -86,7 +86,13 @@ sealed class TransferData {
     abstract val amountEffective: Amount
     abstract val withdrawalAccount: WithdrawalExchangeAccountDetails
 
-    val currency get() = withdrawalAccount.transferAmount?.currency
+//    val currency get() = (withdrawalAccount.transferAmount) ?: (withdrawalAccount.transferAmount.currency)
+
+    val currency: String? get() {
+            val amount = withdrawalAccount.transferAmount
+            return (amount as? Amount)?.currency
+        }
+
 
     data class Taler(
         override val subject: String,
@@ -504,7 +510,7 @@ class WithdrawManager(
         transactionId = response.transactionId,
         withdrawalTransfers = response.withdrawalAccountsList.mapNotNull {
             val details = status.amountInfo ?: error("no amountInfo")
-            val uri = Uri.parse(it.paytoUri.replace("receiver-name=", "receiver_name="))
+            val uri = it.paytoUri.replace("receiver-name=", "receiver_name=").toUri()
             if ("bitcoin".equals(uri.authority, true)) {
                 val msg = uri.getQueryParameter("message").orEmpty()
                 val reg = "\\b([A-Z0-9]{52})\\b".toRegex().find(msg)

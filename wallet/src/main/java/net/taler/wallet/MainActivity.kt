@@ -49,12 +49,13 @@ import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.journeyapps.barcodescanner.ScanOptions.QR_CODE
 import kotlinx.coroutines.launch
-import net.taler.common.EventObserver
+import net.taler.common.liveData.EventObserver
 import net.taler.lib.android.TalerNfcService
 import net.taler.wallet.databinding.ActivityMainBinding
 import net.taler.wallet.events.ObservabilityDialog
 import net.taler.wallet.transactions.TransactionPeerPullCredit
 import net.taler.wallet.transactions.TransactionPeerPushDebit
+
 
 class MainActivity : AppCompatActivity(), OnPreferenceStartFragmentCallback {
     private val model: MainViewModel by viewModels()

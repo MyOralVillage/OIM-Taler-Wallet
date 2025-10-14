@@ -43,8 +43,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import net.taler.common.Amount
-import net.taler.common.CurrencySpecification
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.CurrencySpecification
 import net.taler.wallet.R
 import net.taler.wallet.cleanExchange
 import net.taler.wallet.compose.AmountCurrencyField
@@ -116,7 +116,8 @@ fun WithdrawalShowInfo(
                     amount = selectedAmount.withSpec(spec),
                     currencies = currencies,
                     editableCurrency = editableCurrency,
-                    onAmountChanged = { amount ->
+                    onAmountChanged = { untypedAmount: Amount ->
+                        val amount = untypedAmount
                         selectedAmount = if (amount.currency != status.currency) {
                             // if amount changes, reset to zero!
                             Amount.zero(amount.currency)

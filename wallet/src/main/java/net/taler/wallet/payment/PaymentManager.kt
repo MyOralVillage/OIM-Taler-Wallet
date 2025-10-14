@@ -23,9 +23,8 @@ import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import net.taler.common.Amount
-import net.taler.common.ContractTerms
+import net.taler.database.data_models.*
+import net.taler.common.utils.model.ContractTerms
 import net.taler.wallet.TAG
 import net.taler.wallet.backend.BackendManager
 import net.taler.wallet.backend.TalerErrorInfo

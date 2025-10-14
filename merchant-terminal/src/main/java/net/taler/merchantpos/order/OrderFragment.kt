@@ -29,7 +29,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.transition.TransitionManager.beginDelayedTransition
-import net.taler.common.navigate
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
 import net.taler.merchantpos.databinding.FragmentOrderBinding
@@ -38,6 +37,7 @@ import net.taler.merchantpos.order.OrderFragmentDirections.Companion.actionOrder
 import net.taler.merchantpos.order.OrderFragmentDirections.Companion.actionOrderToProcessPayment
 import net.taler.merchantpos.order.RestartState.ENABLED
 import net.taler.merchantpos.order.RestartState.UNDO
+import net.taler.utils.android.navigate
 
 class OrderFragment : Fragment() {
 

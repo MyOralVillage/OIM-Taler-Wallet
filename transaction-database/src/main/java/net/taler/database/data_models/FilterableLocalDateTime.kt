@@ -16,7 +16,7 @@
 
 @file:Suppress("unused")
 
-package net.taler.common.utils.time
+package net.taler.database.data_models
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -29,13 +29,12 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import net.taler.common.utils.Filterable
 
 /**
  * Wrapper class for [LocalDateTime] which
  * implements the [Filterable] interface.
  */
-@RequiresApi(api = Build.VERSION_CODES.O)
+
 @KxSerializable(with = FilterableLocalDateTimeSerializer::class)
 class FilterableLocalDateTime : Filterable<FilterableLocalDateTime>, Serializable {
 

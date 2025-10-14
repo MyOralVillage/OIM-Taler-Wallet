@@ -1,26 +1,11 @@
-/*
- * This file is part of GNU Taler
- * (C) 2020 Taler Systems S.A.
- *
- * GNU Taler is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 3, or (at your option) any later version.
- *
- * GNU Taler is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
- */
-
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id "com.android.application"
     id "kotlin-android"
     id "kotlinx-serialization"
-    id "com.google.protobuf" version "0.9.5"
+    id "org.jetbrains.kotlin.plugin.compose"  // Add this line
+    id "com.google.protobuf" version "0.9.4"
 }
 
 def qtart_version = "0.13.10"
@@ -43,7 +28,7 @@ android {
 
     defaultConfig {
         applicationId "net.taler.wallet"
-        minSdkVersion 24
+        minSdkVersion 26
         targetSdkVersion 36
         versionCode 49
         versionName "0.14.0"
@@ -55,7 +40,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            minifyEnabled minify_debug
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -64,8 +49,6 @@ android {
         fdroid {
             dimension "distributionChannel"
             applicationIdSuffix ".fdroid"
-            // version codes get multiplied by 10 and an ABI suffix gets added to the code
-            // if 'splitApk' property is set
         }
         google {
             dimension "distributionChannel"
@@ -81,8 +64,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-
-        // Flag to enable support for the new language APIs for zxing
         coreLibraryDesugaringEnabled true
     }
 
@@ -90,14 +71,20 @@ android {
         jvmTarget = "17"
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion "1.5.14"
-    }
+    // REMOVE THIS SECTION - it's no longer needed with the Compose Compiler plugin
+    // composeOptions {
+    //     kotlinCompilerExtensionVersion "1.5.14"
+    // }
 
     buildFeatures {
         buildConfig true
         viewBinding true
         compose true
+    }
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
     packagingOptions {
         jniLibs {
@@ -109,9 +96,8 @@ android {
     }
     splits {
         abi {
-            // can not be defined per flavor, so we use a property to turn this on for F-Droid
             enable project.hasProperty('splitApk')
-            reset() // Resets the list of ABIs to remove all included by default
+            reset()
             include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
             universalApk false
         }
@@ -125,7 +111,7 @@ android {
 
 dependencies {
     implementation project(":taler-kotlin-android")
-
+    implementation project(":transaction-database")
     implementation "net.taler:qtart:$qtart_version@aar"
 
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
@@ -141,15 +127,13 @@ dependencies {
     implementation 'androidx.compose.material:material-icons-extended'
     implementation "androidx.compose.runtime:runtime-livedata"
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose"
-    implementation "com.google.accompanist:accompanist-themeadapter-material3:0.36.0"
+    implementation "com.google.accompanist:accompanist-themeadapter-material3:0.28.0"
     implementation 'androidx.activity:activity-compose:1.11.0'
-    implementation 'androidx.compose.ui:ui'
-    implementation 'androidx.compose.ui:ui-graphics'
     implementation 'androidx.compose.ui:ui-tooling-preview'
     implementation 'androidx.compose.ui:ui-viewbinding'
     implementation "androidx.fragment:fragment-compose:1.8.9"
+    implementation 'androidx.privacysandbox.tools:tools-core:1.0.0-alpha13'
     debugImplementation 'androidx.compose.ui:ui-tooling'
-    debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
     // Lists and Selection
     implementation "androidx.recyclerview:recyclerview:1.4.0"
@@ -164,7 +148,6 @@ dependencies {
 
     // QR codes
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0@aar'
-    // needed to support zxing library in taler-kotlin-android on API < 24
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 
     // Nicer ProgressBar
@@ -176,20 +159,15 @@ dependencies {
     implementation "io.noties.markwon:ext-tables:$markwon_version"
     implementation "io.noties.markwon:recycler:$markwon_version"
 
-    // Java Native Access (must always match JNA in qtart)
+    // Java Native Access
     implementation "net.java.dev.jna:jna:5.18.1@aar"
 
     // Shared preferences
     implementation "androidx.datastore:datastore:$datastore_version"
-    implementation  "com.google.protobuf:protobuf-javalite:4.32.1"
+    implementation  "com.google.protobuf:protobuf-javalite:3.18.0"
 
-    // JUint tests
     testImplementation "junit:junit:$junit_version"
     testImplementation 'org.json:json:20250517'
-
-    // SVG parser
-    implementation 'com.caverock:androidsvg-aar:1.4'
-
 }
 
 tasks.withType(KotlinCompile).configureEach {
@@ -198,20 +176,14 @@ tasks.withType(KotlinCompile).configureEach {
     }
 }
 
-// Map for the version code that gives each ABI a value.
 ext.abiCodes = ['armeabi-v7a': 1, 'arm64-v8a': 2, x86: 3, x86_64: 4]
-// For each APK output variant, override versionCode with a combination of ext.abiCodes + variant.versionCode.
 android.applicationVariants.configureEach { variant ->
-    // Assigns a different version code for each output APK
     variant.outputs.each { output ->
-        // Stores the value of ext.abiCodes that is associated with the ABI for this variant.
         def baseAbiVersionCode =
-                // Determines the ABI for this variant and returns the mapped value.
                 project.ext.abiCodes.get(output.getFilter(com.android.build.OutputFile.ABI))
         if (baseAbiVersionCode != null) {
             output.versionCodeOverride = 10 * variant.versionCode + baseAbiVersionCode
         }
-        // leaves version code alone of there's no baseAbiVersionCode
     }
 }
 

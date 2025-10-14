@@ -44,8 +44,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.common.Amount
-import net.taler.common.CurrencySpecification
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.CurrencySpecification
 import net.taler.wallet.R
 import net.taler.wallet.balances.ScopeInfo.Auditor
 import net.taler.wallet.balances.ScopeInfo.Exchange
@@ -163,7 +163,7 @@ fun BalanceRow(
             supportingContent = {
                 Column {
                     ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
-                        AnimatedVisibility(!balance.pendingIncoming.isZero()) {
+                        AnimatedVisibility(!(balance.pendingIncoming as Amount).isZero()) {
                             Text(
                                 stringResource(
                                     R.string.balances_inbound_amount,
@@ -173,7 +173,7 @@ fun BalanceRow(
                             )
                         }
 
-                        AnimatedVisibility(!balance.pendingOutgoing.isZero()) {
+                        AnimatedVisibility(!(balance.pendingOutgoing as Amount).isZero()) {
                             Text(
                                 stringResource(
                                     R.string.balances_outbound_amount,

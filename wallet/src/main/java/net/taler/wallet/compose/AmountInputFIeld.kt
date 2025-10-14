@@ -54,9 +54,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TextInputService
 import androidx.compose.ui.text.input.TextInputSession
 import androidx.compose.ui.unit.dp
-import net.taler.common.Amount
+import net.taler.database.data_models.Amount
 import net.taler.wallet.deposit.CurrencyDropdown
-
 @Composable
 fun AmountCurrencyField(
     modifier: Modifier = Modifier,

@@ -16,12 +16,12 @@
 
 package net.taler.wallet
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.ConnectivityManager.NetworkCallback
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.net.Uri
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSpecifier
@@ -50,13 +50,13 @@ import androidx.fragment.app.FragmentActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import net.taler.common.Amount
-import net.taler.common.AmountParserException
-import net.taler.common.showError
-import net.taler.common.startActivitySafe
+import net.taler.database.data_models.*
+import net.taler.database.data_models.AmountParserException
+import net.taler.utils.android.showError
+import net.taler.utils.android.startActivitySafe
 import net.taler.wallet.backend.TalerErrorInfo
+import androidx.core.net.toUri
 
 const val CURRENCY_BTC = "BITCOINBTC"
 
@@ -87,6 +87,7 @@ private fun connectToWifi29(context: Context, ssid: String) {
     connectivityManager?.requestNetwork(request, NetworkCallback())
 }
 
+@SuppressLint("StringFormatInvalid")
 @Suppress("DEPRECATION")
 private fun connectToWifiDeprecated(context: Context, ssid: String) {
     context.getSystemService<WifiManager>()?.apply {
@@ -132,7 +133,7 @@ fun Context.getAttrColor(attr: Int): Int {
 fun launchInAppBrowser(context: Context, url: String) {
     val builder = CustomTabsIntent.Builder()
     val intent = builder.build().intent
-    intent.data = Uri.parse(url)
+    intent.data = url.toUri()
     context.startActivitySafe(intent)
 }
 
@@ -166,7 +167,7 @@ fun Context.getThemeColor(attr: Int): Int {
 fun <T> T.useDebounce(
     delayMillis: Long = 300L,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
-    onChange: suspend (T) -> Unit
+    onChange: suspend (T) -> Unit,
 ): T{
     val state by rememberUpdatedState(this)
 

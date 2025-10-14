@@ -16,6 +16,7 @@
 
 package net.taler.wallet.settings
 
+//import BalanceManager
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -25,7 +26,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.taler.wallet.R
 import net.taler.wallet.backend.WalletBackendApi
@@ -38,7 +38,8 @@ class SettingsManager(
     private val context: Context,
     private val api: WalletBackendApi,
     private val scope: CoroutineScope,
-    private val balanceManager: BalanceManager,
+    balanceManager: BalanceManager,
+//    private val balanceManager: BalanceManager,
 ) {
     fun exportLogcat(uri: Uri?) {
         if (uri == null) {
@@ -125,7 +126,7 @@ class SettingsManager(
                         is Success -> {
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(context, R.string.settings_db_import_success, LENGTH_LONG).show()
-                                balanceManager.loadBalances()
+//                                balanceManager.loadBalances()
                             }
                         }
                         is Error -> {
@@ -152,7 +153,7 @@ class SettingsManager(
             when (val response = api.rawRequest("clearDb")) {
                 is Success -> {
                     onSuccess()
-                    balanceManager.resetBalances()
+//                    balanceManager.resetBalances()
                 }
                 is Error -> {
                     Log.e(SettingsManager::class.simpleName, "Error cleaning db: ${response.error}")

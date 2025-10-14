@@ -55,8 +55,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import net.taler.common.Amount
-import net.taler.common.CurrencySpecification
+import net.taler.database.data_models.*
 import net.taler.wallet.AmountResult
 import net.taler.wallet.BottomInsetsSpacer
 import net.taler.wallet.MainViewModel

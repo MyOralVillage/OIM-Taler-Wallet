@@ -36,8 +36,8 @@ import com.google.android.material.snackbar.Snackbar
 import net.taler.cashier.MainViewModel
 import net.taler.cashier.R
 import net.taler.cashier.databinding.FragmentConfigBinding
-import net.taler.common.exhaustive
-import net.taler.common.showError
+import net.taler.utils.android.exhaustive
+import net.taler.utils.android.showError
 
 private const val URL_BANK_TEST = "https://bank.demo.taler.net"
 private const val URL_BANK_TEST_REGISTER = "https://bank.demo.taler.net/webui/#/register"

@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import net.taler.database.data_models.Amount
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
 import net.taler.wallet.balances.ScopeInfo
@@ -51,7 +52,7 @@ class TransactionWithdrawalFragment : TransactionDetailFragment(), ActionListene
                     TransactionWithdrawalComposable(
                         t = tx,
                         devMode = devMode,
-                        spec = balanceManager.getSpecForCurrency(tx.amountRaw.currency),
+                        spec = balanceManager.getSpecForCurrency((tx.amountRaw as Amount).currency),
                         actionListener = this@TransactionWithdrawalFragment,
                     ) {
                         onTransitionButtonClicked(tx, it)
@@ -90,7 +91,7 @@ class TransactionWithdrawalFragment : TransactionDetailFragment(), ActionListene
                     amountEffective = tx.amountEffective,
                     withdrawalAccountList = tx.withdrawalDetails.exchangeCreditAccountDetails,
                     scopeInfo = transactionManager.selectedScope.value ?: ScopeInfo.Exchange(
-                        currency = tx.amountRaw.currency,
+                        currency = (tx.amountRaw as Amount).currency,
                         url = tx.exchangeBaseUrl,
                     ),
                 )

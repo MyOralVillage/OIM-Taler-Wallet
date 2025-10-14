@@ -16,10 +16,12 @@
 
 package net.taler.merchantpos.order
 
-import net.taler.common.Amount
-import net.taler.common.ContractTerms
-import net.taler.common.Timestamp
-import net.taler.common.now
+import android.os.Build
+import androidx.annotation.RequiresApi
+import net.taler.common.utils.model.ContractTerms
+import net.taler.common.utils.now
+import net.taler.database.data_models.Timestamp
+import net.taler.database.data_models.Amount
 import net.taler.merchantpos.config.Category
 import net.taler.merchantpos.config.ConfigProduct
 import java.net.URLEncoder
@@ -100,14 +102,12 @@ data class Order(val id: Int, val currency: String, val availableCategories: Map
                 availableLocales.retainAll(category.nameI18n!!.keys)
                 if (availableLocales.isEmpty()) return null
             }
-            return availableLocales.map { locale ->
-                Pair(
-                    locale, categoryQuantities.map { (category, quantity) ->
-                        // category.nameI18n should be non-null now
-                        "$quantity x ${category.nameI18n!![locale]}"
-                    }.joinToString()
-                )
-            }.toMap()
+            return availableLocales.associateWith { locale ->
+                categoryQuantities.map { (category, quantity) ->
+                    // category.nameI18n should be non-null now
+                    "$quantity x ${category.nameI18n!![locale]}"
+                }.joinToString()
+            }
         }
 
     private val fulfillmentUri: String

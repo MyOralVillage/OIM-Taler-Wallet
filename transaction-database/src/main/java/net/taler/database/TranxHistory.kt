@@ -14,18 +14,15 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.common.transaction
+package net.taler.database
 
-import TranxFilter
+import net.taler.database.filter.*
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import androidx.annotation.RequiresApi
-import net.taler.common.transaction.TranxHistory._filtTyp
-import net.taler.common.utils.directionality.FilterableDirection
-import net.taler.common.utils.time.FilterableLocalDateTime
-import net.taler.common.utils.time.Timestamp
-import okhttp3.internal.toImmutableList
+import net.taler.database.data_models.*
+import net.taler.database.data_access.*
 
 /**
  * Singleton object that manages transaction history and related metadata.
@@ -101,7 +98,7 @@ object TranxHistory {
      * **Note:** Changing the filter invalidates cached history
      * triggers a new database query on the next read. Call this function
      * only when it is necessary to apply a new filter.
-     * Use [TranxFilter.isEqual] to test if the new filter
+     * Use [net.taler.database.data_access.isEqual] to test if the new filter
      * is identical to the current one.
      *
      * @param filter The new [TranxFilter] to apply.
@@ -119,21 +116,23 @@ object TranxHistory {
      *    based on the new transaction amount.
      * 2. Updates the minimum and maximum datetime bounds (_miniDtm, _maxiDtm)
      *    based on the new transaction timestamp.
-     * 3. Inserts the new [Tranx] into the database using [addTranx].
+     * 3. Inserts the new [Tranx] into the database using [net.taler.database.data_access.addTranx].
      * 4. Marks the transaction history as stale (_isStale = true) so that
      *    cached lists will be refreshed on the next read.
      *
-     * @param purp The purpose of the transaction ([TranxPurp]).
+     * @param TID  the transaction id
+     * @param purp The purpose of the transaction ([net.taler.database.data_models.TranxPurp]), optional.
      * @param amt The transaction amount ([Amount]).
      * @param dir The transaction direction ([FilterableDirection].
      * @param tms The timestamp of the transaction ([Timestamp]).
      * @throws IllegalStateException if [TranxHistory] is not initialized
      */
     fun newTransaction(
-        purp: TranxPurp,
+        TID:  String,
+        purp: TranxPurp?,
         amt: Amount,
-        dir: FilterableDirection,
-        tms: Timestamp) {
+        dir:  FilterableDirection,
+        tms:  Timestamp) {
 
         if (!_isIniti) throw IllegalStateException("Database is not initialized!")
 
@@ -158,7 +157,7 @@ object TranxHistory {
         else {(if (_miniDtm!! >= new_dtm) _miniDtm = new_dtm else Unit) }
 
         // add transaction to database
-        addTranx(_trxn_db, Tranx(new_dtm, purp, amt, dir))
+        addTranx(_trxn_db, Tranx(TID, new_dtm, purp, amt, dir))
         _isStale = true
     }
 

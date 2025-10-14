@@ -37,9 +37,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.common.Amount
-import net.taler.common.CurrencySpecification
-import net.taler.common.RelativeTime
+import net.taler.database.data_models.*
 import net.taler.wallet.AmountResult
 import net.taler.wallet.BottomInsetsSpacer
 import net.taler.wallet.R

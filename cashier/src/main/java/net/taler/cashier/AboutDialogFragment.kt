@@ -21,10 +21,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
-import net.taler.cashier.BuildConfig.VERSION_NAME
 import net.taler.cashier.config.VERSION_BANK
 import net.taler.cashier.databinding.FragmentAboutDialogBinding
-import net.taler.common.Version
+import net.taler.common.utils.model.Version
 
 class AboutDialogFragment : DialogFragment() {
 
@@ -42,7 +41,7 @@ class AboutDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        ui.versionView.text = getString(R.string.about_version, VERSION_NAME)
+        ui.versionView.text =  getString(R.string.about_version, VERSION_BANK.str())
         ui.bankVersionView.text = getString(R.string.about_supported_bank_api, VERSION_BANK.str())
         ui.licenseView.text =
             getString(R.string.about_license, getString(R.string.about_license_content))

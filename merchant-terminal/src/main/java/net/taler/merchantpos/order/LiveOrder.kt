@@ -20,8 +20,8 @@ import androidx.annotation.UiThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
-import net.taler.common.Amount
-import net.taler.common.CombinedLiveData
+import net.taler.common.liveData.CombinedLiveData
+import net.taler.database.data_models.Amount
 import net.taler.merchantpos.config.Category
 import net.taler.merchantpos.config.ConfigProduct
 import net.taler.merchantpos.order.RestartState.DISABLED
@@ -49,7 +49,7 @@ internal class MutableLiveOrder(
     private val productsByCategory: HashMap<Category, ArrayList<ConfigProduct>>
 ) : LiveOrder {
     private val availableCategories: Map<Int, Category>
-        get() = productsByCategory.keys.map { it.id to it }.toMap()
+        get() = productsByCategory.keys.associateBy { it.id }
     override val order: MutableLiveData<Order?> =
         MutableLiveData(Order(id, currency, availableCategories))
     override val orderTotal: LiveData<Amount> = order.map { it?.total ?: Amount.zero(currency) }

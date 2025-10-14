@@ -16,20 +16,17 @@
 
 package net.taler.merchantpos.refund
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import net.taler.common.Amount
-import net.taler.common.AmountParserException
-import net.taler.common.fadeIn
-import net.taler.common.fadeOut
-import net.taler.common.navigate
-import net.taler.common.showError
+import net.taler.database.data_models.*
 import net.taler.merchantlib.OrderHistoryEntry
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
@@ -39,6 +36,10 @@ import net.taler.merchantpos.refund.RefundResult.AlreadyRefunded
 import net.taler.merchantpos.refund.RefundResult.Error
 import net.taler.merchantpos.refund.RefundResult.PastDeadline
 import net.taler.merchantpos.refund.RefundResult.Success
+import net.taler.utils.android.fadeIn
+import net.taler.utils.android.fadeOut
+import net.taler.utils.android.navigate
+import net.taler.utils.android.showError
 
 class RefundFragment : Fragment() {
 
@@ -108,3 +109,4 @@ class RefundFragment : Fragment() {
     }
 
 }
+

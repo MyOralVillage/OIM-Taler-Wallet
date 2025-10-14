@@ -18,7 +18,8 @@ package net.taler.merchantlib
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.taler.common.Amount
+import net.taler.database.data_models.Amount
+
 @Serializable
 data class RefundRequest(
     /**

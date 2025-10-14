@@ -16,16 +16,18 @@
 
 package net.taler.merchantpos.order
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
-import net.taler.common.Amount
-import net.taler.common.AmountParserException
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.AmountParserException
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
 import net.taler.merchantpos.config.ConfigProduct

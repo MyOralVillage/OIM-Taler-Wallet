@@ -35,8 +35,6 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import net.taler.common.isOnline
-import net.taler.common.showError
 import net.taler.wallet.compose.LoadingScreen
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.refund.RefundStatus
@@ -44,6 +42,9 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Locale
+import androidx.core.net.toUri
+import net.taler.utils.android.isOnline
+import net.taler.utils.android.showError
 
 class HandleUriFragment: Fragment() {
     private val model: MainViewModel by activityViewModels()
@@ -54,7 +55,7 @@ class HandleUriFragment: Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         uri = arguments?.getString("uri") ?: error("no uri passed")
         from = arguments?.getString("from") ?: error("no from passed")
@@ -71,7 +72,7 @@ class HandleUriFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val uri = Uri.parse(uri)
+        val uri = uri.toUri()
         if (uri.fragment != null && !requireContext().isOnline()) {
             connectToWifi(requireContext(), uri.fragment!!)
         }
@@ -196,7 +197,7 @@ class HandleUriFragment: Fragment() {
                     val talerHeader = conn.headerFields["Taler"]
                     if (talerHeader != null && talerHeader[0] != null) {
                         Log.v(TAG, "taler header: ${talerHeader[0]}")
-                        val talerHeaderUri = Uri.parse(talerHeader[0])
+                        val talerHeaderUri = talerHeader[0].toUri()
                         getTalerAction(talerHeaderUri, 0, actionFound)
                     } else {
                         showError(R.string.error_no_uri, "$uri")
@@ -212,7 +213,7 @@ class HandleUriFragment: Fragment() {
                     val location = conn.headerFields["Location"]
                     if (location != null && location[0] != null) {
                         Log.v(TAG, "location redirect: ${location[0]}")
-                        val locUri = Uri.parse(location[0])
+                        val locUri = location[0].toUri()
                         getTalerAction(locUri, maxRedirects - 1, actionFound)
                     }
                 } else {

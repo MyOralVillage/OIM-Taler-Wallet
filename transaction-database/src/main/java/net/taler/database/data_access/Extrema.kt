@@ -14,11 +14,5 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.common.utils
+package net.taler.database.data_access
 
-/**
- * Defines a marker interface for data types which can be
- * filtered in transaction history. Essentially a wrapper
- * for the comparable interface.
- */
-interface Filterable<T : Filterable<T>> : Comparable<T>

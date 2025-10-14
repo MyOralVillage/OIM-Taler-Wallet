@@ -26,15 +26,15 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import androidx.recyclerview.widget.LinearLayoutManager
-import net.taler.common.exhaustive
-import net.taler.common.navigate
-import net.taler.common.showError
 import net.taler.merchantlib.OrderHistoryEntry
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
 import net.taler.merchantpos.databinding.FragmentMerchantHistoryBinding
 import net.taler.merchantpos.history.HistoryFragmentDirections.Companion.actionGlobalMerchantSettings
 import net.taler.merchantpos.history.HistoryFragmentDirections.Companion.actionNavHistoryToRefundFragment
+import net.taler.utils.android.exhaustive
+import net.taler.utils.android.navigate
+import net.taler.utils.android.showError
 
 internal interface RefundClickListener {
     fun onRefundClicked(item: OrderHistoryEntry)

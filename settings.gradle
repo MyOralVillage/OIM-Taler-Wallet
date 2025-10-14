@@ -1,3 +1,7 @@
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
 include ':cashier', ':merchant-terminal'
-include ':taler-kotlin-android'
-include ':merchant-lib'
+include ':taler-kotlin-android', ':merchant-lib'
+include ':transaction-database', ':wallet'

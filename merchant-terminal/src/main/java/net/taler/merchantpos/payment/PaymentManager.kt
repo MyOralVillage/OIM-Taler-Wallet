@@ -26,8 +26,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import net.taler.common.RelativeTime
-import net.taler.common.assertUiThread
+import net.taler.database.data_models.RelativeTime
 import net.taler.merchantlib.CheckPaymentResponse
 import net.taler.merchantlib.MerchantApi
 import net.taler.merchantlib.PostOrderRequest
@@ -35,6 +34,7 @@ import net.taler.merchantpos.MainActivity.Companion.TAG
 import net.taler.merchantpos.R
 import net.taler.merchantpos.config.ConfigManager
 import net.taler.merchantpos.order.Order
+import net.taler.utils.android.assertUiThread
 import java.util.concurrent.TimeUnit.HOURS
 import java.util.concurrent.TimeUnit.SECONDS
 

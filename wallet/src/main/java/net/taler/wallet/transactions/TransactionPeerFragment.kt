@@ -44,9 +44,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
-import net.taler.common.Amount
-import net.taler.common.CurrencySpecification
-import net.taler.common.toAbsoluteTime
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.CurrencySpecification
+import net.taler.utils.android.toAbsoluteTime
 import net.taler.wallet.BottomInsetsSpacer
 import net.taler.wallet.R
 import net.taler.wallet.compose.TalerSurface

@@ -20,8 +20,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
-import net.taler.common.ContractTerms
-import net.taler.common.RelativeTime
+import net.taler.common.utils.model.*
+import net.taler.database.data_models.RelativeTime
 
 @Serializable
 data class PostOrderRequest(

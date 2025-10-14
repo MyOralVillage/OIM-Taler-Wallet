@@ -14,12 +14,12 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.common.transaction
+package net.taler.database.data_models
 
 import android.os.Build
+import androidx.annotation.RequiresApi
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -30,7 +30,46 @@ import java.text.NumberFormat
 import kotlin.math.floor
 import kotlin.math.pow
 import kotlin.math.roundToInt
-import net.taler.common.utils.Filterable
+import net.taler.database.data_models.Filterable
+import net.taler.database.schema.Schema
+import android.annotation.SuppressLint
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+
+/**
+ * Represents the specification of a currency, including formatting rules
+ * and alternative unit names.
+ *
+ * @property name The canonical name of the currency (e.g., "Euro").
+ * @property numFractionalInputDigits Number of fractional digits allowed for user input.
+ * @property numFractionalNormalDigits Number of fractional digits normally displayed.
+ * @property numFractionalTrailingZeroDigits Number of trailing zero digits displayed, if any.
+ * @property altUnitNames Map of alternative unit names keyed by index
+ *                        (0 = primary unit, 1+ = secondary units).
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class CurrencySpecification(
+    val name: String,
+    @SerialName("num_fractional_input_digits")
+    val numFractionalInputDigits: Int,
+    @SerialName("num_fractional_normal_digits")
+    val numFractionalNormalDigits: Int,
+    @SerialName("num_fractional_trailing_zero_digits")
+    val numFractionalTrailingZeroDigits: Int,
+    @SerialName("alt_unit_names")
+    val altUnitNames: Map<Int, String>,
+) {
+    /**
+     * Returns the primary symbol for the currency, if available.
+     *
+     * Currently this returns the unit at index 0 in [altUnitNames].
+     * TODO: add support for additional alternative units.
+     */
+    val symbol: String? get() = altUnitNames[0]
+}
+
 
 /**
  * Exception thrown when parsing or constructing an [Amount] fails due to invalid format,
@@ -99,8 +138,8 @@ data class Amount(
          * manual input if no [spec] is provided. */
         const val DEFAULT_INPUT_DECIMALS = 2
 
-        /** Internal fractional scaling base (1e8). */
-        private const val FRACTIONAL_BASE: Int = 100_000_000 // 1e8
+        /** Internal fractional scaling, [Schema.CURRENCY_DIVISOR]] */
+                const val FRACTIONAL_BASE: Int = Schema.CURRENCY_DIVISOR.toInt() // 1e8
 
         /** Currency validation regex: allows letters, digits,
          * underscores, and hyphens. */
@@ -239,7 +278,7 @@ data class Amount(
      * @throws IllegalStateException if other currency does not match this currency.
      * @throws AmountOverflowException if the resulting value exceeds [MAX_VALUE].
      */
-    operator fun plus(other: Amount): Amount {
+        operator fun plus(other: Amount): Amount {
 
         // assert currencies match
         check(currency == other.currency) { "Can only subtract from same currency" }

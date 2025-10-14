@@ -28,7 +28,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import net.taler.common.ContractProduct
+import net.taler.common.utils.model.ContractProduct
 import net.taler.wallet.R
 import net.taler.wallet.payment.ProductAdapter.ProductViewHolder
 

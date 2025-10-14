@@ -33,16 +33,18 @@ import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
-import net.taler.common.showError
-import net.taler.wallet.BuildConfig.FLAVOR
-import net.taler.wallet.BuildConfig.VERSION_CODE
-import net.taler.wallet.BuildConfig.VERSION_NAME
+import net.taler.utils.android.showError
+//import net.taler.common.showError
+//import net.taler.wallet.BuildConfig.FLAVOR
+//import net.taler.wallet.BuildConfig.VERSION_CODE
+//import net.taler.wallet.BuildConfig.VERSION_NAME
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
 import net.taler.wallet.showError
 import net.taler.wallet.withdraw.TestWithdrawStatus
 import java.lang.System.currentTimeMillis
 
+const val BuildConfig_PLACEHOLDER = "ALPHA_TEST"
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -108,7 +110,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        prefVersionApp.summary = "$VERSION_NAME ($FLAVOR $VERSION_CODE)"
+        // TODO: fix this
+        //prefVersionApp.summary = "$VERSION_NAME ($FLAVOR $VERSION_CODE)"
+        prefVersionApp.summary = BuildConfig_PLACEHOLDER
         prefVersionCore.summary = "${model.walletVersion} (${model.walletVersionHash?.take(7)})"
         model.exchangeVersion?.let { prefVersionExchange.summary = it }
         model.merchantVersion?.let { prefVersionMerchant.summary = it }

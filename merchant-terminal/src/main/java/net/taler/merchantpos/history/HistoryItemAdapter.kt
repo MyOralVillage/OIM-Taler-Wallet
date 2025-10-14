@@ -24,10 +24,10 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat.getColor
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import net.taler.common.toRelativeTime
 import net.taler.merchantlib.OrderHistoryEntry
 import net.taler.merchantpos.R
 import net.taler.merchantpos.history.HistoryItemAdapter.HistoryItemViewHolder
+import net.taler.utils.android.toRelativeTime
 import java.util.ArrayList
 
 

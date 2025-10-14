@@ -18,8 +18,8 @@ package net.taler.wallet.backend
 
 import android.util.Log
 import kotlinx.serialization.json.Json
+// import net.taler.wallet.BuildConfig
 import net.taler.qtart.TalerWalletCore
-import net.taler.wallet.BuildConfig
 import org.json.JSONObject
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
@@ -54,9 +54,11 @@ class BackendManager(
         if (initialized.getAndSet(true)) error("Already initialized")
         walletCore.setMessageHandler { onMessageReceived(it) }
         walletCore.setHttpClient(networkInterface)
-        if (BuildConfig.DEBUG) walletCore.setStdoutHandler {
-            Log.d(TAG_CORE, it)
-        }
+
+        // TODO: NEED TO FIX
+        //if (BuildConfig.DEBUG) walletCore.setStdoutHandler {
+        //    Log.d(TAG_CORE, it)
+       // }
     }
 
     fun run() {
