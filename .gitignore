@@ -14,7 +14,7 @@ Desktop.ini
 $RECYCLE.BIN/
 
 ## EDITOR / OFFICE FILES ##
-
+.idea
 # Ignore lock and swap/backup files (LibreOffice, Kate, Vim, etc.)
 *.~lock*
 *.kate-swp
