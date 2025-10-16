@@ -9,7 +9,7 @@ This is an **EXPERIMENTAL IMPLEMENTATION** of the GNU Taler Android wallet:
 
     https://git.taler.net/taler-android.git
 
-See the [Taler developer manual](https://docs.taler.net/developers-manual.html#build-apps-from-source).
+See the [Taler manual](https://docs.taler.net).
 for more information.
 
 ## this version is *PURLEY A PROOF OF CONCEPT!* 
@@ -19,21 +19,28 @@ used for financial transactions, sensitive financial information, nor as a suppl
 GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT *WILL* BREAK EXISTING GNU TALER ANDROID BUILDS!**
 
 ## this version has known issues:
-
-- User preferences (selected scope, action button state) are stored in memory only
-  + Preferences will be lost when app restarts
-  + This is a temporary workaround - proper persistence will be added in future versions
+- [Protobuf is borked](/wallet/src/main/proto) 
+  - we've patched together a temporary fix but it comes with downsides...
+  - user preferences (selected scope, action button state) are stored in memory only
+    -due to protobuf not working in current build
+      + preferences will be lost when app restarts
+      + his is a temporary workaround - proper persistence will be added in future versions
 - Not compatible with GNU Taler Android 
   + list issues here 
   + and more issues
   + proposed solutions?
 - Gradle version (possible upgrade?)
 - Database is hardcoded and not yet integrated with main wallet app
-- Merchant protocol (in MainViewModel.kt) hardcoded as an update
-  - exchangeVersion changed from versionInfo.exchange -> "30:2:8"
-  - effectivley hardcodes an update from protocol version 17:0:0 -> 30:2:8
-  - very likely due to gradle/agp/sdk updates breaking old protocol
-
+- [App version is hardcoded](/wallet/src/main/java/net/taler/wallet/settings/SettingsFragment.kt) 
+  - BuildConfig_PLACEHOLDER = "OIM-v0.1.0-alpha" 
+  - due to issues with protobuf 
+- [Merchant and wallet protocols are hardcoded](/wallet/src/main/java/net/taler/wallet/MainViewModel.kt) 
+  - hardcodes to protocol version 32:2:8 
+  - walletVersionHash is not synced to walletVersion
+  - borking very likely due to gradle/agp/sdk updates breaking protobuf
+- Minification is disabled 
+  - causing very large APKs
+  - likely to be reimplemented when integration with existing GNU Taler Android is completed
 ---
 # Building and Structure
 
