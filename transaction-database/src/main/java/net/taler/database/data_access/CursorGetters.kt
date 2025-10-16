@@ -96,6 +96,7 @@ internal fun Cursor.getPurp(): TranxPurp? =
     try {
         tranxPurpLookup[this.getString(this.getColumnIndexOrThrow(Schema.TRNX_PURPOSE_COL))]
     } catch (_: Exception) { null }
+
 /**
  * Parses the transaction direction from the current [Cursor] row.
  *
@@ -109,13 +110,12 @@ internal fun Cursor.getPurp(): TranxPurp? =
  * @throws IllegalArgumentException if [Schema.TRNX_INCOMING_COL] does not exist.
  */
 @RequiresApi(Build.VERSION_CODES.O)
-internal fun Cursor.getDir(): FilterableDirection {
-    return if (this.getInt(this.getColumnIndexOrThrow(Schema.TRNX_INCOMING_COL)) != 0) {
+internal fun Cursor.getDir(): FilterableDirection =
+    if (this.getInt(this.getColumnIndexOrThrow(Schema.TRNX_INCOMING_COL)) != 0) {
         FilterableDirection.INCOMING
     } else {
         FilterableDirection.OUTGOING
     }
-}
 
 /**
  * @receiver [Cursor] positioned at a valid transaction row.
@@ -123,15 +123,29 @@ internal fun Cursor.getDir(): FilterableDirection {
  * @throws IllegalArgumentException if [Schema.EPOCH_MILLI_COL] does not exist.
  */
 @RequiresApi(Build.VERSION_CODES.O)
-internal fun Cursor.getDtm(): FilterableLocalDateTime {
-    return FilterableLocalDateTime(
+internal fun Cursor.getDtm(): FilterableLocalDateTime =
+     FilterableLocalDateTime(
         LocalDateTime.ofInstant(
-            Instant.ofEpochMilli(this.getLong(this.getColumnIndexOrThrow(Schema.EPOCH_MILLI_COL))),
+            Instant.ofEpochMilli(
+                this.getLong(
+                    this.getColumnIndexOrThrow(
+                        Schema.EPOCH_MILLI_COL
+                    )
+                )
+            ),
             Schema.DEFAULT_TIME_ZONE
         ),
         Schema.DEFAULT_TIME_ZONE
     )
-}
+
+
+/**
+ * @receiver [Cursor] positioned at a valid transaction row.
+ * @return a String representing a  transaction ID
+ */
+@RequiresApi(Build.VERSION_CODES.O)
+internal fun Cursor.getTID(): String = this.getString(this.getColumnIndexOrThrow(Schema.TID_COL))
+
 
 /**
  * Converts the current row of the [Cursor] into a [Tranx] object.

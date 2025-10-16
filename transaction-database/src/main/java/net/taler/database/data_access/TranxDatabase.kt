@@ -24,14 +24,6 @@ import androidx.annotation.RequiresApi
 import net.taler.database.schema.Schema
 
 
-
-/**
- * @receiver [Cursor] positioned at a valid transaction row.
- * @return a String representing a  transaction ID
- */
-@RequiresApi(Build.VERSION_CODES.O)
-fun Cursor.getTID(): String = this.getString(this.getColumnIndexOrThrow(Schema.TID_COL))
-
 /**
  * SQLite database helper for managing transaction history storage.
  *
@@ -105,6 +97,7 @@ class TransactionDatabase(context: Context?)
             """
             CREATE TABLE ${Schema.TABLE_NAME} (
                 ${Schema.INDEX_COL} INTEGER PRIMARY KEY AUTOINCREMENT,
+                ${Schema.TID_COL} TEXT UNIQUE NOT NULL,
                 ${Schema.EPOCH_MILLI_COL} INTEGER NOT NULL,
                 ${Schema.AMOUNT_COL} INTEGER NOT NULL,
                 ${Schema.CURRENCY_COL} TEXT NOT NULL,
