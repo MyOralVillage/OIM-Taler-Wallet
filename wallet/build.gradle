@@ -4,7 +4,7 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "kotlinx-serialization"
-    id "org.jetbrains.kotlin.plugin.compose"  // Add this line
+    id "org.jetbrains.kotlin.plugin.compose"
     id "com.google.protobuf" version "0.9.4"
 }
 
@@ -34,6 +34,7 @@ android {
         versionName "0.14.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -44,6 +45,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     flavorDimensions = ["distributionChannel"]
     productFlavors {
         fdroid {
@@ -66,34 +68,32 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
         coreLibraryDesugaringEnabled true
     }
-
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
-    // REMOVE THIS SECTION - it's no longer needed with the Compose Compiler plugin
-    // composeOptions {
-    //     kotlinCompilerExtensionVersion "1.5.14"
-    // }
+    kotlinOptions { jvmTarget = "17" }
 
     buildFeatures {
         buildConfig true
         viewBinding true
         compose true
     }
-    packaging {
-        jniLibs {
-            useLegacyPackaging = true
+
+    // Merge OIM assets from the library so runtime can load "file:///android_asset/...".
+    sourceSets {
+        main {
+            assets.srcDirs += project(":taler-kotlin-android").file("src/main/assets")
         }
+        debug {
+            assets.srcDirs += project(":taler-kotlin-android").file("src/main/assets")
+        }
+    }
+
+    packaging {
+        jniLibs { useLegacyPackaging = true }
     }
     packagingOptions {
-        jniLibs {
-            keepDebugSymbols += ['**/*.so']
-        }
-        resources {
-            excludes += ['META-INF/*.kotlin_module']
-        }
+        jniLibs { keepDebugSymbols += ['**/*.so'] }
+        resources { excludes += ['META-INF/*.kotlin_module'] }
     }
+
     splits {
         abi {
             enable project.hasProperty('splitApk')
@@ -119,53 +119,68 @@ dependencies {
     implementation 'androidx.preference:preference-ktx:1.2.1'
     implementation "com.google.android.material:material:$material_version"
     implementation "androidx.constraintlayout:constraintlayout:$constraintlayout_version"
-    implementation "androidx.browser:browser:1.9.0"
+    implementation 'androidx.browser:browser:1.9.0'
 
-    // Compose
+    // --- Compose (keep your chosen BOM) ---
     implementation platform('androidx.compose:compose-bom:2025.10.00')
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-graphics'
     implementation 'androidx.compose.material3:material3'
     implementation 'androidx.compose.material:material-icons-extended'
-    implementation "androidx.compose.runtime:runtime-livedata"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose"
-    implementation "com.google.accompanist:accompanist-themeadapter-material3:0.28.0"
-    implementation 'androidx.activity:activity-compose:1.11.0'
     implementation 'androidx.compose.ui:ui-tooling-preview'
-    implementation 'androidx.compose.ui:ui-viewbinding'
-    implementation "androidx.fragment:fragment-compose:1.8.9"
-    implementation 'androidx.privacysandbox.tools:tools-core:1.0.0-alpha13'
     debugImplementation 'androidx.compose.ui:ui-tooling'
+    implementation 'androidx.activity:activity-compose:1.11.0'
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose"
+    implementation "androidx.compose.runtime:runtime-livedata"
+    implementation "androidx.fragment:fragment-compose:1.8.9"
+    implementation 'androidx.compose.foundation:foundation'
 
-    // Lists and Selection
-    implementation "androidx.recyclerview:recyclerview:1.4.0"
-    implementation "androidx.recyclerview:recyclerview-selection:1.2.0"
 
-    // Navigation Library
+    // Accompanist (single, current; drop the older 0.28.0 to avoid conflicts)
+    implementation 'com.google.accompanist:accompanist-themeadapter-material3:0.36.0'
+
+    // Images from android_asset (JPG/PNG + SVG)
+    implementation 'io.coil-kt:coil-compose:2.7.0'
+    implementation 'io.coil-kt:coil-svg:2.7.0'
+
+    // QR generation (bitmap)
+    implementation 'com.google.zxing:core:3.5.3'
+
+    // (You also keep the embedded scanner; fine to have both)
+    implementation 'com.journeyapps:zxing-android-embedded:4.3.0@aar'
+
+    // Lists & selection
+    implementation 'androidx.recyclerview:recyclerview:1.4.0'
+    implementation 'androidx.recyclerview:recyclerview-selection:1.2.0'
+
+    // Navigation (as you already had)
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 
-    // ViewModel and LiveData
+    // Lifecycle / LiveData
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
 
-    // QR codes
-    implementation 'com.journeyapps:zxing-android-embedded:4.3.0@aar'
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
-
-    // Nicer ProgressBar
+    // Progress bar
     implementation 'me.zhanghai.android.materialprogressbar:library:1.6.1'
 
-    // Markdown rendering
-    final def markwon_version = '4.6.2'
+    // Markdown
+    def markwon_version = '4.6.2'
     implementation "io.noties.markwon:core:$markwon_version"
     implementation "io.noties.markwon:ext-tables:$markwon_version"
     implementation "io.noties.markwon:recycler:$markwon_version"
 
-    // Java Native Access
+    // JNA
     implementation "net.java.dev.jna:jna:5.18.1@aar"
 
-    // Shared preferences
+    // DataStore + Protobuf
     implementation "androidx.datastore:datastore:$datastore_version"
-    implementation  "com.google.protobuf:protobuf-javalite:3.18.0"
+    implementation "com.google.protobuf:protobuf-javalite:3.18.0"
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 
+    // (Optional/Experimental) remove if unused
+    // implementation 'androidx.privacysandbox.tools:tools-core:1.0.0-alpha13'
+
+    // Tests
     testImplementation "junit:junit:$junit_version"
     testImplementation 'org.json:json:20250517'
 }
@@ -188,16 +203,11 @@ android.applicationVariants.configureEach { variant ->
 }
 
 protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:4.28.3"
-    }
-
+    protoc { artifact = "com.google.protobuf:protoc:4.28.3" }
     generateProtoTasks {
         all().each { task ->
             task.builtins {
-                java {
-                    option 'lite'
-                }
+                java { option 'lite' }
             }
         }
     }
