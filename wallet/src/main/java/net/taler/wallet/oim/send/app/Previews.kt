@@ -53,10 +53,14 @@ fun OimSendAppPreview() {
         val currencyCode = "SLE"
         val currencyLabel = "Leones"
 <<<<<<< HEAD
+<<<<<<< HEAD
         val balance = 700
 =======
         val balance = 25
 >>>>>>> 5c7011a (fixed preview animations)
+=======
+        val balance = 700
+>>>>>>> f512e18 (added backend integration and db transaction update)
 
         when (screen) {
             PreviewScreen.Send -> SendScreen(
@@ -77,11 +81,16 @@ fun OimSendAppPreview() {
             )
             PreviewScreen.Qr -> QrScreen(
 <<<<<<< HEAD
+<<<<<<< HEAD
                 talerUri = "taler://pay-push?amount=SLE:3&summary=Groceries",
                 amountText = amount.toString(),
 =======
                 amount = amount,
 >>>>>>> 5c7011a (fixed preview animations)
+=======
+                talerUri = "taler://pay-push?amount=SLE:3&summary=Groceries",
+                amountText = amount.toString(),
+>>>>>>> f512e18 (added backend integration and db transaction update)
                 currencyCode = currencyCode,
                 displayLabel = currencyLabel,
                 purpose = chosenPurpose.orEmpty(),
@@ -94,9 +103,12 @@ fun OimSendAppPreview() {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
  * If you want focused previews per-screen (also interactive):
 >>>>>>> 5c7011a (fixed preview animations)
+=======
+>>>>>>> f512e18 (added backend integration and db transaction update)
 
 @Preview(name = "Send Screen – Interactive")
 @Composable

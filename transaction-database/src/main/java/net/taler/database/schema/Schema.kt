@@ -19,7 +19,7 @@ package net.taler.database.schema
 import java.time.ZoneId
 
 /** Holds constants for the transaction history database schema */
-internal object Schema {
+object Schema {
     const val VERSION = 1
     const val DATABASE_NAME = "transaction_history.db"
     const val TABLE_NAME = "TRANSACTION_HISTORY"

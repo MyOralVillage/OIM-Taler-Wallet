@@ -16,6 +16,7 @@
 
 package net.taler.database.data_models
 
+<<<<<<< HEAD:transaction-database/src/main/java/net/taler/database/data_models/CurrencyDivisor.kt
 /**
  * Currency precision divisor used by both [Amount] and database storage.
  *
@@ -28,3 +29,25 @@ package net.taler.database.data_models
  * **WARNING:** Modifying this constant will break entire database!
  */
 const val CURRENCY_DIVISOR = 1e8
+=======
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+import net.taler.wallet.oim.send.app.OimTheme
+import net.taler.wallet.oim.send.screens.QrScreen
+
+@Preview(showBackground = true, widthDp = 1280, heightDp = 720)
+@Composable
+fun QrScreenPreview_WithSeparateFields() {
+    OimTheme {
+        QrScreen(
+            talerUri = "taler://pay-push?amount=SLE:3&summary=Groceries",
+            amountText = "3",
+            currencyCode = "SLE",
+            displayLabel = "Leones",
+            purpose = "Groceries",
+            onBack = {}
+        )
+    }
+}
+
+>>>>>>> f512e18 (added backend integration and db transaction update):wallet/src/main/java/net/taler/wallet/oim/send/preview/QrScreenPreview.kt

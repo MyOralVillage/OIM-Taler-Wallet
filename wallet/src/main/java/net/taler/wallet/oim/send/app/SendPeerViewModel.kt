@@ -10,6 +10,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
+<<<<<<< HEAD
+=======
+import kotlinx.serialization.json.jsonObject
+>>>>>>> f512e18 (added backend integration and db transaction update)
 import kotlinx.serialization.json.jsonPrimitive
 import net.taler.database.data_models.Amount
 import net.taler.wallet.backend.WalletBackendApi
