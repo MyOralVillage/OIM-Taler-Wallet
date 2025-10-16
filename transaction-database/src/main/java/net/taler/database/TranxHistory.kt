@@ -21,8 +21,14 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import androidx.annotation.RequiresApi
+<<<<<<<< HEAD:transaction-database/src/main/java/net/taler/database/TranxHistory.kt
 import net.taler.database.data_models.*
 import net.taler.database.data_access.*
+========
+import net.taler.common.utils.directionality.FilterableDirection
+import net.taler.common.utils.time.FilterableLocalDateTime
+import net.taler.common.utils.time.Timestamp
+>>>>>>>> ea31a9e (migrating transactions_database to unique module):taler-kotlin-android/src/main/java/net/taler/common/transaction/TranxHistory.kt
 
 /**
  * Singleton object that manages transaction history and related metadata.
