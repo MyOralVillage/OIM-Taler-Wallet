@@ -17,10 +17,7 @@
 package net.taler.common
 
 import android.os.Build
-import net.taler.common.transaction.Amount
-import net.taler.common.transaction.AmountOverflowException
-import net.taler.common.transaction.AmountParserException
-import net.taler.common.transaction.CurrencySpecification
+import net.taler.database.data_models.*
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
