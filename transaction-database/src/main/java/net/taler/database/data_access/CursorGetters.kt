@@ -78,7 +78,6 @@ internal fun Cursor.getAmt(): Amount {
     )
 }
 
-
 /**
  * Parses the transaction purpose from the current [Cursor] row.
  *
@@ -137,7 +136,6 @@ internal fun Cursor.getDtm(): FilterableLocalDateTime =
         ),
         Schema.DEFAULT_TIME_ZONE
     )
-
 
 /**
  * @receiver [Cursor] positioned at a valid transaction row.
