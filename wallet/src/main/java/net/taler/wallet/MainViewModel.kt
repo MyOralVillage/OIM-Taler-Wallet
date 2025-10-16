@@ -160,7 +160,9 @@ class MainViewModel(
     override fun onVersionReceived(versionInfo: WalletCoreVersion) {
         walletVersion = versionInfo.implementationSemver
         walletVersionHash = versionInfo.implementationGitHash
-        exchangeVersion = versionInfo.exchange
+
+        // old: versionInfo.exchange (17:0:0) which did NOT work w/ test exchange, want to see if this will work
+        exchangeVersion = "30:2:8"
         merchantVersion = versionInfo.merchant
     }
 

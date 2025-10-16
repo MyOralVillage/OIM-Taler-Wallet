@@ -28,9 +28,11 @@ GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT *WILL* BREAK EXISTING GN
   + and more issues
   + proposed solutions?
 - Gradle version (possible upgrade?)
-- Database is hardcoded 
-- idk list more?
-- idk what else to add lmao
+- Database is hardcoded and not yet integrated with main wallet app
+- Merchant protocol (in MainViewModel.kt) hardcoded as an update
+  - exchangeVersion changed from versionInfo.exchange -> "30:2:8"
+  - effectivley hardcodes an update from protocol version 17:0:0 -> 30:2:8
+  - very likely due to gradle/agp/sdk updates breaking old protocol
 
 ---
 # Building and Structure
