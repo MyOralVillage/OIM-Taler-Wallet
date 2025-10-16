@@ -23,6 +23,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast.LENGTH_LONG
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -35,7 +37,10 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import net.taler.common.isOnline
+import net.taler.common.showError
 import net.taler.wallet.compose.LoadingScreen
+import net.taler.wallet.compose.RetryScreen
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.refund.RefundStatus
 import java.io.IOException
@@ -43,14 +48,14 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Locale
 import androidx.core.net.toUri
-import net.taler.utils.android.isOnline
-import net.taler.utils.android.showError
 
 class HandleUriFragment: Fragment() {
     private val model: MainViewModel by activityViewModels()
 
     lateinit var uri: String
     lateinit var from: String
+
+    private var processing = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,7 +68,14 @@ class HandleUriFragment: Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 TalerSurface {
-                    LoadingScreen()
+                    val networkStatus by model.networkManager.networkStatus.observeAsState()
+                    if (networkStatus == true) {
+                        LoadingScreen()
+                    } else {
+                        RetryScreen {
+                            processTalerUri()
+                        }
+                    }
                 }
             }
         }
@@ -71,8 +83,26 @@ class HandleUriFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        model.networkManager.networkStatus.observe(viewLifecycleOwner) { status ->
+            if (status) {
+                processTalerUri()
+            }
+        }
+    }
 
-        val uri = uri.toUri()
+    override fun onStart() {
+        super.onStart()
+        processing = false
+    }
+
+    private fun processTalerUri() {
+        // TODO: pressing "Retry" button manually will not stop the
+        //  user from losing the QR code in case the action fails.
+        //  (i.e. "Retry" can only be pressed once)
+        if (processing) return
+        processing = true
+
+        val uri = uri.trim().toUri()
         if (uri.fragment != null && !requireContext().isOnline()) {
             connectToWifi(requireContext(), uri.fragment!!)
         }
@@ -111,12 +141,12 @@ class HandleUriFragment: Fragment() {
             } else u
 
             when {
-                action.startsWith("pay/", ignoreCase = true) -> {
+                action.startsWith("pay/", ignoreCase = true) -> run {
                     Log.v(TAG, "navigating!")
                     findNavController().navigate(R.id.action_handleUri_to_promptPayment)
                     model.paymentManager.preparePay(u2)
                 }
-                action.startsWith("withdraw/", ignoreCase = true) -> {
+                action.startsWith("withdraw/", ignoreCase = true) -> run {
                     Log.v(TAG, "navigating!")
                     // there's more than one entry point, so use global action
                     val args = bundleOf(
@@ -127,7 +157,7 @@ class HandleUriFragment: Fragment() {
                     findNavController().navigate(R.id.action_handleUri_to_promptWithdraw, args)
                 }
 
-                action.startsWith("withdraw-exchange/", ignoreCase = true) -> {
+                action.startsWith("withdraw-exchange/", ignoreCase = true) -> run {
                     Log.v(TAG, "navigating!")
                     val args = bundleOf(
                         "withdrawExchangeUri" to u2,
@@ -137,15 +167,15 @@ class HandleUriFragment: Fragment() {
                     findNavController().navigate(R.id.action_handleUri_to_promptWithdraw, args)
                 }
 
-                action.startsWith("refund/", ignoreCase = true) -> {
+                action.startsWith("refund/", ignoreCase = true) -> run {
                     model.showProgressBar.value = true
                     model.refundManager.refund(u2).observe(viewLifecycleOwner, Observer(::onRefundResponse))
                 }
-                action.startsWith("pay-pull/", ignoreCase = true) -> {
+                action.startsWith("pay-pull/", ignoreCase = true) -> run {
                     findNavController().navigate(R.id.action_handleUri_to_promptPullPayment)
                     model.peerManager.preparePeerPullDebit(u2)
                 }
-                action.startsWith("pay-push/", ignoreCase = true) -> {
+                action.startsWith("pay-push/", ignoreCase = true) -> run {
                     findNavController().navigate(R.id.action_handleUri_to_promptPushPayment)
                     model.peerManager.preparePeerPushCredit(u2)
                 }
@@ -197,7 +227,7 @@ class HandleUriFragment: Fragment() {
                     val talerHeader = conn.headerFields["Taler"]
                     if (talerHeader != null && talerHeader[0] != null) {
                         Log.v(TAG, "taler header: ${talerHeader[0]}")
-                        val talerHeaderUri = talerHeader[0].toUri()
+                        val talerHeaderUri = Uri.parse(talerHeader[0])
                         getTalerAction(talerHeaderUri, 0, actionFound)
                     } else {
                         showError(R.string.error_no_uri, "$uri")
@@ -213,7 +243,7 @@ class HandleUriFragment: Fragment() {
                     val location = conn.headerFields["Location"]
                     if (location != null && location[0] != null) {
                         Log.v(TAG, "location redirect: ${location[0]}")
-                        val locUri = location[0].toUri()
+                        val locUri = Uri.parse(location[0])
                         getTalerAction(locUri, maxRedirects - 1, actionFound)
                     }
                 } else {

@@ -30,8 +30,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerializationException
-import net.taler.common.utils.network.getDefaultHttpClient
-import net.taler.common.utils.network.toHttpMethod
+import net.taler.common.getDefaultHttpClient
+import net.taler.common.toHttpMethod
 import net.taler.qtart.Networking
 import net.taler.wallet.TAG
 import java.io.IOException

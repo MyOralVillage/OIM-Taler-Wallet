@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -43,20 +44,23 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.serialization.json.JsonPrimitive
-import net.taler.database.data_models.Amount
-import net.taler.database.data_models.CurrencySpecification
+import net.taler.common.Amount
+import net.taler.common.CurrencySpecification
 import net.taler.wallet.BottomInsetsSpacer
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorCode
 import net.taler.wallet.backend.TalerErrorInfo
+import net.taler.wallet.balances.ScopeInfo
 import net.taler.wallet.cleanExchange
-import net.taler.wallet.compose.AmountCurrencyField
+import net.taler.wallet.compose.AmountScope
+import net.taler.wallet.compose.AmountScopeField
+import net.taler.wallet.compose.BottomButtonBox
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.exchanges.ExchangeTosStatus
+import net.taler.wallet.systemBarsPaddingBottom
 import net.taler.wallet.transactions.TransactionInfoComposable
 import net.taler.wallet.useDebounce
 import kotlin.random.Random
@@ -64,25 +68,179 @@ import kotlin.random.Random
 @Composable
 fun OutgoingPullComposable(
     state: OutgoingState,
-    defaultCurrency: String?,
-    currencies: List<String>,
-    getCurrencySpec: (currency: String) -> CurrencySpecification?,
-    checkPeerPullCredit: suspend (amount: Amount) -> CheckPeerPullCreditResult?,
-    onCreateInvoice: (amount: Amount, subject: String, hours: Long, exchangeBaseUrl: String) -> Unit,
+    defaultScope: ScopeInfo?,
+    scopes: List<ScopeInfo>,
+    getCurrencySpec: (scope: ScopeInfo) -> CurrencySpecification?,
+    checkPeerPullCredit: suspend (amount: AmountScope, loading: Boolean) -> CheckPeerPullCreditResult?,
+    onCreateInvoice: (amount: AmountScope, subject: String, hours: Long, exchangeBaseUrl: String) -> Unit,
     onTosAccept: (exchangeBaseUrl: String) -> Unit,
     onClose: () -> Unit,
 ) {
-    when(state) {
-        is OutgoingChecking, is OutgoingCreating, is OutgoingResponse -> PeerCreatingComposable()
-        is OutgoingIntro, is OutgoingChecked -> OutgoingPullIntroComposable(
-            defaultCurrency = defaultCurrency,
-            currencies = currencies,
-            getCurrencySpec = getCurrencySpec,
-            checkPeerPullCredit = checkPeerPullCredit,
-            onCreateInvoice = onCreateInvoice,
-            onTosAccept = onTosAccept,
-        )
-        is OutgoingError -> PeerErrorComposable(state, onClose)
+    var subject by rememberSaveable { mutableStateOf("") }
+    var amount by remember {
+        val scope = defaultScope ?: scopes[0]
+        val currency = scope.currency
+        mutableStateOf(AmountScope(Amount.zero(currency), scope))
+    }
+    val selectedSpec = remember(amount.scope) { getCurrencySpec(amount.scope) }
+    var checkResult by remember { mutableStateOf<CheckPeerPullCreditResult?>(null) }
+    val res = checkResult
+
+    var option by rememberSaveable { mutableStateOf(DEFAULT_EXPIRY) }
+    var hours by rememberSaveable { mutableLongStateOf(DEFAULT_EXPIRY.hours) }
+
+    val tosReview = checkResult != null && checkResult?.tosStatus != ExchangeTosStatus.Accepted
+
+    amount.amount.useDebounce {
+        checkResult = checkPeerPullCredit(amount, false)
+    }
+
+    LaunchedEffect(amount.scope) {
+        checkResult = checkPeerPullCredit(amount, true)
+    }
+
+    if (state is OutgoingChecking ||
+        state is OutgoingCreating ||
+        state is OutgoingResponse) {
+        PeerCreatingComposable()
+        return
+    }
+
+    Column(
+        Modifier
+            .fillMaxSize()
+            .imePadding(),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = CenterHorizontally,
+        ) {
+            AmountScopeField(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                amount = amount.copy(amount = amount.amount.withSpec(selectedSpec)),
+                scopes = scopes,
+                readOnly = false,
+                enabledAmount = !tosReview,
+                onAmountChanged = { amount = it },
+                isError = amount.amount.isZero(),
+                label = { Text(stringResource(R.string.amount_receive)) },
+            )
+
+            if (state is OutgoingError) {
+                PeerErrorComposable(state, onClose)
+                return@Column
+            }
+
+            if (tosReview) {
+                Text(
+                    modifier = Modifier.padding(16.dp),
+                    text = stringResource(R.string.receive_peer_review_terms)
+                )
+            } else {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
+                    singleLine = true,
+                    value = subject,
+                    onValueChange = { input ->
+                        if (input.length <= MAX_LENGTH_SUBJECT)
+                            subject = input.replace('\n', ' ')
+                    },
+                    isError = subject.isBlank(),
+                    label = {
+                        Text(
+                            stringResource(R.string.send_peer_purpose),
+                            color = if (subject.isBlank()) {
+                                MaterialTheme.colorScheme.error
+                            } else Color.Unspecified,
+                        )
+                    },
+                    supportingText = {
+                        Text(
+                            stringResource(
+                                R.string.char_count,
+                                subject.length,
+                                MAX_LENGTH_SUBJECT
+                            )
+                        )
+                    },
+                )
+
+                if (res != null) {
+                    if (res.amountEffective > res.amountRaw) {
+                        val fee = res.amountEffective - res.amountRaw
+                        Text(
+                            modifier = Modifier.padding(vertical = 16.dp),
+                            text = stringResource(
+                                id = R.string.payment_fee,
+                                fee.withSpec(selectedSpec)
+                            ),
+                            softWrap = false,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+
+                Text(
+                    modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                    text = stringResource(R.string.send_peer_expiration_period),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+
+                ExpirationComposable(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 8.dp, bottom = 16.dp),
+                    option = option,
+                    hours = hours,
+                    onOptionChange = { option = it }
+                ) { hours = it }
+            }
+
+            // only show provider for global scope,
+            // otherwise it's already in scope selector
+            if (amount.scope is ScopeInfo.Global) {
+                checkResult?.exchangeBaseUrl?.let { exchangeBaseUrl ->
+                    TransactionInfoComposable(
+                        label = stringResource(id = R.string.withdraw_exchange),
+                        info = cleanExchange(exchangeBaseUrl),
+                    )
+                }
+            }
+
+            BottomInsetsSpacer()
+        }
+
+        BottomButtonBox(Modifier.fillMaxWidth()) {
+            Button(
+                modifier = Modifier
+                    .systemBarsPaddingBottom(),
+                enabled = tosReview || (res != null && subject.isNotBlank()),
+                onClick = {
+                    val ex = res?.exchangeBaseUrl ?: error("clickable without exchange")
+                    if (res.tosStatus == ExchangeTosStatus.Accepted) {
+                        onCreateInvoice(
+                            amount,
+                            subject,
+                            hours,
+                            ex
+                        )
+                    } else onTosAccept(ex)
+                },
+            ) {
+                if (checkResult != null && checkResult?.tosStatus != ExchangeTosStatus.Accepted) {
+                    Text(text = stringResource(R.string.exchange_tos_accept))
+                } else {
+                    Text(text = stringResource(R.string.receive_peer_create_button))
+                }
+            }
+        }
     }
 }
 
@@ -97,137 +255,6 @@ fun PeerCreatingComposable() {
                 .padding(32.dp)
                 .align(Center),
         )
-    }
-}
-
-@Composable
-fun OutgoingPullIntroComposable(
-    defaultCurrency: String?,
-    currencies: List<String>,
-    getCurrencySpec: (currency: String) -> CurrencySpecification?,
-    checkPeerPullCredit: suspend (amount: Amount) -> CheckPeerPullCreditResult?,
-    onCreateInvoice: (amount: Amount, subject: String, hours: Long, exchangeBaseUrl: String) -> Unit,
-    onTosAccept: (exchangeBaseUrl: String) -> Unit,
-) {
-    val scrollState = rememberScrollState()
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .verticalScroll(scrollState),
-        horizontalAlignment = CenterHorizontally,
-    ) {
-        var subject by rememberSaveable { mutableStateOf("") }
-        var amount by remember { mutableStateOf(Amount.zero(defaultCurrency ?: currencies[0])) }
-        val selectedSpec = remember(amount.currency) { getCurrencySpec(amount.currency) }
-        var checkResult by remember { mutableStateOf<CheckPeerPullCreditResult?>(null) }
-
-        amount.useDebounce {
-            checkResult = checkPeerPullCredit(it)
-        }
-
-        LaunchedEffect(Unit) {
-            checkResult = checkPeerPullCredit(amount)
-        }
-
-        AmountCurrencyField(
-            modifier = Modifier
-                .padding(bottom = 16.dp)
-                .fillMaxWidth(),
-            amount = amount.withSpec(selectedSpec),
-            currencies = currencies,
-            readOnly = false,
-            onAmountChanged = {it: Amount -> amount = it},
-            isError = amount.isZero(),
-            label = { Text(stringResource(R.string.amount_receive)) },
-        )
-
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            value = subject,
-            onValueChange = { input ->
-                if (input.length <= MAX_LENGTH_SUBJECT)
-                    subject = input.replace('\n', ' ')
-            },
-            isError = subject.isBlank(),
-            label = {
-                Text(
-                    stringResource(R.string.send_peer_purpose),
-                    color = if (subject.isBlank()) {
-                        MaterialTheme.colorScheme.error
-                    } else Color.Unspecified,
-                )
-            }
-        )
-
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 5.dp),
-            color = if (subject.isBlank()) MaterialTheme.colorScheme.error else Color.Unspecified,
-            text = stringResource(R.string.char_count, subject.length, MAX_LENGTH_SUBJECT),
-            textAlign = TextAlign.End,
-        )
-
-        val res = checkResult
-        if (res != null) {
-            if (res.amountEffective.compareTo(res.amountRaw) > 0) {
-                val fee = res.amountEffective - res.amountRaw
-                Text(
-                    modifier = Modifier.padding(vertical = 16.dp),
-                    text = stringResource(id = R.string.payment_fee, (fee as Amount).withSpec(selectedSpec)),
-                    softWrap = false,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-        }
-
-        checkResult?.exchangeBaseUrl?.let { exchangeBaseUrl ->
-            TransactionInfoComposable(
-                label = stringResource(id = R.string.withdraw_exchange),
-                info = cleanExchange(exchangeBaseUrl),
-            )
-        }
-
-        Text(
-            modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
-            text = stringResource(R.string.send_peer_expiration_period),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-
-        var option by rememberSaveable { mutableStateOf(DEFAULT_EXPIRY) }
-        var hours by rememberSaveable { mutableLongStateOf(DEFAULT_EXPIRY.hours) }
-        ExpirationComposable(
-            modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
-            option = option,
-            hours = hours,
-            onOptionChange = { option = it }
-        ) { hours = it }
-
-        Button(
-            modifier = Modifier.padding(16.dp),
-            enabled = subject.isNotBlank() && res != null,
-            onClick = {
-                val ex = res?.exchangeBaseUrl ?: error("clickable without exchange")
-                if (res.tosStatus == ExchangeTosStatus.Accepted) {
-                    onCreateInvoice(
-                        amount,
-                        subject,
-                        hours,
-                        ex
-                    )
-                } else onTosAccept(ex)
-            },
-        ) {
-            if (checkResult != null && checkResult?.tosStatus != ExchangeTosStatus.Accepted) {
-                Text(text = stringResource(R.string.exchange_tos_accept))
-            } else {
-                Text(text = stringResource(R.string.receive_peer_create_button))
-            }
-        }
-
-        BottomInsetsSpacer()
     }
 }
 
@@ -267,10 +294,14 @@ fun PeerPullComposableCreatingPreview() {
     TalerSurface {
         OutgoingPullComposable(
             state = OutgoingCreating,
-            defaultCurrency = "KUDOS",
-            currencies = listOf("KUDOS", "TESTKUDOS", "NETZBON"),
+            defaultScope = ScopeInfo.Exchange("KUDOS", "https://exchange.demo.taler.net/"),
+            scopes = listOf(
+                ScopeInfo.Exchange("KUDOS", "https://exchange.demo.taler.net/"),
+                ScopeInfo.Exchange("TESTKUDOS", "https://exchange.test.taler.net/"),
+                ScopeInfo.Global("CHF"),
+            ),
             getCurrencySpec = { null },
-            checkPeerPullCredit = { null },
+            checkPeerPullCredit = { _, _ -> null },
             onCreateInvoice = { _, _, _, _ -> },
             onTosAccept = {},
             onClose = {},
@@ -284,10 +315,14 @@ fun PeerPullComposableCheckingPreview() {
     TalerSurface {
         OutgoingPullComposable(
             state = if (Random.nextBoolean()) OutgoingIntro else OutgoingChecking,
-            defaultCurrency = "KUDOS",
-            currencies = listOf("KUDOS", "TESTKUDOS", "NETZBON"),
+            defaultScope = ScopeInfo.Exchange("KUDOS", "https://exchange.demo.taler.net/"),
+            scopes = listOf(
+                ScopeInfo.Exchange("KUDOS", "https://exchange.demo.taler.net/"),
+                ScopeInfo.Exchange("TESTKUDOS", "https://exchange.test.taler.net/"),
+                ScopeInfo.Global("CHF"),
+            ),
             getCurrencySpec = { null },
-            checkPeerPullCredit = { null },
+            checkPeerPullCredit = { _, _ -> null },
             onCreateInvoice = { _, _, _, _ -> },
             onTosAccept = {},
             onClose = {},
@@ -303,10 +338,14 @@ fun PeerPullComposableCheckedPreview() {
         val amountEffective = Amount.fromString("TESTKUDOS", "42.23")
         OutgoingPullComposable(
             state = OutgoingChecked(amountRaw, amountEffective, "https://exchange.demo.taler.net/", ExchangeTosStatus.Accepted),
-            defaultCurrency = "KUDOS",
-            currencies = listOf("KUDOS", "TESTKUDOS", "NETZBON"),
+            defaultScope = ScopeInfo.Exchange("KUDOS", "https://exchange.demo.taler.net/"),
+            scopes = listOf(
+                ScopeInfo.Exchange("KUDOS", "https://exchange.demo.taler.net/"),
+                ScopeInfo.Exchange("TESTKUDOS", "https://exchange.test.taler.net/"),
+                ScopeInfo.Global("CHF"),
+            ),
             getCurrencySpec = { null },
-            checkPeerPullCredit = { null },
+            checkPeerPullCredit = { _, _ -> null },
             onCreateInvoice = { _, _, _, _ -> },
             onTosAccept = {},
             onClose = {},
@@ -322,10 +361,14 @@ fun PeerPullComposableErrorPreview() {
         val state = OutgoingError(TalerErrorInfo(TalerErrorCode.WALLET_WITHDRAWAL_KYC_REQUIRED, "hint", "message", json))
         OutgoingPullComposable(
             state = state,
-            defaultCurrency = "KUDOS",
-            currencies = listOf("KUDOS", "TESTKUDOS", "NETZBON"),
+            defaultScope = ScopeInfo.Exchange("KUDOS", "https://exchange.demo.taler.net/"),
+            scopes = listOf(
+                ScopeInfo.Exchange("KUDOS", "https://exchange.demo.taler.net/"),
+                ScopeInfo.Exchange("TESTKUDOS", "https://exchange.test.taler.net/"),
+                ScopeInfo.Global("CHF"),
+            ),
             getCurrencySpec = { null },
-            checkPeerPullCredit = { null },
+            checkPeerPullCredit = { _, _ -> null },
             onCreateInvoice = { _, _, _, _ -> },
             onTosAccept = {},
             onClose = {},

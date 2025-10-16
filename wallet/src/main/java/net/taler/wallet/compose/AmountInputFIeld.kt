@@ -17,17 +17,28 @@
 package net.taler.wallet.compose
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -40,6 +51,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.utf16CodePoint
 import androidx.compose.ui.platform.LocalTextInputService
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.InternalTextApi
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.BackspaceCommand
@@ -54,8 +66,13 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TextInputService
 import androidx.compose.ui.text.input.TextInputSession
 import androidx.compose.ui.unit.dp
-import net.taler.database.data_models.Amount
-import net.taler.wallet.deposit.CurrencyDropdown
+import net.taler.common.Amount
+import net.taler.wallet.R
+
+@Deprecated(
+    message = "Use AmountScopeField for scopeInfo support",
+    replaceWith = ReplaceWith("AmountScopeField"),
+)
 @Composable
 fun AmountCurrencyField(
     modifier: Modifier = Modifier,
@@ -68,35 +85,131 @@ fun AmountCurrencyField(
     isError: Boolean = false,
     readOnly: Boolean = false,
     enabled: Boolean = true,
+    showShortcuts: Boolean = false,
+    onShortcutSelected: ((amount: Amount) -> Unit)? = null,
 ) {
-    Row(modifier = modifier) {
-        AmountInputFieldBase(
-            modifier = Modifier
-                .weight(2f, true)
-                .padding(end = 16.dp),
-            amount = amount,
-            onAmountChanged = onAmountChanged,
-            label = label,
-            isError = isError,
-            supportingText = supportingText,
-            readOnly = readOnly,
-            enabled = enabled,
-        )
+    Column(modifier) {
+        Row {
+            AmountInputFieldBase(
+                modifier = Modifier
+                    .weight(2f, true)
+                    .padding(end = 16.dp),
+                amount = amount,
+                onAmountChanged = onAmountChanged,
+                label = label,
+                isError = isError,
+                supportingText = supportingText,
+                readOnly = readOnly,
+                enabled = enabled,
+                showSymbol = !editableCurrency
+                        || amount.currency != amount.spec?.symbol
+            )
 
-        if (editableCurrency) {
-            CurrencyDropdown(
-                modifier = Modifier.weight(1f),
-                currencies = currencies,
-                onCurrencyChanged = { onAmountChanged(amount.copy(currency = it)) },
-                initialCurrency = amount.currency,
-                readOnly = readOnly || !enabled,
+            if (editableCurrency) {
+                CurrencyDropdown(
+                    modifier = Modifier.weight(1f),
+                    currencies = currencies,
+                    onCurrencyChanged = { onAmountChanged(amount.copy(currency = it)) },
+                    initialCurrency = amount.currency,
+                    readOnly = readOnly || !enabled,
+                )
+            }
+        }
+
+        if (showShortcuts) {
+            val currency = amount.currency
+            AmountInputShortcuts(
+                // TODO: currency-appropriate presets
+                amounts = listOf(
+                    Amount.fromString(currency, "50").withSpec(amount.spec),
+                    Amount.fromString(currency, "25").withSpec(amount.spec),
+                    Amount.fromString(currency, "10").withSpec(amount.spec),
+                    Amount.fromString(currency, "5").withSpec(amount.spec),
+                ),
+                onSelected = { shortcut ->
+                    onShortcutSelected?.let { it(shortcut) }
+                },
             )
         }
     }
 }
 
 @Composable
-private fun AmountInputFieldBase(
+private fun CurrencyDropdown(
+    currencies: List<String>,
+    onCurrencyChanged: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    initialCurrency: String? = null,
+    readOnly: Boolean = false,
+) {
+    val initialIndex = currencies.indexOf(initialCurrency).let { if (it < 0) 0 else it }
+    var selectedIndex by remember { mutableIntStateOf(initialIndex) }
+    var expanded by remember { mutableStateOf(false) }
+    Box(
+        modifier = modifier,
+    ) {
+        OutlinedTextField(
+            modifier = Modifier
+                .clickable(onClick = { if (!readOnly) expanded = true })
+                .fillMaxWidth(),
+            value = currencies.getOrNull(selectedIndex)
+                ?: initialCurrency // wallet is empty or currency is new
+                ?: error("no currency available"),
+            onValueChange = { },
+            readOnly = true,
+            enabled = false,
+            textStyle = LocalTextStyle.current.copy( // show text as if not disabled
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            singleLine = true,
+            label = {
+                Text(stringResource(R.string.currency))
+            }
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier,
+        ) {
+            currencies.forEachIndexed { index, s ->
+                DropdownMenuItem(
+                    text = {
+                        Text(text = s)
+                    },
+                    onClick = {
+                        selectedIndex = index
+                        onCurrencyChanged(currencies[index])
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AmountInputShortcuts(
+    amounts: List<Amount>,
+    onSelected: (amount: Amount) -> Unit,
+) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        maxItemsInEachRow = 2,
+        horizontalArrangement = Arrangement.SpaceEvenly,
+    ) {
+        amounts.forEach {
+            SelectionChip (
+                selected = false,
+                label = { Text(it.toString()) },
+                value = it,
+                onSelected = onSelected,
+            )
+        }
+    }
+}
+
+@Composable
+internal fun AmountInputFieldBase(
     amount: Amount,
     onAmountChanged: (amount: Amount) -> Unit,
     modifier: Modifier,
@@ -105,6 +218,7 @@ private fun AmountInputFieldBase(
     isError: Boolean = false,
     readOnly: Boolean = false,
     enabled: Boolean = true,
+    showSymbol: Boolean = true,
 ) {
     // TODO: use non-deprecated PlatformTextInputModifierNode instead
     val inputService = LocalTextInputService.current
@@ -146,7 +260,7 @@ private fun AmountInputFieldBase(
     }
 
     OutlinedTextField(
-        value = amount.toString(),
+        value = amount.toString(showSymbol = showSymbol),
         onValueChange = {},
         modifier = modifier.onKeyEvent {
             if (it.type == KeyEventType.KeyDown) return@onKeyEvent false
@@ -157,11 +271,15 @@ private fun AmountInputFieldBase(
             }
         },
         readOnly = true,
-        textStyle = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace),
+        textStyle = LocalTextStyle.current.copy(
+            fontFamily = FontFamily.Monospace,
+        ),
         label = label,
         supportingText = supportingText,
         isError = isError,
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.NumberPassword),
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.NumberPassword,
+        ),
         singleLine = true,
         maxLines = 1,
         interactionSource = interactionSource,

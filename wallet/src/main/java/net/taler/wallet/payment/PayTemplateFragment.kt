@@ -26,7 +26,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.asFlow
 import androidx.navigation.fragment.findNavController
-import net.taler.utils.android.showError
+import net.taler.common.showError
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
 import net.taler.wallet.compose.TalerSurface
@@ -60,7 +60,7 @@ class PayTemplateFragment : Fragment() {
                         onCreateAmount = model::createAmount,
                         onSubmit = this@PayTemplateFragment::createOrder,
                         onError = { this@PayTemplateFragment.showError(it) },
-                        getCurrencySpec = model.balanceManager::getSpecForCurrency,
+                        getCurrencySpec = model.exchangeManager::getSpecForCurrency,
                     )
                 }
             }
@@ -74,7 +74,9 @@ class PayTemplateFragment : Fragment() {
         model.paymentManager.payStatus.observe(viewLifecycleOwner) { payStatus ->
             when (payStatus) {
                 is PayStatus.Prepared -> {
-                    findNavController().navigate(R.id.action_promptPayTemplate_to_promptPayment)
+                    model.paymentManager.preparePay(payStatus.transactionId) {
+                        findNavController().navigate(R.id.action_global_promptPayment)
+                    }
                 }
 
                 is PayStatus.Pending -> if (payStatus.error != null && model.devMode.value == true) {

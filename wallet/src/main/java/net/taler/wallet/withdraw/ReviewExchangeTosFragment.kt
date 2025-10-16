@@ -16,7 +16,6 @@
 
 package net.taler.wallet.withdraw
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -41,8 +40,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.launch
-import net.taler.utils.android.fadeIn
-import net.taler.utils.android.fadeOut
+import net.taler.common.fadeIn
+import net.taler.common.fadeOut
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
 import net.taler.wallet.databinding.FragmentReviewExchangeTosBinding
@@ -160,7 +159,7 @@ class ReviewExchangeTosFragment : Fragment(), AdapterView.OnItemSelectedListener
                 right = insets.right,
                 bottom = insets.bottom,
             )
-            WindowInsetsCompat.CONSUMED
+            windowInsets
         }
 
         val checkboxMarginLeft = ui.acceptTosCheckBox.marginLeft
@@ -173,11 +172,10 @@ class ReviewExchangeTosFragment : Fragment(), AdapterView.OnItemSelectedListener
                 rightMargin = checkboxMarginRight + insets.right
                 bottomMargin = checkboxMarginBottom + insets.bottom
             }
-            WindowInsetsCompat.CONSUMED
+            windowInsets
         }
     }
 
-    @SuppressLint("StringFormatInvalid")
     private fun onTosError(msg: String) {
         ui.tosList.fadeIn()
         ui.progressBar.fadeOut()

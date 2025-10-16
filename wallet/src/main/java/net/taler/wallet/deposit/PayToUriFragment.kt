@@ -16,30 +16,22 @@
 
 package net.taler.wallet.deposit
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -55,18 +47,21 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import net.taler.database.data_models.*
+import net.taler.common.Amount
+import net.taler.common.CurrencySpecification
 import net.taler.wallet.AmountResult
 import net.taler.wallet.BottomInsetsSpacer
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
 import net.taler.wallet.compose.AmountCurrencyField
 import net.taler.wallet.compose.TalerSurface
+import androidx.core.net.toUri
 
 class PayToUriFragment : Fragment() {
     private val model: MainViewModel by activityViewModels()
     private val depositManager get() = model.depositManager
     private val balanceManager get() = model.balanceManager
+    private val exchangeManager get() = model.exchangeManager
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -74,8 +69,8 @@ class PayToUriFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View {
         val uri = arguments?.getString("uri") ?: error("no amount passed")
-        val u = Uri.parse(uri)
-        val receiverName = u.getQueryParameter("receiver_name")
+        val u = uri.toUri()
+        val receiverName = u.getQueryParameter("receiver-name")
             ?.replace('+', ' ') ?: ""
         val iban = u.pathSegments.last() ?: ""
 
@@ -98,7 +93,7 @@ class PayToUriFragment : Fragment() {
                             findNavController().navigate(
                                 R.id.action_nav_payto_uri_to_nav_deposit, bundle)
                         },
-                        getCurrencySpec = balanceManager::getSpecForCurrency,
+                        getCurrencySpec = exchangeManager::getSpecForCurrency,
                     ) else Text(
                         text = stringResource(id = R.string.uri_invalid),
                         color = MaterialTheme.colorScheme.error,
@@ -173,59 +168,6 @@ private fun PayToComposable(
         }
 
         BottomInsetsSpacer()
-    }
-}
-
-@Composable
-fun CurrencyDropdown(
-    currencies: List<String>,
-    onCurrencyChanged: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    initialCurrency: String? = null,
-    readOnly: Boolean = false,
-) {
-    val initialIndex = currencies.indexOf(initialCurrency).let { if (it < 0) 0 else it }
-    var selectedIndex by remember { mutableIntStateOf(initialIndex) }
-    var expanded by remember { mutableStateOf(false) }
-    Box(
-        modifier = modifier,
-    ) {
-        OutlinedTextField(
-            modifier = Modifier
-                .clickable(onClick = { if (!readOnly) expanded = true })
-                .fillMaxWidth(),
-            value = currencies.getOrNull(selectedIndex)
-                ?: initialCurrency // wallet is empty or currency is new
-                ?: error("no currency available"),
-            onValueChange = { },
-            readOnly = true,
-            enabled = false,
-            textStyle = LocalTextStyle.current.copy( // show text as if not disabled
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-            singleLine = true,
-            label = {
-                Text(stringResource(R.string.currency))
-            }
-        )
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier,
-        ) {
-            currencies.forEachIndexed { index, s ->
-                DropdownMenuItem(
-                    text = {
-                        Text(text = s)
-                    },
-                    onClick = {
-                        selectedIndex = index
-                        onCurrencyChanged(currencies[index])
-                        expanded = false
-                    }
-                )
-            }
-        }
     }
 }
 

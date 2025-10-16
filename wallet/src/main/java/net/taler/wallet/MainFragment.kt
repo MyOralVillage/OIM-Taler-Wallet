@@ -80,7 +80,6 @@ import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import net.taler.database.data_models.CurrencySpecification
 import net.taler.wallet.balances.BalanceState
 import net.taler.wallet.balances.BalancesComposable
 import net.taler.wallet.balances.ScopeInfo
@@ -90,6 +89,11 @@ import net.taler.wallet.compose.GridMenuItem
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.compose.collectAsStateLifecycleAware
 import net.taler.wallet.settings.SettingsFragment
+import net.taler.wallet.transactions.Transaction
+import net.taler.wallet.transactions.TransactionMajorState
+import net.taler.wallet.transactions.TransactionPayment
+import net.taler.wallet.transactions.TransactionState
+import net.taler.wallet.transactions.TransactionStateFilter.Nonfinal
 import kotlin.math.roundToInt
 
 class MainFragment: Fragment() {
@@ -113,19 +117,14 @@ class MainFragment: Fragment() {
                 val settingsFragmentState = rememberFragmentState()
 
                 val context = LocalContext.current
+                val online by model.networkManager.networkStatus.observeAsState(false)
                 val balanceState by model.balanceManager.state.observeAsState(BalanceState.None)
                 val selectedScope by model.transactionManager.selectedScope.collectAsStateLifecycleAware()
-                val txResult by remember(selectedScope) {
-                    model.transactionManager.transactionsFlow(selectedScope)
-                }.collectAsStateLifecycleAware()
-                val selectedSpec : R? = remember(selectedScope) {
-                    selectedScope?.let {
-                        model.balanceManager.getSpecForScopeInfo(it)
-                    } as R?
-                }
-                val actionButtonUsed by model
-                    .getActionButtonUsed(context)   // Flow<Boolean>
-                    .collectAsStateLifecycleAware(initial = true)
+                val txStateFilter by model.transactionManager.stateFilter.collectAsStateLifecycleAware()
+                val txResult by remember(selectedScope, txStateFilter) { model.transactionManager.transactionsFlow(selectedScope, stateFilter = txStateFilter) }.collectAsStateLifecycleAware()
+                val selectedSpec = remember(selectedScope) { selectedScope?.let { model.exchangeManager.getSpecForScopeInfo(it) } }
+                val actionButtonUsed by remember { model.settingsManager.getActionButtonUsed(context) }.collectAsStateLifecycleAware(true)
+
                 Scaffold(
                     bottomBar = {
                         NavigationBar {
@@ -133,18 +132,23 @@ class MainFragment: Fragment() {
                                 icon = { Icon(Icons.Default.BarChart, contentDescription = null) },
                                 label = { Text(stringResource(R.string.balances_title)) },
                                 selected = tab == Tab.BALANCES,
-                                onClick = { tab = Tab.BALANCES },
+                                onClick = {
+                                    tab = Tab.BALANCES
+                                    if (selectedScope != null) {
+                                        model.transactionManager.selectScope(null)
+                                    }
+                                }
                             )
 
                             TalerActionButton(
                                 demandAttention = !actionButtonUsed,
                                 onShowSheet = {
                                     showSheet = true
-                                    model.saveActionButtonUsed(context)
+                                    model.settingsManager.saveActionButtonUsed(context)
                                 },
                                 onScanQr = {
                                     onScanQr()
-                                    model.saveActionButtonUsed(context)
+                                    model.settingsManager.saveActionButtonUsed(context)
                                 },
                             )
 
@@ -163,7 +167,7 @@ class MainFragment: Fragment() {
                     LaunchedEffect(Unit) {
                         if (selectedScope == null) {
                             model.transactionManager.selectScope(
-                                model.getSelectedScope(context).first()
+                                model.settingsManager.getSelectedScope(context).first()
                             )
                         }
                     }
@@ -181,20 +185,21 @@ class MainFragment: Fragment() {
                             innerPadding = innerPadding,
                             state = balanceState,
                             txResult = txResult,
+                            txStateFilter = txStateFilter,
                             selectedScope = selectedScope,
-                            selectedCurrencySpec = selectedSpec as CurrencySpecification?,
+                            selectedCurrencySpec = selectedSpec,
                             onGetDemoMoneyClicked = {
-                                model.withdrawManager.withdrawTestkudos()
+                                model.withdrawManager.withdrawTestBalance()
                                 Snackbar.make(requireView(), getString(R.string.settings_test_withdrawal), LENGTH_LONG).show()
                             },
                             onBalanceClicked = {
                                 model.showTransactions(it.scopeInfo)
                             },
+                            onPendingClicked = {
+                                model.showTransactions(it.scopeInfo, Nonfinal)
+                            },
                             onTransactionClicked = { tx ->
-                                if (tx.detailPageNav != 0) {
-                                    model.transactionManager.selectTransaction(tx)
-                                    findNavController().navigate(tx.detailPageNav)
-                                }
+                                onTransactionClicked(tx)
                             },
                             onTransactionsDelete = { txIds ->
                                 model.transactionManager.deleteTransactions(txIds) { error ->
@@ -214,8 +219,8 @@ class MainFragment: Fragment() {
                     }
                 }
 
-                val disableActions = remember(balanceState) {
-                    (balanceState as? BalanceState.Success)?.balances?.isEmpty() ?: true
+                val disableActions = remember(balanceState, online) {
+                    !online || (balanceState as? BalanceState.Success)?.balances?.isEmpty() ?: true
                 }
 
                 TalerActionsModal(
@@ -234,7 +239,29 @@ class MainFragment: Fragment() {
         }
     }
 
+    private fun onTransactionClicked(tx: Transaction) {
+        val showTxDetails = {
+            if (tx.detailPageNav != 0) {
+                model.transactionManager.selectTransaction(tx)
+                findNavController().navigate(tx.detailPageNav)
+            }
+        }
 
+        when (tx.txState) {
+            // unfinished transactions (dialog)
+            TransactionState(TransactionMajorState.Dialog) -> when (tx) {
+                is TransactionPayment -> {
+                    model.paymentManager.preparePay(tx.transactionId) {
+                        findNavController().navigate(R.id.action_global_promptPayment)
+                    }
+                }
+
+                else -> showTxDetails()
+            }
+
+            else -> showTxDetails()
+        }
+    }
 
     override fun onStart() {
         super.onStart()
@@ -437,4 +464,3 @@ fun TalerActionsModal(
         }
     }
 }
-

@@ -37,14 +37,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.database.data_models.Amount
-import net.taler.database.data_models.CurrencySpecification
-import net.taler.database.data_models.Timestamp
-import net.taler.utils.android.toAbsoluteTime
+import net.taler.common.Amount
+import net.taler.common.CurrencySpecification
+import net.taler.common.Timestamp
+import net.taler.common.toAbsoluteTime
 import net.taler.wallet.BottomInsetsSpacer
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorCode
 import net.taler.wallet.backend.TalerErrorInfo
+import net.taler.wallet.balances.ScopeInfo
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.compose.collectAsStateLifecycleAware
 import net.taler.wallet.transactions.TransactionAction.Abort
@@ -64,7 +65,7 @@ class TransactionRefreshFragment : TransactionDetailFragment() {
                 val t by transactionManager.selectedTransaction.collectAsStateLifecycleAware()
                 (t as? TransactionRefresh)?.let { tx ->
                     TransactionRefreshComposable(tx, devMode,
-                        balanceManager.getSpecForCurrency(tx.amountRaw.currency),
+                        exchangeManager.getSpecForCurrency(tx.amountRaw.currency, tx.scopes),
                     ) {
                         onTransitionButtonClicked(tx, it)
                     }
@@ -124,6 +125,10 @@ private fun TransactionRefreshComposablePreview() {
         amountRaw = Amount.fromString("TESTKUDOS", "42.23"),
         amountEffective = Amount.fromString("TESTKUDOS", "42.1337"),
         error = TalerErrorInfo(code = TalerErrorCode.WALLET_WITHDRAWAL_KYC_REQUIRED),
+        scopes = listOf(ScopeInfo.Exchange(
+            currency = "TESTKUDOS",
+            url = "exchange.test.taler.net",
+        ))
     )
     Surface {
         TransactionRefreshComposable(t, true, null) {}

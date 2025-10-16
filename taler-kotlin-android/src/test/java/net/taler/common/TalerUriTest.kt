@@ -16,8 +16,7 @@
 
 package net.taler.common
 
-import net.taler.common.utils.network.TalerUri
-import net.taler.common.utils.network.TalerUri.parseWithdrawUri
+import net.taler.common.TalerUri.parseWithdrawUri
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test

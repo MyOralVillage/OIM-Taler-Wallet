@@ -41,7 +41,8 @@ class TransactionDepositFragment : TransactionDetailFragment() {
                 if (tx is TransactionDeposit) TransactionDepositComposable(
                     t = tx,
                     devMode = devMode,
-                    spec = balanceManager.getSpecForCurrency(tx.amountRaw.currency),
+                    spec = exchangeManager.getSpecForCurrency(tx.amountRaw.currency, tx.scopes),
+                    actionListener = this@TransactionDepositFragment,
                 ) {
                     onTransitionButtonClicked(tx, it)
                 }

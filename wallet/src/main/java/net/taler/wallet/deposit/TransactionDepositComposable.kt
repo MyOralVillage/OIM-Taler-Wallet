@@ -31,14 +31,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.database.data_models.*
-import net.taler.utils.android.toAbsoluteTime
+import net.taler.common.Amount
+import net.taler.common.CurrencySpecification
+import net.taler.common.Timestamp
+import net.taler.common.toAbsoluteTime
 import net.taler.wallet.BottomInsetsSpacer
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorCode.EXCHANGE_GENERIC_KYC_REQUIRED
 import net.taler.wallet.backend.TalerErrorInfo
+import net.taler.wallet.balances.ScopeInfo
+import net.taler.wallet.transactions.ActionButton
+import net.taler.wallet.transactions.ActionListener
 import net.taler.wallet.transactions.AmountType
 import net.taler.wallet.transactions.ErrorTransactionButton
+import net.taler.wallet.transactions.Transaction
 import net.taler.wallet.transactions.TransactionAction
 import net.taler.wallet.transactions.TransactionAction.Abort
 import net.taler.wallet.transactions.TransactionAction.Retry
@@ -55,6 +61,7 @@ fun TransactionDepositComposable(
     t: TransactionDeposit,
     devMode: Boolean,
     spec: CurrencySpecification?,
+    actionListener: ActionListener,
     onTransition: (t: TransactionAction) -> Unit,
 ) {
     val scrollState = rememberScrollState()
@@ -73,6 +80,8 @@ fun TransactionDepositComposable(
             text = t.timestamp.ms.toAbsoluteTime(context).toString(),
             style = MaterialTheme.typography.bodyLarge,
         )
+
+        ActionButton(tx = t, listener = actionListener)
 
         TransactionAmountComposable(
             label = stringResource(id = R.string.amount_chosen),
@@ -117,8 +126,14 @@ fun TransactionDepositComposablePreview() {
         amountEffective = Amount.fromString("TESTKUDOS", "42.23"),
         targetPaytoUri = "https://exchange.example.org/peer/pull/credit",
         error = TalerErrorInfo(code = EXCHANGE_GENERIC_KYC_REQUIRED),
+        scopes = listOf(ScopeInfo.Exchange(
+            currency = "TESTKUDOS",
+            url = "exchange.test.taler.net",
+        ))
     )
     Surface {
-        TransactionDepositComposable(t, true, null) {}
+        TransactionDepositComposable(t, true, null, object : ActionListener {
+            override fun onActionButtonClicked(tx: Transaction, type: ActionListener.Type) {}
+        }) {}
     }
 }

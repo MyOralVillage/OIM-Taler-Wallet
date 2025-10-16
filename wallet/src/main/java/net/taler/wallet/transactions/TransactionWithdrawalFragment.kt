@@ -22,23 +22,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
-import net.taler.database.data_models.Amount
-import net.taler.wallet.MainViewModel
-import net.taler.wallet.R
-import net.taler.wallet.balances.ScopeInfo
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.compose.collectAsStateLifecycleAware
-import net.taler.wallet.launchInAppBrowser
-import net.taler.wallet.transactions.WithdrawalDetails.ManualTransfer
-import net.taler.wallet.transactions.WithdrawalDetails.TalerBankIntegrationApi
 import net.taler.wallet.withdraw.TransactionWithdrawalComposable
 
 class TransactionWithdrawalFragment : TransactionDetailFragment(), ActionListener {
-
-    private val model: MainViewModel by activityViewModels()
-    private val withdrawManager by lazy { model.withdrawManager }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,53 +40,12 @@ class TransactionWithdrawalFragment : TransactionDetailFragment(), ActionListene
                     TransactionWithdrawalComposable(
                         t = tx,
                         devMode = devMode,
-                        spec = balanceManager.getSpecForCurrency((tx.amountRaw as Amount).currency),
+                        spec = exchangeManager.getSpecForCurrency(tx.amountRaw.currency, tx.scopes),
                         actionListener = this@TransactionWithdrawalFragment,
                     ) {
                         onTransitionButtonClicked(tx, it)
                     }
                 }
-            }
-        }
-    }
-
-    override fun onActionButtonClicked(tx: Transaction, type: ActionListener.Type) {
-        when (type) {
-            ActionListener.Type.COMPLETE_KYC -> {
-                if (tx !is TransactionWithdrawal) return
-                tx.kycUrl?.let {
-                    launchInAppBrowser(requireContext(), it)
-                }
-            }
-
-            ActionListener.Type.CONFIRM_WITH_BANK -> {
-                if (tx !is TransactionWithdrawal) return
-                if (tx.withdrawalDetails !is TalerBankIntegrationApi) return
-                tx.withdrawalDetails.bankConfirmationUrl?.let { url ->
-                    launchInAppBrowser(requireContext(), url)
-                }
-            }
-
-            ActionListener.Type.CONFIRM_MANUAL -> {
-                if (tx !is TransactionWithdrawal) return
-                if (tx.withdrawalDetails !is ManualTransfer) return
-                if (tx.withdrawalDetails.exchangeCreditAccountDetails.isNullOrEmpty()) return
-
-                withdrawManager.viewManualWithdrawal(
-                    transactionId = tx.transactionId,
-                    exchangeBaseUrl = tx.exchangeBaseUrl,
-                    amountRaw = tx.amountRaw,
-                    amountEffective = tx.amountEffective,
-                    withdrawalAccountList = tx.withdrawalDetails.exchangeCreditAccountDetails,
-                    scopeInfo = transactionManager.selectedScope.value ?: ScopeInfo.Exchange(
-                        currency = (tx.amountRaw as Amount).currency,
-                        url = tx.exchangeBaseUrl,
-                    ),
-                )
-
-                findNavController().navigate(
-                    R.id.action_nav_transactions_detail_withdrawal_to_nav_exchange_manual_withdrawal_success,
-                )
             }
         }
     }

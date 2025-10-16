@@ -21,10 +21,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import net.taler.database.data_models.*
+import net.taler.common.Amount
+import net.taler.common.CurrencySpecification
+import net.taler.common.Timestamp
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorCode.EXCHANGE_GENERIC_KYC_REQUIRED
 import net.taler.wallet.backend.TalerErrorInfo
+import net.taler.wallet.balances.ScopeInfo
 import net.taler.wallet.transactions.ActionButton
 import net.taler.wallet.transactions.ActionListener
 import net.taler.wallet.transactions.AmountType
@@ -35,6 +38,7 @@ import net.taler.wallet.transactions.TransactionAction.Retry
 import net.taler.wallet.transactions.TransactionAction.Suspend
 import net.taler.wallet.transactions.TransactionAmountComposable
 import net.taler.wallet.transactions.TransactionInfoComposable
+import net.taler.wallet.transactions.TransactionMajorState.Done
 import net.taler.wallet.transactions.TransactionMajorState.Pending
 import net.taler.wallet.transactions.TransactionMinorState.CreatePurse
 import net.taler.wallet.transactions.TransactionMinorState.Ready
@@ -73,7 +77,11 @@ fun ColumnScope.TransactionPeerPullCreditComposable(
     }
 
     TransactionAmountComposable(
-        label = stringResource(id = R.string.amount_received),
+        label = if (t.txState.major == Done) {
+            stringResource(id = R.string.amount_received)
+        } else {
+            stringResource(id = R.string.amount_receive)
+        },
         amount = t.amountEffective.withSpec(spec),
         amountType = AmountType.Positive,
     )
@@ -101,6 +109,10 @@ fun TransactionPeerPullCreditPreview(loading: Boolean = false) {
         ),
         talerUri = "https://exchange.example.org/peer/pull/credit",
         error = TalerErrorInfo(code = EXCHANGE_GENERIC_KYC_REQUIRED),
+        scopes = listOf(ScopeInfo.Exchange(
+            currency = "TESTKUDOS",
+            url = "exchange.test.taler.net",
+        ))
     )
     Surface {
         TransactionPeerComposable(t, true, null, object: ActionListener {

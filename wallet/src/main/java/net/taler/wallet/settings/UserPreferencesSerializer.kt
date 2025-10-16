@@ -26,8 +26,8 @@ import net.taler.wallet.UserPreferences
 import java.io.InputStream
 import java.io.OutputStream
 
-object UserPreferencesSerializer : Serializer<UserPreferences> {
-    override val defaultValue: UserPreferences = UserPreferences.getDefaultInstance()
+object UserPreferencesSerializer: Serializer<UserPreferences> {
+    override val defaultValue = UserPreferences.getDefaultInstance()
 
     override suspend fun readFrom(input: InputStream): UserPreferences {
         try {
@@ -37,9 +37,9 @@ object UserPreferencesSerializer : Serializer<UserPreferences> {
         }
     }
 
-    override suspend fun writeTo(t: UserPreferences, output: OutputStream) {
+    override suspend fun writeTo(t: UserPreferences, output: OutputStream) =
         t.writeTo(output)
-    }
+
 }
 
 val Context.userPreferencesDataStore: DataStore<UserPreferences> by dataStore(

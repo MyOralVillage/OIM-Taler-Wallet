@@ -25,22 +25,26 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.taler.database.data_models.*
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import net.taler.common.Amount
 import net.taler.wallet.TAG
+import net.taler.wallet.accounts.KnownBankAccountInfo
 import net.taler.wallet.accounts.PaytoUriBitcoin
 import net.taler.wallet.accounts.PaytoUriIban
 import net.taler.wallet.accounts.PaytoUriTalerBank
 import net.taler.wallet.backend.BackendManager
 import net.taler.wallet.backend.TalerErrorCode.WALLET_DEPOSIT_GROUP_INSUFFICIENT_BALANCE
 import net.taler.wallet.backend.WalletBackendApi
+import net.taler.wallet.balances.BalanceManager
 import net.taler.wallet.balances.ScopeInfo
 import org.json.JSONObject
 
 class DepositManager(
     private val api: WalletBackendApi,
     private val scope: CoroutineScope,
+    private val balanceManager: BalanceManager,
 ) {
 
     private val mDepositState = MutableStateFlow<DepositState>(DepositState.Start)
@@ -54,14 +58,17 @@ class DepositManager(
     }
 
     @UiThread
-    fun selectAccount(paytoUri: String, currency: String) {
-        mDepositState.value = DepositState.AccountSelected(paytoUri, currency)
+    fun selectAccount(account: KnownBankAccountInfo) = scope.launch {
+        getMaxDepositableForPayto(account.paytoUri).let { response ->
+            mDepositState.value = DepositState.AccountSelected(account, response)
+        }
     }
 
     suspend fun checkDepositFees(paytoUri: String, amount: Amount): CheckDepositResult {
         val max = getMaxDepositAmount(amount.currency, paytoUri)
         var response: CheckDepositResult = CheckDepositResult.None(
             maxDepositAmountEffective = max?.effectiveAmount,
+            maxDepositAmountRaw = max?.rawAmount,
         )
         api.request("checkDeposit", CheckDepositResponse.serializer()) {
             put("depositPaytoUri", paytoUri)
@@ -74,6 +81,7 @@ class DepositManager(
                 kycHardLimit = it.kycHardLimit,
                 kycExchanges = it.kycExchanges,
                 maxDepositAmountEffective = max?.effectiveAmount,
+                maxDepositAmountRaw = max?.rawAmount,
             )
         }.onError { error ->
             Log.e(TAG, "Error checkDeposit $error")
@@ -91,6 +99,7 @@ class DepositManager(
                         maxAmountEffective = maxAmountEffective,
                         maxAmountRaw = maxAmountRaw,
                         maxDepositAmountEffective = max?.effectiveAmount,
+                        maxDepositAmountRaw = max?.rawAmount,
                     )
                 }
             }
@@ -150,25 +159,45 @@ class DepositManager(
         return response
     }
 
-    suspend fun getDepositWireTypesForCurrency(currency: String, scopeInfo: ScopeInfo? = null): GetDepositWireTypesForCurrencyResponse? {
-        var result: GetDepositWireTypesForCurrencyResponse? = null
-        api.request("getDepositWireTypesForCurrency", GetDepositWireTypesForCurrencyResponse.serializer()) {
+    suspend fun getDepositWireTypes(
+        currency: String? = null,
+        scopeInfo: ScopeInfo? = null,
+    ): GetDepositWireTypesResponse? {
+        var result: GetDepositWireTypesResponse? = null
+        api.request("getDepositWireTypes", GetDepositWireTypesResponse.serializer()) {
             scopeInfo?.let { put("scopeInfo", JSONObject(BackendManager.json.encodeToString(it))) }
-            put("currency", currency)
+            currency?.let { put("currency", it) }
+            this
         }.onError {
-            Log.e(TAG, "Error getDepositWireTypesForCurrency $it")
+            Log.e(TAG, "Error getDepositWireTypes $it")
         }.onSuccess {
             result = it
         }
         return result
     }
+
+    private suspend fun getMaxDepositableForPayto(
+        paytoUri: String,
+    ): Map<String, GetMaxDepositAmountResponse?> {
+        return balanceManager.getCurrencies().associateWith { currency ->
+            getMaxDepositAmount(currency, paytoUri)
+        }
+    }
 }
 
-fun getIbanPayto(receiverName: String, iban: String) = PaytoUriIban(
+fun getIbanPayto(
+    receiverName: String,
+    receiverPostalCode: String?,
+    receiverTown: String?,
+    iban: String,
+) = PaytoUriIban(
     iban = iban,
     bic = null,
     targetPath = "",
     params = mapOf("receiver-name" to receiverName),
+    receiverName = receiverName,
+    receiverPostalCode = receiverPostalCode,
+    receiverTown = receiverTown,
 ).paytoUri
 
 fun getTalerPayto(receiverName: String, host: String, account: String) = PaytoUriTalerBank(
@@ -176,11 +205,13 @@ fun getTalerPayto(receiverName: String, host: String, account: String) = PaytoUr
     account = account,
     targetPath = "",
     params = mapOf("receiver-name" to receiverName),
+    receiverName = receiverName,
 ).paytoUri
 
-fun getBitcoinPayto(bitcoinAddress: String) = PaytoUriBitcoin(
+fun getBitcoinPayto(bitcoinAddress: String, receiverName: String? = null) = PaytoUriBitcoin(
     segwitAddresses = listOf(bitcoinAddress),
     targetPath = bitcoinAddress,
+    receiverName = receiverName,
 ).paytoUri
 
 @Serializable
@@ -200,15 +231,18 @@ data class CheckDepositResponse(
 @Serializable
 sealed class CheckDepositResult {
     abstract val maxDepositAmountEffective: Amount?
+    abstract val maxDepositAmountRaw: Amount?
 
     data class None(
-        override val maxDepositAmountEffective: Amount? = null
+        override val maxDepositAmountEffective: Amount? = null,
+        override val maxDepositAmountRaw: Amount? = null,
     ): CheckDepositResult()
 
     data class InsufficientBalance(
         val maxAmountEffective: Amount?,
         val maxAmountRaw: Amount?,
-        override val maxDepositAmountEffective: Amount?
+        override val maxDepositAmountEffective: Amount?,
+        override val maxDepositAmountRaw: Amount? = null,
     ): CheckDepositResult()
 
     data class Success(
@@ -217,7 +251,8 @@ sealed class CheckDepositResult {
         val kycSoftLimit: Amount? = null,
         val kycHardLimit: Amount? = null,
         val kycExchanges: List<String>? = null,
-        override val maxDepositAmountEffective: Amount?
+        override val maxDepositAmountEffective: Amount?,
+        override val maxDepositAmountRaw: Amount? = null,
     ): CheckDepositResult()
 }
 
@@ -234,10 +269,29 @@ data class CreateDepositGroupResponse(
 )
 
 @Serializable
-data class GetDepositWireTypesForCurrencyResponse(
-    val wireTypes: List<WireType>,
+data class GetDepositWireTypesResponse(
     val wireTypeDetails: List<WireTypeDetails>,
-)
+) {
+    val wireTypes: List<WireType>
+        get() = wireTypeDetails.map { it.paymentTargetType }
+
+    val hostNames: List<String>
+        get() = wireTypeDetails
+            .flatMap { it.talerBankHostnames }
+            .distinct()
+}
+
+@Serializable
+data class GetScopesForPaytoResponse(
+    val scopes: List<Scope>,
+) {
+    @Serializable
+    data class Scope(
+        val scopeInfo: ScopeInfo,
+        val available: Boolean,
+        // val restrictedAccounts: List<ExchangeWireAccount>,
+    )
+}
 
 @Serializable
 enum class WireType {

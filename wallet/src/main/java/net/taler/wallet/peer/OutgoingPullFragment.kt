@@ -21,6 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -30,9 +31,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.launch
-import net.taler.database.data_models.Amount
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
+import net.taler.wallet.compose.AmountScope
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.compose.collectAsStateLifecycleAware
 import net.taler.wallet.showError
@@ -58,15 +59,15 @@ class OutgoingPullFragment : Fragment() {
                         state = state,
                         onCreateInvoice = this@OutgoingPullFragment::onCreateInvoice,
                         onTosAccept = this@OutgoingPullFragment::onTosAccept,
-                        defaultCurrency = selectedScope?.currency,
-                        currencies = balanceManager.getCurrencies(),
-                        getCurrencySpec = balanceManager::getSpecForCurrency,
-                        checkPeerPullCredit = {
-                            // TODO: this should work with scopeInfo/exchangeBaseUrl
-                            exchangeManager.findExchange(it.currency)?.let { ex ->
-                                peerManager.checkPeerPullCredit(it,
-                                    exchangeBaseUrl = ex.exchangeBaseUrl)
-                            }
+                        defaultScope = remember { selectedScope },
+                        scopes = balanceManager.getScopes(),
+                        getCurrencySpec = exchangeManager::getSpecForScopeInfo,
+                        checkPeerPullCredit = { amount, loading ->
+                            transactionManager.selectScope(amount.scope)
+                             peerManager.checkPeerPullCredit(amount.amount,
+                                scopeInfo = amount.scope,
+                                loading = loading,
+                            )
                         },
                         onClose = {
                             findNavController().navigate(R.id.action_nav_peer_pull_to_nav_main)
@@ -118,7 +119,7 @@ class OutgoingPullFragment : Fragment() {
         findNavController().navigate(R.id.action_global_reviewExchangeTos, bundle)
     }
 
-    private fun onCreateInvoice(amount: Amount, summary: String, hours: Long, exchangeBaseUrl: String) {
-        peerManager.initiatePeerPullCredit(amount, summary, hours, exchangeBaseUrl)
+    private fun onCreateInvoice(amount: AmountScope, summary: String, hours: Long, exchangeBaseUrl: String) {
+        peerManager.initiatePeerPullCredit(amount.amount, summary, hours, exchangeBaseUrl)
     }
 }

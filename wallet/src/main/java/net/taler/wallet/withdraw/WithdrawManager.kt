@@ -29,8 +29,8 @@ import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.taler.common.utils.crypto.Bech32
-import net.taler.database.data_models.Amount
+import net.taler.common.Amount
+import net.taler.common.Bech32
 import net.taler.wallet.TAG
 import net.taler.wallet.backend.TalerErrorInfo
 import net.taler.wallet.backend.WalletBackendApi
@@ -42,6 +42,9 @@ import net.taler.wallet.exchanges.ExchangeTosStatus
 import net.taler.wallet.transactions.WithdrawalExchangeAccountDetails
 import net.taler.wallet.withdraw.WithdrawStatus.Status.*
 import androidx.core.net.toUri
+import kotlinx.coroutines.runBlocking
+import net.taler.wallet.transactions.TransactionMajorState
+import net.taler.wallet.transactions.TransactionManager
 
 sealed class TestWithdrawStatus {
     data object None : TestWithdrawStatus()
@@ -61,6 +64,7 @@ data class WithdrawStatus(
 
     // received details
     val currency: String? = null,
+    val scopeInfo: ScopeInfo? = null,
     val uriInfo: WithdrawalDetailsForUri? = null,
     val amountInfo: WithdrawalDetailsForAmount? = null,
 
@@ -73,42 +77,47 @@ data class WithdrawStatus(
         Loading,
         Updating,
         InfoReceived,
+        AlreadyConfirmed,
         TosReviewRequired,
         ManualTransferRequired,
         Success,
         Error,
     }
+
+    val isCashAcceptor get() = uriInfo != null
+            && uriInfo.amount == null
+            && !uriInfo.editableAmount
 }
 
 sealed class TransferData {
     abstract val subject: String
     abstract val amountRaw: Amount
     abstract val amountEffective: Amount
+    abstract val transferAmount: Amount
     abstract val withdrawalAccount: WithdrawalExchangeAccountDetails
 
-//    val currency get() = (withdrawalAccount.transferAmount) ?: (withdrawalAccount.transferAmount.currency)
-
-    val currency: String? get() {
-            val amount = withdrawalAccount.transferAmount
-            return (amount as? Amount)?.currency
-        }
-
+    val currency get() = withdrawalAccount.transferAmount?.currency
 
     data class Taler(
         override val subject: String,
         override val amountRaw: Amount,
         override val amountEffective: Amount,
+        override val transferAmount: Amount,
         override val withdrawalAccount: WithdrawalExchangeAccountDetails,
         val receiverName: String? = null,
         val account: String,
+        val exchangeBaseUrl: String,
     ): TransferData()
 
     data class IBAN(
         override val subject: String,
         override val amountRaw: Amount,
         override val amountEffective: Amount,
+        override val transferAmount: Amount,
         override val withdrawalAccount: WithdrawalExchangeAccountDetails,
         val receiverName: String? = null,
+        val receiverPostalCode: String? = null,
+        val receiverTown: String? = null,
         val iban: String,
     ): TransferData()
 
@@ -116,6 +125,7 @@ sealed class TransferData {
         override val subject: String,
         override val amountRaw: Amount,
         override val amountEffective: Amount,
+        override val transferAmount: Amount,
         override val withdrawalAccount: WithdrawalExchangeAccountDetails,
         val account: String,
         val segwitAddresses: List<String>,
@@ -123,14 +133,38 @@ sealed class TransferData {
 }
 
 @Serializable
+enum class WithdrawalOperationStatusFlag {
+    Unknown,
+
+    @SerialName("pending")
+    Pending,
+
+    @SerialName("selected")
+    Selected,
+
+    @SerialName("aborted")
+    Aborted,
+
+    @SerialName("confirmed")
+    Confirmed,
+}
+
+@Serializable
+data class PrepareBankIntegratedWithdrawalResponse(
+    val transactionId: String,
+    val info: WithdrawalDetailsForUri,
+)
+
+@Serializable
 data class WithdrawalDetailsForUri(
-    val amount: Amount?,
+    val amount: Amount? = null,
     val currency: String,
     val editableAmount: Boolean = false,
     val maxAmount: Amount? = null,
     val wireFee: Amount? = null,
     val defaultExchangeBaseUrl: String? = null,
     val possibleExchanges: List<ExchangeItem> = emptyList(),
+    val status: WithdrawalOperationStatusFlag,
 )
 
 @Serializable
@@ -214,6 +248,7 @@ class WithdrawManager(
     private val api: WalletBackendApi,
     private val scope: CoroutineScope,
     private val exchangeManager: ExchangeManager,
+    private val transactionManager: TransactionManager,
 ) {
     private val _withdrawStatus = MutableStateFlow(WithdrawStatus())
     val withdrawStatus: StateFlow<WithdrawStatus> = _withdrawStatus.asStateFlow()
@@ -226,9 +261,14 @@ class WithdrawManager(
     var exchangeFees: ExchangeFees? = null
         private set
 
-    fun withdrawTestkudos() = scope.launch {
+    fun withdrawTestBalance() = scope.launch {
         _withdrawTestStatus.value = TestWithdrawStatus.Withdrawing
-        api.request<Unit>("withdrawTestkudos").onError {
+        api.request<Unit>("withdrawTestBalance") {
+            put("amount", "KUDOS:10")
+            put("corebankApiBaseUrl", "https://bank.demo.taler.net/")
+            put("exchangeBaseUrl", "https://exchange.demo.taler.net/")
+            put("useForeignAccount", true)
+        }.onError {
             _withdrawTestStatus.value = TestWithdrawStatus.Error(it.userFacingMsg)
         }.onSuccess {
             _withdrawTestStatus.value = TestWithdrawStatus.Success
@@ -245,7 +285,7 @@ class WithdrawManager(
         _withdrawTestStatus.value = TestWithdrawStatus.None
     }
 
-    fun getWithdrawalDetails(
+    fun prepareBankIntegratedWithdrawal(
         uri: String,
         loading: Boolean = true,
     ) = scope.launch {
@@ -257,32 +297,47 @@ class WithdrawManager(
         }
 
         // first get URI details
-        api.request("getWithdrawalDetailsForUri", WithdrawalDetailsForUri.serializer()) {
+        api.request(
+            "prepareBankIntegratedWithdrawal",
+            PrepareBankIntegratedWithdrawalResponse.serializer(),
+        ) {
             put("talerWithdrawUri", uri)
         }.onError { error ->
-            handleError("getWithdrawalDetailsForUri", error)
+            handleError("prepareBankIntegratedWithdrawal", error)
         }.onSuccess { details ->
             Log.d(TAG, "Withdraw details: $details")
-            _withdrawStatus.update { value ->
-                value.copy(
-                    status = InfoReceived,
-                    uriInfo = details,
-                    currency = details.currency,
-                    exchangeBaseUrl = details.defaultExchangeBaseUrl,
-                )
-            }
+            scope.launch {
+                val tx = transactionManager.getTransactionById(details.transactionId)
+                    ?: error("transaction ${details.transactionId} not found")
+                val status = _withdrawStatus.updateAndGet { value ->
+                    value.copy(
+                        status = if (tx.txState.major == TransactionMajorState.Dialog) {
+                            InfoReceived
+                        } else {
+                            AlreadyConfirmed
+                        },
+                        uriInfo = details.info,
+                        currency = details.info.currency,
+                        exchangeBaseUrl = details.info.defaultExchangeBaseUrl,
+                        transactionId = details.transactionId,
+                    )
+                }
 
-            // then extend with amount details
-            getWithdrawalDetails(
-                amount = details.amount,
-                exchangeBaseUrl = details.defaultExchangeBaseUrl,
-                loading = loading,
-            )
+                // then extend with amount details (not for cash acceptor)
+                if (!status.isCashAcceptor) {
+                    getWithdrawalDetails(
+                        amount = details.info.amount,
+                        exchangeBaseUrl = details.info.defaultExchangeBaseUrl,
+                        loading = loading,
+                    )
+                }
+            }
         }
     }
 
     fun getWithdrawalDetails(
         amount: Amount? = null,
+        scopeInfo: ScopeInfo? = null,
         exchangeBaseUrl: String? = null,
         loading: Boolean = true,
     ) = scope.launch {
@@ -293,45 +348,36 @@ class WithdrawManager(
         val ex: ExchangeItem
         val am: Amount?
 
-        // TODO: use scopeInfo instead of currency
-        // use cases:
-        if (amount != null && exchangeBaseUrl != null) {
-            // 1. user sets both to null state
-            //    => they are processed as-is
-            ex = exchangeManager.findExchangeByUrl(exchangeBaseUrl)
+        if (amount != null && (scopeInfo != null || exchangeBaseUrl != null)) {
+            // 1. caller sets both parameters
+            ex = exchangeBaseUrl?.let { exchangeManager.findExchangeByUrl(it) }
+                ?: scopeInfo?.let { exchangeManager.findExchange(it) }
                 ?: error("could not resolve exchange")
-            am = amount
+            am = ex.currency?.let { amount.copy(currency = it) }
+                ?: error("could not resolve currency")
         } else if (amount != null) {
-            // 2a user updates amount
-            //    => amount is updated
-            //    => exchange URL is recycled (unless currency changes)
-            // 2b. user sets amount to null state
-            //    => exchange URL is calculated from amount
-            ex = if (status.exchangeBaseUrl != null
-                && status.currency == amount.currency) {
-                exchangeManager.findExchangeByUrl(status.exchangeBaseUrl)
-                    ?: error("could not resolve exchange")
-            } else {
-                exchangeManager.findExchange(amount.currency)
-                    ?: error("could not resolve exchange")
-            }
+            // 2. caller only provides amount
+            //   => amount is updated
+            //   => exchange URL is kept
+            ex = status.exchangeBaseUrl?.let { exchangeManager.findExchangeByUrl(it) }
+                ?: status.scopeInfo?.let { exchangeManager.findExchange(it) }
+                ?: exchangeManager.findExchange(amount.currency)
+                ?: error("could not resolve exchange")
             am = amount
         } else if (exchangeBaseUrl != null) {
-            // 3a. user updates exchange URL
-            //    => amount is recycled (unless currency changes)
-            //    => exchangeURL is updated
-            // 3b. user sets exchange URL to null state
-            //    => amount is calculated from exchange URL
+            // 3. caller only provides exchange URL
             ex = exchangeManager.findExchangeByUrl(exchangeBaseUrl)
                 ?: error("could not resolve exchange")
-            am = if (status.amountInfo?.amountRaw != null
-                && status.currency == ex.currency) {
-                status.amountInfo.amountRaw
-            } else {
-                ex.currency
-                    ?.let { Amount.zero(it) }
-                    ?: error("could not resolve currency")
-            }
+            am = status.amountInfo?.amountRaw
+                ?: ex.currency?.let { Amount.zero(ex.currency) }
+                ?: error("could not resolve currency")
+        } else if (scopeInfo != null) {
+            // 3. caller only provides scope
+            ex = exchangeManager.findExchange(scopeInfo)
+                ?: error("could not resolve exchange")
+            am = status.amountInfo?.amountRaw
+                ?: ex.currency?.let { Amount.zero(ex.currency) }
+                ?: error("could not resolve currency")
         } else {
             error("no parameters specified")
         }
@@ -353,6 +399,7 @@ class WithdrawManager(
                         exchangeBaseUrl = ex.exchangeBaseUrl,
                         amountInfo = details,
                         currency = details.amountRaw.currency,
+                        scopeInfo = details.scopeInfo,
                     )
                 }
             }
@@ -410,13 +457,13 @@ class WithdrawManager(
     ) {
         val exchangeBaseUrl = status.exchangeBaseUrl ?: error("no exchangeBaseUrl")
         val talerWithdrawUri = status.talerWithdrawUri ?: error("no talerWithdrawUri")
-        val amountInfo = status.amountInfo ?: error("no amountInfo")
+        val amountInfo = status.amountInfo
 
         api.request("acceptBankIntegratedWithdrawal", AcceptWithdrawalResponse.serializer()) {
             restrictAge?.let { put("restrictAge", it) }
+            amountInfo?.let { put("amount", it.amountRaw.toJSONString()) }
             put("exchangeBaseUrl", exchangeBaseUrl)
             put("talerWithdrawUri", talerWithdrawUri)
-            put("amount", amountInfo.amountRaw.toJSONString())
         }.onError { error ->
             handleError("acceptBankIntegratedWithdrawal", error)
         }.onSuccess { response ->
@@ -449,7 +496,7 @@ class WithdrawManager(
         }
     }
 
-    fun getQrCodesForPayto(uri: String) = scope.launch {
+    fun getQrCodesForPayto(uri: String): List<QrCodeSpec> = runBlocking {
         var codes = emptyList<QrCodeSpec>()
         api.request("getQrCodesForPayto", GetQrCodesForPaytoResponse.serializer()) {
             put("paytoUri", uri)
@@ -459,7 +506,7 @@ class WithdrawManager(
             codes = response.codes
         }
 
-        qrCodes.value = codes
+        return@runBlocking codes
     }
 
     private fun handleError(operation: String, error: TalerErrorInfo) {
@@ -467,38 +514,6 @@ class WithdrawManager(
         _withdrawStatus.update { value ->
             value.copy(status = Error, error = error)
         }
-    }
-
-    /**
-     * A hack to be able to view bank details for manual withdrawal with the same logic.
-     * Don't call this from ongoing withdrawal processes as it destroys state.
-     */
-    fun viewManualWithdrawal(
-        transactionId: String,
-        exchangeBaseUrl: String,
-        amountRaw: Amount,
-        amountEffective: Amount,
-        withdrawalAccountList: List<WithdrawalExchangeAccountDetails>,
-        scopeInfo: ScopeInfo,
-    ) {
-        _withdrawStatus.value = createManualTransfer(
-            status = WithdrawStatus(
-                transactionId = transactionId,
-                exchangeBaseUrl = exchangeBaseUrl,
-                amountInfo = WithdrawalDetailsForAmount(
-                    amountRaw = amountRaw,
-                    amountEffective = amountEffective,
-                    withdrawalAccountsList = withdrawalAccountList,
-                    scopeInfo = scopeInfo,
-                    tosAccepted = true,
-                )
-            ),
-            response = AcceptManualWithdrawalResponse(
-                transactionId = transactionId,
-                reservePub = "",
-                withdrawalAccountsList = withdrawalAccountList,
-            )
-        )
     }
 
     private fun createManualTransfer(
@@ -510,7 +525,7 @@ class WithdrawManager(
         transactionId = response.transactionId,
         withdrawalTransfers = response.withdrawalAccountsList.mapNotNull {
             val details = status.amountInfo ?: error("no amountInfo")
-            val uri = it.paytoUri.replace("receiver-name=", "receiver_name=").toUri()
+            val uri = it.paytoUri.toUri()
             if ("bitcoin".equals(uri.authority, true)) {
                 val msg = uri.getQueryParameter("message").orEmpty()
                 val reg = "\\b([A-Z0-9]{52})\\b".toRegex().find(msg)
@@ -523,24 +538,36 @@ class WithdrawManager(
                     subject = reserve,
                     amountRaw = details.amountRaw,
                     amountEffective = details.amountEffective,
+                    transferAmount = it.transferAmount
+                        ?.withSpec(it.currencySpecification)
+                        ?: details.amountEffective,
                     withdrawalAccount = it.copy(paytoUri = uri.toString()),
                 )
             } else if (uri.authority.equals("x-taler-bank", true)) {
                 TransferData.Taler(
                     account = uri.lastPathSegment!!,
-                    receiverName = uri.getQueryParameter("receiver_name"),
+                    receiverName = uri.getQueryParameter("receiver-name"),
                     subject = uri.getQueryParameter("message") ?: "Error: No message in URI",
                     amountRaw = details.amountRaw,
                     amountEffective = details.amountEffective,
+                    exchangeBaseUrl = uri.host!!,
+                    transferAmount = it.transferAmount
+                        ?.withSpec(it.currencySpecification)
+                        ?: details.amountEffective,
                     withdrawalAccount = it.copy(paytoUri = uri.toString()),
                 )
             } else if (uri.authority.equals("iban", true)) {
                 TransferData.IBAN(
                     iban = uri.lastPathSegment!!,
-                    receiverName = uri.getQueryParameter("receiver_name"),
+                    receiverName = uri.getQueryParameter("receiver-name"),
+                    receiverTown = uri.getQueryParameter("receiver-town"),
+                    receiverPostalCode = uri.getQueryParameter("receiver-postal-code"),
                     subject = uri.getQueryParameter("message") ?: "Error: No message in URI",
                     amountRaw = details.amountRaw,
                     amountEffective = details.amountEffective,
+                    transferAmount = it.transferAmount
+                        ?.withSpec(it.currencySpecification)
+                        ?: details.amountEffective,
                     withdrawalAccount = it.copy(paytoUri = uri.toString()),
                 )
             } else null

@@ -22,16 +22,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import net.taler.database.data_models.*
+import net.taler.common.Amount
+import net.taler.common.Timestamp
 import net.taler.wallet.TAG
 import net.taler.wallet.backend.BackendManager
-import net.taler.wallet.backend.TalerErrorCode.WALLET_PEER_PUSH_PAYMENT_INSUFFICIENT_BALANCE
 import net.taler.wallet.backend.TalerErrorInfo
 import net.taler.wallet.backend.WalletBackendApi
 import net.taler.wallet.balances.ScopeInfo
@@ -39,23 +39,29 @@ import net.taler.wallet.cleanExchange
 import net.taler.wallet.exchanges.ExchangeItem
 import net.taler.wallet.exchanges.ExchangeManager
 import net.taler.wallet.exchanges.ExchangeTosStatus
+import net.taler.wallet.payment.InsufficientBalanceHint
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit.HOURS
+import net.taler.wallet.peer.CheckPeerPushDebitResponse.*
 
 const val MAX_LENGTH_SUBJECT = 100
 val DEFAULT_EXPIRY = ExpirationOption.DAYS_1
 
 sealed class CheckFeeResult {
     abstract val maxDepositAmountEffective: Amount?
+    abstract val maxDepositAmountRaw: Amount?
 
     data class None(
         override val maxDepositAmountEffective: Amount? = null,
+        override val maxDepositAmountRaw: Amount? = null,
     ): CheckFeeResult()
 
     data class InsufficientBalance(
         val maxAmountEffective: Amount?,
         val maxAmountRaw: Amount?,
+        val causeHint: InsufficientBalanceHint? = null,
         override val maxDepositAmountEffective: Amount? = null,
+        override val maxDepositAmountRaw: Amount? = null,
     ): CheckFeeResult()
 
     data class Success(
@@ -63,6 +69,7 @@ sealed class CheckFeeResult {
         val amountEffective: Amount,
         val exchangeBaseUrl: String,
         override val maxDepositAmountEffective: Amount? = null,
+        override val maxDepositAmountRaw: Amount? = null,
     ): CheckFeeResult()
 }
 
@@ -93,15 +100,18 @@ class PeerManager(
 
     suspend fun checkPeerPullCredit(
         amount: Amount,
-        exchangeBaseUrl: String? = null,
-        scopeInfo: ScopeInfo? = null,
+        scopeInfo: ScopeInfo,
+        loading: Boolean = false,
     ): CheckPeerPullCreditResult? {
         var response: CheckPeerPullCreditResult? = null
-        val exchangeItem = exchangeManager.findExchange(amount.currency) ?: return null
+        val exchangeItem = exchangeManager.findExchange(scopeInfo) ?: return null
+
+        if (loading) {
+            _outgoingPullState.value = OutgoingChecking
+        }
 
         api.request("checkPeerPullCredit", CheckPeerPullCreditResponse.serializer()) {
-            exchangeBaseUrl?.let { put("exchangeBaseUrl", it) }
-            scopeInfo?.let { put("restrictScope", JSONObject(BackendManager.json.encodeToString(scopeInfo))) }
+            put("restrictScope", JSONObject(BackendManager.json.encodeToString(scopeInfo)))
             put("amount", amount.toJSONString())
         }.onSuccess {
             response = CheckPeerPullCreditResult(
@@ -112,6 +122,10 @@ class PeerManager(
             )
         }.onError { error ->
             Log.e(TAG, "got checkPeerPullCredit error result $error")
+        }
+
+        if (loading) {
+            _outgoingPullState.value = OutgoingIntro
         }
 
         return response
@@ -141,38 +155,40 @@ class PeerManager(
         _outgoingPullState.value = OutgoingIntro
     }
 
-    suspend fun checkPeerPushFees(amount: Amount, exchangeBaseUrl: String? = null): CheckFeeResult {
-        val max = getMaxPeerPushDebitAmount(amount.currency, exchangeBaseUrl)
-        var response: CheckFeeResult = CheckFeeResult.None(maxDepositAmountEffective = max?.effectiveAmount)
-        api.request("checkPeerPushDebit", CheckPeerPushDebitResponse.serializer()) {
+    suspend fun checkPeerPushFees(
+        amount: Amount,
+        exchangeBaseUrl: String? = null,
+        restrictScope: ScopeInfo? = null,
+    ): CheckFeeResult {
+        val max = getMaxPeerPushDebitAmount(amount.currency, exchangeBaseUrl, restrictScope = restrictScope)
+        var response: CheckFeeResult = CheckFeeResult.None(
+            maxDepositAmountEffective = max?.effectiveAmount,
+            maxDepositAmountRaw = max?.rawAmount,
+        )
+        api.request("checkPeerPushDebitV2", CheckPeerPushDebitResponse.serializer()) {
             exchangeBaseUrl?.let { put("exchangeBaseUrl", it) }
+            restrictScope?.let { put("restrictScope", JSONObject(BackendManager.json.encodeToString(it))) }
             put("amount", amount.toJSONString())
-        }.onSuccess {
-            response = CheckFeeResult.Success(
-                amountRaw = it.amountRaw,
-                amountEffective = it.amountEffective,
-                maxDepositAmountEffective = max?.effectiveAmount,
-                exchangeBaseUrl = it.exchangeBaseUrl,
-            )
+        }.onSuccess { res ->
+            response = when (val r = res) {
+                is CheckPeerPushDebitOkResponse -> CheckFeeResult.Success(
+                    amountRaw = r.amountRaw,
+                    amountEffective = r.amountEffective,
+                    maxDepositAmountEffective = max?.effectiveAmount,
+                    maxDepositAmountRaw = max?.rawAmount,
+                    exchangeBaseUrl = r.exchangeBaseUrl,
+                )
+
+                is CheckPeerPushDebitInsufficientBalanceResponse -> CheckFeeResult.InsufficientBalance(
+                    maxAmountEffective = r.insufficientBalanceDetails.maxEffectiveSpendAmount,
+                    maxAmountRaw = r.insufficientBalanceDetails.balanceAvailable,
+                    maxDepositAmountEffective = max?.effectiveAmount,
+                    maxDepositAmountRaw = max?.rawAmount,
+                    causeHint = r.insufficientBalanceDetails.causeHint,
+                )
+            }
         }.onError { error ->
             Log.e(TAG, "got checkPeerPushDebit error result $error")
-            if (error.code == WALLET_PEER_PUSH_PAYMENT_INSUFFICIENT_BALANCE) {
-                error.extra["insufficientBalanceDetails"]?.let { details ->
-                    val maxAmountRaw = details.jsonObject["balanceAvailable"]?.let { amount ->
-                        Amount.fromJSONString(amount.jsonPrimitive.content)
-                    }
-
-                    val maxAmountEffective = details.jsonObject["maxEffectiveSpendAmount"]?.let { amount ->
-                        Amount.fromJSONString(amount.jsonPrimitive.content)
-                    } ?: maxAmountRaw
-
-                    response = CheckFeeResult.InsufficientBalance(
-                        maxAmountEffective = maxAmountEffective,
-                        maxAmountRaw = maxAmountRaw,
-                        maxDepositAmountEffective = max?.effectiveAmount,
-                    )
-                }
-            }
         }
 
         return response
@@ -186,7 +202,7 @@ class PeerManager(
         var response: GetMaxPeerPushDebitAmountResponse? = null
         api.request("getMaxPeerPushDebitAmount", GetMaxPeerPushDebitAmountResponse.serializer()) {
             exchangeBaseUrl?.let { put("exchangeBaseUrl", it) }
-            restrictScope?.let { put("restrictScope", it) }
+            restrictScope?.let { put("restrictScope", JSONObject(BackendManager.json.encodeToString(it))) }
             put("currency", currency)
         }.onError { error ->
             Log.e(TAG, "got getMaxPeerPushDebitAmount error result $error")
@@ -197,11 +213,17 @@ class PeerManager(
         return response
     }
 
-    fun initiatePeerPushDebit(amount: Amount, summary: String, expirationHours: Long) {
+    fun initiatePeerPushDebit(
+        amount: Amount,
+        summary: String,
+        expirationHours: Long,
+        restrictScope: ScopeInfo? = null,
+    ) {
         _outgoingPushState.value = OutgoingCreating
         scope.launch(Dispatchers.IO) {
             val expiry = Timestamp.fromMillis(System.currentTimeMillis() + HOURS.toMillis(expirationHours))
             api.request("initiatePeerPushDebit", InitiatePeerPushDebitResponse.serializer()) {
+                restrictScope?.let { put("restrictScope", JSONObject(BackendManager.json.encodeToString(it))) }
                 put("amount", amount.toJSONString())
                 put("partialContractTerms", JSONObject().apply {
                     put("amount", amount.toJSONString())
@@ -246,7 +268,7 @@ class PeerManager(
             api.request<Unit>("confirmPeerPullDebit") {
                 put("transactionId", terms.id)
             }.onSuccess {
-                _incomingPullState.value = IncomingAccepted
+                _incomingPullState.value = IncomingAccepted(terms.id)
             }.onError { error ->
                 Log.e(TAG, "got confirmPeerPullDebit error result $error")
                 _incomingPullState.value = IncomingError(error)
@@ -303,7 +325,7 @@ class PeerManager(
             api.request<Unit>("confirmPeerPushCredit") {
                 put("transactionId", terms.id)
             }.onSuccess {
-                _incomingPushState.value = IncomingAccepted
+                _incomingPushState.value = IncomingAccepted(terms.id)
             }.onError { error ->
                 Log.e(TAG, "got confirmPeerPushCredit error result $error")
                 _incomingPushState.value = IncomingError(error)

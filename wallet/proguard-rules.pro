@@ -23,6 +23,7 @@
 #noinspection ShrinkerUnresolvedReference
 
 -dontobfuscate
+-keep class net.taler.wallet.** {*;}
 -keep class androidx.datastore.*.** {*;}
 -keep class com.google.protobuf.*.** {*;}
 
@@ -31,24 +32,3 @@
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 -dontwarn org.slf4j.impl.StaticMDCBinder
 -dontwarn org.slf4j.impl.StaticMarkerBinder
-
-
--keep class net.taler.** { *; }
-
-# === Keep kotlinx.serialization generated serializers ===
--keepclassmembers class kotlinx.serialization.** { *; }
--keepclassmembers class **$$serializer { *; }
--keepclasseswithmembers class * {
-    @kotlinx.serialization.SerialName <fields>;
-}
-
-# === Keep kotlin poet reflection types ===
--keep class javax.lang.model.** { *; }
--keep class com.squareup.kotlinpoet.** { *; }
-
-# === Keep Google J2ObjC annotations (used by Guava) ===
--dontwarn com.google.j2objc.annotations.**
--keep class com.google.j2objc.annotations.** { *; }
-
-# === Optional: turn off obfuscation for easier debugging ===
--dontobfuscate

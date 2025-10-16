@@ -45,14 +45,13 @@ import androidx.recyclerview.widget.LinearLayoutManager.VERTICAL
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
-import net.taler.database.data_models.*
-import net.taler.common.liveData.*
-import net.taler.utils.android.fadeIn
-import net.taler.utils.android.fadeOut
-import net.taler.utils.android.showError
+import net.taler.common.Amount
+import net.taler.common.EventObserver
+import net.taler.common.fadeIn
+import net.taler.common.fadeOut
+import net.taler.common.showError
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
-import net.taler.wallet.backend.TalerErrorInfo
 import net.taler.wallet.databinding.FragmentExchangeListBinding
 import net.taler.wallet.showError
 
@@ -111,24 +110,21 @@ open class ExchangeListFragment : Fragment(), ExchangeClickListener {
             onExchangeUpdate(exchanges)
         }
 
-        exchangeManager.addError.observe(viewLifecycleOwner, EventObserver<TalerErrorInfo>
-        { error ->
+        exchangeManager.addError.observe(viewLifecycleOwner, EventObserver { error ->
             onAddExchangeFailed()
             if (model.devMode.value == true) {
                 showError(error)
             }
         })
 
-        exchangeManager.listError.observe(viewLifecycleOwner, EventObserver<TalerErrorInfo>
-        { error ->
+        exchangeManager.listError.observe(viewLifecycleOwner, EventObserver { error ->
             onListExchangeFailed()
             if (model.devMode.value == true) {
                 showError(error)
             }
         })
 
-        exchangeManager.deleteError.observe(viewLifecycleOwner, EventObserver<TalerErrorInfo>
-        { error ->
+        exchangeManager.deleteError.observe(viewLifecycleOwner, EventObserver { error ->
             if (model.devMode.value == true) {
                 showError(error)
             } else {
@@ -136,8 +132,7 @@ open class ExchangeListFragment : Fragment(), ExchangeClickListener {
             }
         })
 
-        exchangeManager.reloadError.observe(viewLifecycleOwner, EventObserver<TalerErrorInfo>
-        { error ->
+        exchangeManager.reloadError.observe(viewLifecycleOwner, EventObserver { error ->
             if (model.devMode.value == true) {
                 showError(error)
             } else {
@@ -271,7 +266,7 @@ open class ExchangeListFragment : Fragment(), ExchangeClickListener {
                 left = insets.left,
                 right = insets.right,
             )
-            WindowInsetsCompat.CONSUMED
+            windowInsets
         }
 
         val fabMarginBottom = ui.addExchangeFab.marginBottom
@@ -284,7 +279,7 @@ open class ExchangeListFragment : Fragment(), ExchangeClickListener {
                 leftMargin = fabMarginLeft + insets.left
                 rightMargin = fabMarginRight + insets.right
             }
-            WindowInsetsCompat.CONSUMED
+            windowInsets
         }
     }
 }

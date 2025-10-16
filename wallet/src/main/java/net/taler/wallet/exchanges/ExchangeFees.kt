@@ -16,7 +16,9 @@
 
 package net.taler.wallet.exchanges
 
-import net.taler.database.data_models.*
+import net.taler.common.Amount
+import net.taler.common.Timestamp
+
 
 data class CoinFee(
     val coin: Amount,

@@ -18,7 +18,6 @@ package net.taler.wallet.transactions
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -68,18 +67,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.database.data_models.*
-import net.taler.database.data_models.CurrencySpecification
-import net.taler.utils.android.toRelativeTime
+import net.taler.common.Amount
+import net.taler.common.CurrencySpecification
+import net.taler.common.Timestamp
+import net.taler.common.toRelativeTime
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorCode
 import net.taler.wallet.backend.TalerErrorInfo
 import net.taler.wallet.balances.BalanceItem
 import net.taler.wallet.balances.ScopeInfo.Exchange
 import net.taler.wallet.cleanExchange
+import net.taler.wallet.compose.Banner
 import net.taler.wallet.compose.LoadingScreen
 import net.taler.wallet.compose.SelectionModeTopAppBar
 import net.taler.wallet.compose.TalerSurface
+import net.taler.wallet.compose.cardPaddings
 import net.taler.wallet.transactions.AmountType.Negative
 import net.taler.wallet.transactions.AmountType.Neutral
 import net.taler.wallet.transactions.AmountType.Positive
@@ -88,6 +90,7 @@ import net.taler.wallet.transactions.TransactionAction.Retry
 import net.taler.wallet.transactions.TransactionAction.Suspend
 import net.taler.wallet.transactions.TransactionMajorState.Aborted
 import net.taler.wallet.transactions.TransactionMajorState.Aborting
+import net.taler.wallet.transactions.TransactionMajorState.Dialog
 import net.taler.wallet.transactions.TransactionMajorState.Done
 import net.taler.wallet.transactions.TransactionMajorState.Failed
 import net.taler.wallet.transactions.TransactionMajorState.Pending
@@ -95,9 +98,14 @@ import net.taler.wallet.transactions.TransactionMinorState.BalanceKycInit
 import net.taler.wallet.transactions.TransactionMinorState.BalanceKycRequired
 import net.taler.wallet.transactions.TransactionMinorState.BankConfirmTransfer
 import net.taler.wallet.transactions.TransactionMinorState.KycRequired
+import net.taler.wallet.transactions.TransactionMinorState.KycAuthRequired
+import net.taler.wallet.transactions.TransactionMinorState.KycInit
+import net.taler.wallet.transactions.TransactionMinorState.MergeKycRequired
+import net.taler.wallet.transactions.TransactionMinorState.Repurchase
 import net.taler.wallet.transactions.TransactionsResult.Error
 import net.taler.wallet.transactions.TransactionsResult.None
 import net.taler.wallet.transactions.TransactionsResult.Success
+import net.taler.wallet.transactions.TransactionStateFilter.*
 
 @Composable
 fun TransactionsComposable(
@@ -105,6 +113,7 @@ fun TransactionsComposable(
     balance: BalanceItem,
     currencySpec: CurrencySpecification?,
     txResult: TransactionsResult,
+    txStateFilter: TransactionStateFilter?,
     onTransactionClick: (tx: Transaction) -> Unit,
     onTransactionsDelete: (txIds: List<String>) -> Unit,
     onShowBalancesClicked: () -> Unit,
@@ -175,6 +184,21 @@ fun TransactionsComposable(
                     spec = currencySpec,
                     onShowBalancesClicked = onShowBalancesClicked,
                 )
+            }
+
+            when (txStateFilter) {
+                Nonfinal -> item {
+                    Banner(Modifier.padding(bottom = 6.dp)) {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            text = stringResource(R.string.transactions_filter_nonfinal),
+                            style = MaterialTheme.typography.labelLarge,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+                else -> {}
             }
 
             val placeholderPadding = PaddingValues(vertical = 50.dp)
@@ -269,7 +293,7 @@ fun TransactionsHeader(
         OutlinedCard(
             Modifier
                 .weight(1f)
-                .padding(8.dp)
+                .cardPaddings()
                 .clickable { onShowBalancesClicked() },
         ) {
             ListItem(
@@ -306,7 +330,7 @@ fun TransactionsHeader(
             )
 
             Text(
-                (balance.available as Amount).withSpec(spec).toString(showSymbol = false),
+                balance.available.withSpec(spec).toString(showSymbol = false),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
             )
@@ -314,8 +338,6 @@ fun TransactionsHeader(
     }
 }
 
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TransactionRow(
     tx: Transaction,
@@ -379,7 +401,7 @@ fun TransactionRow(
             supportingContent = {
                 TransactionExtraInfo(tx)
             },
-            overlineContent = { Text((tx.timestamp as Timestamp).ms.toRelativeTime(context).toString()) },
+            overlineContent = { Text(tx.timestamp.ms.toRelativeTime(context).toString()) },
             colors = ListItemDefaults.colors(
                 containerColor = if (isSelected) {
                     MaterialTheme.colorScheme.secondaryContainer
@@ -400,24 +422,27 @@ fun TransactionAmountInfo(
 ) {
     Column(horizontalAlignment = Alignment.End) {
         ProvideTextStyle(MaterialTheme.typography.titleLarge) {
-            val amountStr = (tx.amountEffective as Amount).withSpec(spec).toString(showSymbol = false)
+            val amountStr = tx.amountEffective.withSpec(spec).toString(showSymbol = false)
             when (tx.amountType) {
                 Positive -> Text(
                     stringResource(R.string.amount_positive, amountStr),
-                    color = if (tx.txState.major == Pending)
+                    color = if (tx.txState.major == Pending || tx.txState.major == Dialog)
                         Color.Unspecified else colorResource(R.color.green),
                 )
                 Negative -> Text(
                     stringResource(R.string.amount_negative, amountStr),
-                    color = if (tx.txState.major == Pending)
+                    color = if (tx.txState.major == Pending || tx.txState.major == Dialog)
                         Color.Unspecified else MaterialTheme.colorScheme.error,
                 )
                 Neutral -> Text(amountStr)
             }
         }
 
-        if (tx.txState.major == Pending) {
-            Badge(Modifier.padding(top = 3.dp)) {
+        if (tx.txState.major == Pending || tx.txState.major == Dialog) {
+            Badge(
+                Modifier.padding(top = 3.dp),
+                containerColor = MaterialTheme.colorScheme.secondary,
+            ) {
                 Text(stringResource(R.string.transaction_pending))
             }
         }
@@ -432,6 +457,10 @@ fun TransactionExtraInfo(tx: Transaction) {
             color = MaterialTheme.colorScheme.error,
         )
 
+        tx.txState.minor == Repurchase -> Text(
+            stringResource(R.string.payment_repurchase),
+        )
+
         tx.txState.major == Failed -> Text(
             stringResource(R.string.payment_failed),
             color = MaterialTheme.colorScheme.error,
@@ -444,11 +473,16 @@ fun TransactionExtraInfo(tx: Transaction) {
 
         tx.txState.major == Pending -> when(tx.txState.minor) {
             BankConfirmTransfer -> Text(stringResource(R.string.withdraw_waiting_confirm))
+            KycInit,
             BalanceKycInit -> Text(stringResource(R.string.transaction_preparing_kyc))
-            KycRequired -> Text(stringResource(R.string.transaction_action_kyc_bank))
-            BalanceKycRequired -> Text(stringResource(R.string.transaction_action_kyc_balance))
-            else -> Text(stringResource(R.string.transaction_pending))
+            KycRequired,
+            KycAuthRequired,
+            BalanceKycRequired,
+            MergeKycRequired -> Text(stringResource(R.string.transactions_required_kyc))
+            else -> {}
         }
+
+        tx.txState.major == Dialog -> {}
 
         tx is TransactionWithdrawal && !tx.confirmed -> Text(stringResource(R.string.withdraw_waiting_confirm))
         tx is TransactionPeerPushCredit && tx.info.summary != null -> Text(tx.info.summary)
@@ -492,6 +526,10 @@ fun TransactionsComposableDonePreview() {
         amountRaw = Amount.fromString("TESTKUDOS", "42.23"),
         amountEffective = Amount.fromString("TESTKUDOS", "42.1337"),
         error = TalerErrorInfo(code = TalerErrorCode.WALLET_WITHDRAWAL_KYC_REQUIRED),
+        scopes = listOf(Exchange(
+            currency = "TESTKUDOS",
+            url = "exchange.test.taler.net",
+        ))
     )
 
     val transactions = listOf(t)
@@ -502,6 +540,7 @@ fun TransactionsComposableDonePreview() {
             balance = previewBalance,
             currencySpec = null,
             txResult = Success(transactions),
+            txStateFilter = null,
             onTransactionClick = {},
             onTransactionsDelete = {},
             onShowBalancesClicked = {},
@@ -522,6 +561,10 @@ fun TransactionsComposablePendingPreview() {
         amountRaw = Amount.fromString("TESTKUDOS", "42.23"),
         amountEffective = Amount.fromString("TESTKUDOS", "42.1337"),
         error = TalerErrorInfo(code = TalerErrorCode.WALLET_WITHDRAWAL_KYC_REQUIRED),
+        scopes = listOf(Exchange(
+            currency = "TESTKUDOS",
+            url = "exchange.test.taler.net",
+        ))
     )
 
     val transactions = listOf(t)
@@ -532,6 +575,7 @@ fun TransactionsComposablePendingPreview() {
             balance = previewBalance,
             currencySpec = null,
             txResult = Success(transactions),
+            txStateFilter = Nonfinal,
             onTransactionClick = {},
             onTransactionsDelete = {},
             onShowBalancesClicked = {},
@@ -548,6 +592,7 @@ fun TransactionsComposableEmptyPreview() {
             balance = previewBalance,
             currencySpec = null,
             txResult = Success(listOf()),
+            txStateFilter = null,
             onTransactionClick = {},
             onTransactionsDelete = {},
             onShowBalancesClicked = {},
@@ -564,6 +609,7 @@ fun TransactionsComposableLoadingPreview() {
             balance = previewBalance,
             currencySpec = null,
             txResult = None,
+            txStateFilter = null,
             onTransactionClick = {},
             onTransactionsDelete = {},
             onShowBalancesClicked = {},

@@ -31,11 +31,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.database.data_models.CurrencySpecification
+import net.taler.common.Amount
+import net.taler.common.CurrencySpecification
+import net.taler.common.RelativeTime
+import net.taler.common.Timestamp
+import net.taler.common.toAbsoluteTime
 import net.taler.wallet.BottomInsetsSpacer
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorCode
 import net.taler.wallet.backend.TalerErrorInfo
+import net.taler.wallet.balances.ScopeInfo
 import net.taler.wallet.cleanExchange
 import net.taler.wallet.transactions.ActionButton
 import net.taler.wallet.transactions.ActionListener
@@ -55,8 +60,6 @@ import net.taler.wallet.transactions.TransactionWithdrawal
 import net.taler.wallet.transactions.TransitionsComposable
 import net.taler.wallet.transactions.WithdrawalDetails.ManualTransfer
 import net.taler.wallet.transactions.WithdrawalExchangeAccountDetails
-import net.taler.database.data_models.*
-import net.taler.utils.android.toAbsoluteTime
 
 @Composable
 fun TransactionWithdrawalComposable(
@@ -93,8 +96,8 @@ fun TransactionWithdrawalComposable(
             )
         }
 
-        if (t.amountRaw.compareTo(t.amountEffective) > 0) {
-            val fee : Amount= t.amountRaw - t.amountEffective
+        if (t.amountRaw > t.amountEffective) {
+            val fee = t.amountRaw - t.amountEffective
             TransactionAmountComposable(
                 label = stringResource(id = R.string.amount_fee),
                 amount = fee.withSpec(spec),
@@ -108,10 +111,12 @@ fun TransactionWithdrawalComposable(
             amountType = AmountType.Positive,
         )
 
-        TransactionInfoComposable(
-            label = stringResource(id = R.string.withdraw_exchange),
-            info = cleanExchange(t.exchangeBaseUrl),
-        )
+        if (t.exchangeBaseUrl != null) {
+            TransactionInfoComposable(
+                label = stringResource(id = R.string.withdraw_exchange),
+                info = cleanExchange(t.exchangeBaseUrl),
+            )
+        }
         
         TransitionsComposable(t, devMode, onTransition)
 
@@ -152,6 +157,10 @@ fun TransactionWithdrawalComposablePreview() {
         amountRaw = Amount.fromString("TESTKUDOS", "42.23"),
         amountEffective = Amount.fromString("TESTKUDOS", "42.1337"),
         error = TalerErrorInfo(code = TalerErrorCode.WALLET_WITHDRAWAL_KYC_REQUIRED),
+        scopes = listOf(ScopeInfo.Exchange(
+            currency = "TESTKUDOS",
+            url = "exchange.test.taler.net",
+        ))
     )
 
     val listener = object : ActionListener {

@@ -17,7 +17,7 @@
 package net.taler.wallet.peer
 
 import kotlinx.serialization.Serializable
-import net.taler.database.data_models.Amount
+import net.taler.common.Amount
 import net.taler.wallet.backend.TalerErrorInfo
 
 sealed class IncomingState
@@ -47,7 +47,9 @@ class IncomingTosReview(
 class IncomingAccepting(s: IncomingTerms) :
     IncomingTerms(s.amountRaw, s.amountEffective, s.contractTerms, s.id)
 
-data object IncomingAccepted : IncomingState()
+data class IncomingAccepted(
+    val transactionId: String,
+) : IncomingState()
 
 data class IncomingError(
     val info: TalerErrorInfo,

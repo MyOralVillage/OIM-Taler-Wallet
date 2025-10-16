@@ -17,6 +17,8 @@
 package net.taler.wallet.peer
 
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,10 +31,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.database.data_models.*
+import net.taler.common.Amount
+import net.taler.common.CurrencySpecification
+import net.taler.common.Timestamp
 import net.taler.wallet.R
 import net.taler.wallet.backend.TalerErrorCode.EXCHANGE_GENERIC_KYC_REQUIRED
 import net.taler.wallet.backend.TalerErrorInfo
+import net.taler.wallet.balances.ScopeInfo
 import net.taler.wallet.compose.QrCodeUriComposable
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.compose.getQrCodeSize
@@ -45,8 +50,10 @@ import net.taler.wallet.transactions.TransactionAction.Retry
 import net.taler.wallet.transactions.TransactionAction.Suspend
 import net.taler.wallet.transactions.TransactionAmountComposable
 import net.taler.wallet.transactions.TransactionInfoComposable
+import net.taler.wallet.transactions.TransactionMajorState.Done
 import net.taler.wallet.transactions.TransactionMajorState.Pending
 import net.taler.wallet.transactions.TransactionMinorState.CreatePurse
+import net.taler.wallet.transactions.TransactionMinorState.MergeKycRequired
 import net.taler.wallet.transactions.TransactionMinorState.Ready
 import net.taler.wallet.transactions.TransactionPeerComposable
 import net.taler.wallet.transactions.TransactionPeerPushDebit
@@ -77,7 +84,11 @@ fun ColumnScope.TransactionPeerPushDebitComposable(t: TransactionPeerPushDebit, 
     }
 
     TransactionAmountComposable(
-        label = stringResource(id = R.string.transaction_paid),
+        label = if (t.txState.major == Done) {
+            stringResource(id = R.string.amount_sent)
+        } else {
+            stringResource(R.string.amount_send)
+        },
         amount = t.amountEffective.withSpec(spec),
         amountType = AmountType.Negative,
     )
@@ -95,7 +106,7 @@ fun ColumnScope.PeerQrCode(
     talerUri: String?,
     instructionResId: Int,
 ) {
-    if (state == TransactionState(Pending)) {
+    if (state == TransactionState(Pending) && state.minor != MergeKycRequired) {
         Text(
             modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
             style = MaterialTheme.typography.titleLarge,
@@ -104,6 +115,7 @@ fun ColumnScope.PeerQrCode(
         )
 
         if (state.minor == Ready && talerUri != null) {
+            Spacer(Modifier.height(8.dp))
             QrCodeUriComposable(
                 talerUri = talerUri,
                 clipBoardLabel = "Push payment",
@@ -125,7 +137,6 @@ fun ColumnScope.PeerQrCode(
             )
         }
     }
-
 }
 
 @Preview
@@ -145,6 +156,10 @@ fun TransactionPeerPushDebitPreview(loading: Boolean = false) {
         ),
         talerUri = "https://exchange.example.org/peer/pull/credit",
         error = TalerErrorInfo(code = EXCHANGE_GENERIC_KYC_REQUIRED),
+        scopes = listOf(ScopeInfo.Exchange(
+            currency = "TESTKUDOS",
+            url = "exchange.test.taler.net",
+        ))
     )
 
     TalerSurface {

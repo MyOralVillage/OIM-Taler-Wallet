@@ -36,8 +36,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asFlow
 import com.google.accompanist.themeadapter.material3.Mdc3Theme
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import net.taler.common.liveData.Event
-import net.taler.common.liveData.toEvent
+import net.taler.common.Event
+import net.taler.common.toEvent
 import net.taler.wallet.R
 import net.taler.wallet.cleanExchange
 import net.taler.wallet.compose.collectAsStateLifecycleAware

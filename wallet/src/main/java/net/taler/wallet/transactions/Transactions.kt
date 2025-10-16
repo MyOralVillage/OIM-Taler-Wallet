@@ -22,6 +22,7 @@ import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.IdRes
 import androidx.annotation.StringRes
+import androidx.core.net.toUri
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -34,35 +35,34 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonElement
-import net.taler.database.data_models.*
+import net.taler.common.Amount
+import net.taler.common.Bech32
+import net.taler.common.ContractProduct
+import net.taler.common.ContractTerms
+import net.taler.common.Timestamp
 import net.taler.wallet.R
 import net.taler.wallet.TAG
 import net.taler.wallet.backend.TalerErrorCode
 import net.taler.wallet.backend.TalerErrorInfo
+import net.taler.common.CurrencySpecification
+import net.taler.common.Merchant
+import net.taler.common.RelativeTime
+import net.taler.wallet.balances.ScopeInfo
 import net.taler.wallet.refund.RefundPaymentInfo
 import net.taler.wallet.transactions.TransactionMajorState.Done
 import net.taler.wallet.transactions.TransactionMajorState.None
 import net.taler.wallet.transactions.TransactionMajorState.Pending
 import net.taler.wallet.transactions.WithdrawalDetails.ManualTransfer
 import net.taler.wallet.transactions.WithdrawalDetails.TalerBankIntegrationApi
+import net.taler.wallet.withdraw.TransferData
 import java.util.UUID
-import net.taler.common.utils.model.ContractMerchant
-import net.taler.common.utils.model.ContractProduct
-import androidx.core.net.toUri
 
-/** represents a list of GNU Taler transactions */
 @Serializable
 data class Transactions(
     @Serializable(with = TransactionListSerializer::class)
     val transactions: List<Transaction>,
 )
 
-
-/**
- * Serializer for a list of transactions.
- * Handles deserialization of the transaction list.
- * Serialization is not implemented.
- */
 class TransactionListSerializer : KSerializer<List<Transaction>> {
     private val serializer = ListSerializer(TransactionSerializer())
     override val descriptor: SerialDescriptor = serializer.descriptor
@@ -76,11 +76,6 @@ class TransactionListSerializer : KSerializer<List<Transaction>> {
     }
 }
 
-/**
- * Serializer for a single transactions
- * Handles deserialization of the transaction list.
- * Serialization is not implemented.
- */
 class TransactionSerializer : KSerializer<Transaction> {
 
     private val serializer = Transaction.serializer()
@@ -118,6 +113,7 @@ sealed class Transaction {
     abstract val error: TalerErrorInfo?
     abstract val amountRaw: Amount
     abstract val amountEffective: Amount
+    abstract val scopes: List<ScopeInfo>
 
     @get:DrawableRes
     abstract val icon: Int
@@ -169,11 +165,12 @@ class TransactionWithdrawal(
     override val txState: TransactionState,
     override val txActions: List<TransactionAction>,
     val kycUrl: String? = null,
-    val exchangeBaseUrl: String,
+    val exchangeBaseUrl: String? = null,
     val withdrawalDetails: WithdrawalDetails,
     override val error: TalerErrorInfo? = null,
     override val amountRaw: Amount,
     override val amountEffective: Amount,
+    override val scopes: List<ScopeInfo>,
 ) : Transaction() {
     override val icon = R.drawable.transaction_withdrawal
 
@@ -274,6 +271,56 @@ data class WithdrawalExchangeAccountDetails (
         @SerialName("error")
         Error;
     }
+
+    fun getTransferDetails(
+        amountRaw: Amount,
+        amountEffective: Amount,
+    ): TransferData? {
+        val uri = paytoUri.trim().toUri()
+        val transferAmount = (transferAmount
+            ?: uri.getQueryParameter("amount")
+                ?.let { Amount.fromJSONString(it) }
+            ?: amountEffective).withSpec(currencySpecification)
+        return if ("bitcoin".equals(uri.authority, true)) {
+            val msg = uri.getQueryParameter("message").orEmpty()
+            val reg = "\\b([A-Z0-9]{52})\\b".toRegex().find(msg)
+            val reserve = reg?.value ?: uri.getQueryParameter("subject")!!
+            val segwitAddresses =
+                Bech32.generateFakeSegwitAddress(reserve, uri.pathSegments.first())
+            TransferData.Bitcoin(
+                account = uri.lastPathSegment!!,
+                segwitAddresses = segwitAddresses,
+                subject = reserve,
+                amountRaw = amountRaw,
+                amountEffective = amountEffective,
+                transferAmount = transferAmount,
+                withdrawalAccount = copy(paytoUri = uri.toString()),
+            )
+        } else if (uri.authority.equals("x-taler-bank", true)) {
+            TransferData.Taler(
+                account = uri.lastPathSegment!!,
+                receiverName = uri.getQueryParameter("receiver-name"),
+                subject = uri.getQueryParameter("message") ?: "Error: No message in URI",
+                amountRaw = amountRaw,
+                amountEffective = amountEffective,
+                exchangeBaseUrl = uri.pathSegments[0] ?: return null,
+                transferAmount = transferAmount,
+                withdrawalAccount = copy(paytoUri = uri.toString()),
+            )
+        } else if (uri.authority.equals("iban", true)) {
+            TransferData.IBAN(
+                iban = uri.lastPathSegment!!,
+                receiverName = uri.getQueryParameter("receiver-name"),
+                receiverTown = uri.getQueryParameter("receiver-town"),
+                receiverPostalCode = uri.getQueryParameter("receiver-postal-code"),
+                subject = uri.getQueryParameter("message") ?: "Error: No message in URI",
+                amountRaw = amountRaw,
+                amountEffective = amountEffective,
+                transferAmount = transferAmount,
+                withdrawalAccount = copy(paytoUri = uri.toString()),
+            )
+        } else null
+    }
 }
 
 @Serializable
@@ -316,9 +363,11 @@ class TransactionPayment(
     override val txState: TransactionState,
     override val txActions: List<TransactionAction>,
     val info: TransactionInfo,
+    val contractTerms: ContractTerms? = null,
     override val error: TalerErrorInfo? = null,
     override val amountRaw: Amount,
     override val amountEffective: Amount,
+    override val scopes: List<ScopeInfo>,
     val posConfirmation: String? = null,
 ) : Transaction() {
     override val icon = R.drawable.transaction_payment
@@ -333,7 +382,7 @@ class TransactionPayment(
 @Serializable
 class TransactionInfo(
     val orderId: String,
-    val merchant: ContractMerchant,
+    val merchant: Merchant,
     val summary: String,
     @SerialName("summary_i18n")
     val summaryI18n: Map<String, String>? = null,
@@ -361,6 +410,7 @@ class TransactionRefund(
     override val error: TalerErrorInfo? = null,
     override val amountRaw: Amount,
     override val amountEffective: Amount,
+    override val scopes: List<ScopeInfo>,
 ) : Transaction() {
     override val icon = R.drawable.transaction_refund
     override val detailPageNav = R.id.action_nav_transactions_detail_refund
@@ -382,6 +432,7 @@ class TransactionRefresh(
     override val error: TalerErrorInfo? = null,
     override val amountRaw: Amount,
     override val amountEffective: Amount,
+    override val scopes: List<ScopeInfo>,
 ) : Transaction() {
     override val icon = R.drawable.transaction_refresh
     override val detailPageNav = R.id.action_nav_transactions_detail_refresh
@@ -402,9 +453,12 @@ class TransactionDeposit(
     override val timestamp: Timestamp,
     override val txState: TransactionState,
     override val txActions: List<TransactionAction>,
+    val kycUrl: String? = null,
+    val kycAuthTransferInfo: KycAuthTransferInfo? = null,
     override val error: TalerErrorInfo? = null,
     override val amountRaw: Amount,
     override val amountEffective: Amount,
+    override val scopes: List<ScopeInfo>,
     val targetPaytoUri: String,
     val depositGroupId: String,
 ) : Transaction() {
@@ -414,7 +468,7 @@ class TransactionDeposit(
     @Transient
     override val amountType = AmountType.Negative
     override fun getTitle(context: Context): String {
-        val uri = targetPaytoUri.toUri()
+        val uri = Uri.parse(targetPaytoUri)
         return uri.getQueryParameter("receiver-name")?.let { receiverName ->
             context.getString(R.string.transaction_deposit_to, receiverName)
         } ?: context.getString(R.string.transaction_deposit)
@@ -422,6 +476,13 @@ class TransactionDeposit(
 
     override val generalTitleRes = R.string.transaction_deposit
 }
+
+@Serializable
+data class KycAuthTransferInfo(
+    val debitPaytoUri: String,
+    val accountPub: String,
+    val creditPaytoUris: List<String>,
+)
 
 @Serializable
 data class PeerInfoShort(
@@ -443,6 +504,7 @@ class TransactionPeerPullDebit(
     override val error: TalerErrorInfo? = null,
     override val amountRaw: Amount,
     override val amountEffective: Amount,
+    override val scopes: List<ScopeInfo>,
     val info: PeerInfoShort,
 ) : Transaction() {
     override val icon = R.drawable.transaction_p2p_outgoing
@@ -476,6 +538,7 @@ class TransactionPeerPullCredit(
     override val error: TalerErrorInfo? = null,
     override val amountRaw: Amount,
     override val amountEffective: Amount,
+    override val scopes: List<ScopeInfo>,
     val info: PeerInfoShort,
     val talerUri: String,
     // val completed: Boolean, maybe
@@ -505,6 +568,7 @@ class TransactionPeerPushDebit(
     override val error: TalerErrorInfo? = null,
     override val amountRaw: Amount,
     override val amountEffective: Amount,
+    override val scopes: List<ScopeInfo>,
     val info: PeerInfoShort,
     val talerUri: String? = null,
     // val completed: Boolean, definitely
@@ -540,6 +604,7 @@ class TransactionPeerPushCredit(
     override val error: TalerErrorInfo? = null,
     override val amountRaw: Amount,
     override val amountEffective: Amount,
+    override val scopes: List<ScopeInfo>,
     val info: PeerInfoShort,
 ) : Transaction() {
     override val icon = R.drawable.transaction_p2p_incoming
@@ -572,6 +637,7 @@ class TransactionDenomLoss(
     override val error: TalerErrorInfo? = null,
     override val amountRaw: Amount,
     override val amountEffective: Amount,
+    override val scopes: List<ScopeInfo>,
     val lossEventType: LossEventType,
 ): Transaction() {
     override val icon: Int = R.drawable.transaction_loss
@@ -615,6 +681,10 @@ class DummyTransaction(
     override val detailPageNav: Int = R.id.nav_transactions_detail_dummy
     override val amountType: AmountType = AmountType.Neutral
     override val generalTitleRes: Int = R.string.transaction_dummy_title
+    override val scopes: List<ScopeInfo> = listOf(ScopeInfo.Exchange(
+        currency = "TESTKUDOS",
+        url = "exchange.test.taler.net",
+    ))
     override fun getTitle(context: Context): String {
         return context.getString(R.string.transaction_dummy_title)
     }

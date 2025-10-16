@@ -14,7 +14,9 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-import net.taler.common.utils.crypto.Bech32
+package net.taler.wallet.withdraw
+
+import net.taler.common.Bech32.Companion.generateFakeSegwitAddress
 import org.junit.Assert
 import org.junit.Test
 
@@ -22,10 +24,8 @@ class WithdrawManagerKtTest {
 
     @Test
     fun generateMainnet() {
-        val addresses = Bech32.generateFakeSegwitAddress("54ZN9AMVN1R0YZ68ZPVHHQA4KZE1V037M05FNMYH4JQ596YAKJEG",
+        val (addr1, addr2) = generateFakeSegwitAddress("54ZN9AMVN1R0YZ68ZPVHHQA4KZE1V037M05FNMYH4JQ596YAKJEG",
             "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq")
-        val addr1 = addresses[0]
-        val addr2 = addresses[1]
 
         Assert.assertEquals(addr1, "bc1q9yl4f23f8a224xagwq8hej8akuvd63yl8nyedj")
         Assert.assertEquals(addr2, "bc1q4yl4f2kurkqx0gq2ltfazf9w2jdu48yaqlghnp")
@@ -33,10 +33,8 @@ class WithdrawManagerKtTest {
 
     @Test
     fun generateTestnet() {
-        val addresses = Bech32.generateFakeSegwitAddress("54ZN9AMVN1R0YZ68ZPVHHQA4KZE1V037M05FNMYH4JQ596YAKJEG",
+        val (addr1, addr2) = generateFakeSegwitAddress("54ZN9AMVN1R0YZ68ZPVHHQA4KZE1V037M05FNMYH4JQ596YAKJEG",
             "tb1qhxrhccqexg0dv4nltgkuw4fg2ce7muplmjsn0v")
-        val addr1 = addresses[0]
-        val addr2 = addresses[1]
 
         Assert.assertEquals(addr1, "tb1q9yl4f23f8a224xagwq8hej8akuvd63yld4l2kp")
         Assert.assertEquals(addr2, "tb1q4yl4f2kurkqx0gq2ltfazf9w2jdu48ya2enygj")
@@ -44,10 +42,8 @@ class WithdrawManagerKtTest {
 
     @Test
     fun generateRegnet() {
-        val addresses = Bech32.generateFakeSegwitAddress("54ZN9AMVN1R0YZ68ZPVHHQA4KZE1V037M05FNMYH4JQ596YAKJEG",
+        val (addr1, addr2) = generateFakeSegwitAddress("54ZN9AMVN1R0YZ68ZPVHHQA4KZE1V037M05FNMYH4JQ596YAKJEG",
             "bcrtqhxrhccqexg0dv4nltgkuw4fg2ce7muplmjsn0v")
-        val addr1 = addresses[0]
-        val addr2 = addresses[1]
 
         Assert.assertEquals(addr1, "bcrt1q9yl4f23f8a224xagwq8hej8akuvd63yl0ux8pg")
         Assert.assertEquals(addr2, "bcrt1q4yl4f2kurkqx0gq2ltfazf9w2jdu48yags2flm")

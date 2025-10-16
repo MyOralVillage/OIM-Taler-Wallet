@@ -20,35 +20,41 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.database.data_models.Amount
-import net.taler.database.data_models.RelativeTime
-import net.taler.database.data_models.Timestamp
-import net.taler.utils.android.toAbsoluteTime
+import net.taler.common.Amount
+import net.taler.common.RelativeTime
+import net.taler.common.Timestamp
+import net.taler.common.toAbsoluteTime
 import net.taler.wallet.R
+import net.taler.wallet.balances.ScopeInfo
+import net.taler.wallet.compose.Banner
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.transactions.TransactionMajorState.Aborted
 import net.taler.wallet.transactions.TransactionMajorState.Aborting
 import net.taler.wallet.transactions.TransactionMajorState.Done
 import net.taler.wallet.transactions.TransactionMajorState.Expired
 import net.taler.wallet.transactions.TransactionMajorState.Failed
+import net.taler.wallet.transactions.TransactionMajorState.Finalizing
 import net.taler.wallet.transactions.TransactionMajorState.Pending
 import net.taler.wallet.transactions.TransactionMajorState.Suspended
 import net.taler.wallet.transactions.TransactionMinorState.BalanceKycInit
 import net.taler.wallet.transactions.TransactionMinorState.BalanceKycRequired
 import net.taler.wallet.transactions.TransactionMinorState.BankConfirmTransfer
+import net.taler.wallet.transactions.TransactionMinorState.KycAuthRequired
+import net.taler.wallet.transactions.TransactionMinorState.KycInit
 import net.taler.wallet.transactions.TransactionMinorState.KycRequired
+import net.taler.wallet.transactions.TransactionMinorState.MergeKycRequired
+import net.taler.wallet.transactions.TransactionMinorState.Repurchase
 import net.taler.wallet.transactions.WithdrawalDetails.ManualTransfer
 
 @Composable
@@ -59,55 +65,65 @@ fun TransactionStateComposable(
 ) {
     val context = LocalContext.current
     val message = when (state) {
+        TransactionState(Done) -> stringResource(R.string.transaction_state_done)
         TransactionState(Pending, BankConfirmTransfer) -> stringResource(R.string.transaction_state_pending_bank)
+        TransactionState(Pending, KycInit) -> stringResource(R.string.transaction_preparing_kyc)
         TransactionState(Pending, BalanceKycInit) -> stringResource(R.string.transaction_preparing_kyc)
         TransactionState(Pending, KycRequired) -> stringResource(R.string.transaction_state_pending_kyc_bank)
-        TransactionState(Pending, BalanceKycRequired) -> stringResource(R.string.transaction_state_pending_kyc_balance)
+        TransactionState(Pending, BalanceKycRequired) -> stringResource(R.string.transaction_state_pending_kyc_bank)
+        TransactionState(Pending, MergeKycRequired) -> stringResource(R.string.transaction_state_pending_kyc_bank)
+        TransactionState(Pending, KycAuthRequired) -> stringResource(R.string.transaction_state_pending_kyc_auth)
         TransactionState(Pending) -> stringResource(R.string.transaction_state_pending)
         TransactionState(Aborted) -> if (tx is TransactionWithdrawal && tx.withdrawalDetails is ManualTransfer) {
             stringResource(
                 R.string.transaction_state_aborted_manual,
-                (
-                    (tx.timestamp + tx.withdrawalDetails.reserveClosingDelay) as Timestamp
-                ).ms.toAbsoluteTime(context).toString(),
+                (tx.timestamp + tx.withdrawalDetails.reserveClosingDelay).ms.toAbsoluteTime(context).toString(),
             )
         } else stringResource(R.string.transaction_state_aborted)
         TransactionState(Aborting) -> stringResource(R.string.transaction_state_aborting)
         TransactionState(Suspended) -> stringResource(R.string.transaction_state_suspended)
+        TransactionState(Failed, Repurchase) -> stringResource(R.string.payment_already_paid)
         TransactionState(Failed) -> stringResource(R.string.transaction_state_failed)
+        TransactionState(Finalizing) -> stringResource(R.string.transaction_state_finalizing)
         TransactionState(Expired) -> stringResource(R.string.transaction_state_expired)
         else -> return
     }
 
-    val cardColor = when (state.major) {
-        Aborted, Aborting, Failed, Expired -> MaterialTheme.colorScheme.errorContainer
-        Pending, Suspended -> MaterialTheme.colorScheme.surfaceVariant
+    val cardColor = when (state) {
+        TransactionState(Done) -> colorResource(R.color.green)
+        TransactionState(Pending),
+        TransactionState(Suspended),
+        TransactionState(Failed, Repurchase),
+        TransactionState(Finalizing) -> MaterialTheme.colorScheme.surfaceVariant
+        TransactionState(Aborted),
+        TransactionState(Aborting),
+        TransactionState(Failed),
+        TransactionState(Expired) -> MaterialTheme.colorScheme.errorContainer
         else -> return
     }
 
-    val textColor = when (state.major) {
-        Aborted, Aborting, Failed, Expired -> MaterialTheme.colorScheme.onErrorContainer
-        Pending, Suspended -> MaterialTheme.colorScheme.onSurfaceVariant
+    val textColor = when (state) {
+        TransactionState(Done) -> Color.White
+        TransactionState(Pending),
+        TransactionState(Suspended),
+        TransactionState(Failed, Repurchase),
+        TransactionState(Finalizing) -> MaterialTheme.colorScheme.onSurfaceVariant
+        TransactionState(Aborted),
+        TransactionState(Aborting),
+        TransactionState(Failed),
+        TransactionState(Expired) -> MaterialTheme.colorScheme.onErrorContainer
         else -> return
     }
 
-    Card(
-        modifier = modifier
-            .padding(horizontal = 9.dp)
-            .fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = cardColor,
-        ),
-        shape = ShapeDefaults.ExtraSmall,
+    Banner(
+        modifier = Modifier.padding(horizontal = 9.dp),
+        colors = CardDefaults.cardColors(containerColor = cardColor),
     ) {
         Text(
             modifier = Modifier
-                .padding(10.dp)
                 .fillMaxWidth(),
             text = message,
-            style = MaterialTheme.typography.labelLarge,
             color = textColor,
-            textAlign = TextAlign.Center,
         )
     }
 }
@@ -120,20 +136,25 @@ fun TransactionStateComposablePreview() {
 
             val modifier = Modifier.padding(vertical = 6.dp)
             TransactionStateComposable(modifier, state = TransactionState(Pending, BankConfirmTransfer))
+            TransactionStateComposable(modifier, state = TransactionState(Pending, KycInit))
             TransactionStateComposable(modifier, state = TransactionState(Pending, BalanceKycInit))
             TransactionStateComposable(modifier, state = TransactionState(Pending, KycRequired))
             TransactionStateComposable(modifier, state = TransactionState(Pending, BalanceKycRequired))
+            TransactionStateComposable(modifier, state = TransactionState(Pending, MergeKycRequired))
+            TransactionStateComposable(modifier, state = TransactionState(Pending, KycAuthRequired))
             TransactionStateComposable(modifier, state = TransactionState(Pending))
             TransactionStateComposable(modifier, state = TransactionState(Aborted))
             TransactionStateComposable(modifier, state = TransactionState(Aborting))
             TransactionStateComposable(modifier, state = TransactionState(Suspended))
+            TransactionStateComposable(modifier, state = TransactionState(Failed, Repurchase))
             TransactionStateComposable(modifier, state = TransactionState(Failed))
+            TransactionStateComposable(modifier, state = TransactionState(Finalizing))
             TransactionStateComposable(modifier, state = TransactionState(Expired))
             TransactionStateComposable(modifier, state = TransactionState(Done))
 
             TransactionStateComposable(modifier, state = TransactionState(Aborted), tx = TransactionWithdrawal(
                 transactionId = "1234",
-                timestamp = net.taler.database.data_models.Timestamp.fromMillis(1722629432000L),
+                timestamp = Timestamp.fromMillis(1722629432000L),
                 txState = TransactionState(Aborted),
                 txActions = emptyList(),
                 exchangeBaseUrl = "exchange.demo.taler.net",
@@ -143,6 +164,10 @@ fun TransactionStateComposablePreview() {
                 ),
                 amountRaw = Amount.zero("KUDOS"),
                 amountEffective = Amount.zero("KUDOS"),
+                scopes = listOf(ScopeInfo.Exchange(
+                    currency = "KUDOS",
+                    url = "exchange.demo.taler.net",
+                ))
             ))
         }
     }

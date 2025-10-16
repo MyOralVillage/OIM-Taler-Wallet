@@ -17,7 +17,6 @@
 package net.taler.common
 
 import android.os.Build
-import net.taler.database.data_models.*
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

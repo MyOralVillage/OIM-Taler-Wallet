@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -28,11 +29,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -45,21 +46,20 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_LONG
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import net.taler.common.liveData.EventObserver
-import net.taler.database.data_models.Amount
-import net.taler.database.data_models.CurrencySpecification
+import net.taler.common.Amount
+import net.taler.common.EventObserver
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
+import net.taler.wallet.backend.BackendManager
 import net.taler.wallet.backend.TalerErrorInfo
-import net.taler.wallet.balances.BalanceManager
 import net.taler.wallet.balances.ScopeInfo
 import net.taler.wallet.compose.LoadingScreen
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.compose.collectAsStateLifecycleAware
 import net.taler.wallet.exchanges.ExchangeItem
-import net.taler.wallet.exchanges.ExchangeTosStatus
 import net.taler.wallet.exchanges.SelectExchangeDialogFragment
-import net.taler.wallet.showError
+import net.taler.wallet.withdraw.WithdrawStatus.Status.AlreadyConfirmed
+import net.taler.wallet.withdraw.WithdrawStatus.Status.Error
 import net.taler.wallet.withdraw.WithdrawStatus.Status.InfoReceived
 import net.taler.wallet.withdraw.WithdrawStatus.Status.Loading
 import net.taler.wallet.withdraw.WithdrawStatus.Status.ManualTransferRequired
@@ -73,12 +73,13 @@ class PromptWithdrawFragment: Fragment() {
     private val withdrawManager by lazy { model.withdrawManager }
     private val transactionManager by lazy { model.transactionManager }
     private val exchangeManager by lazy { model.exchangeManager }
-    private val balanceManager : BalanceManager by lazy { model.balanceManager }
+    private val balanceManager by lazy { model.balanceManager }
 
     private val selectExchangeDialog = SelectExchangeDialogFragment()
 
     private var editableCurrency: Boolean = true
     private var navigating: Boolean = false
+    private var acceptingTos: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -89,11 +90,13 @@ class PromptWithdrawFragment: Fragment() {
         val withdrawExchangeUri = arguments?.getString("withdrawExchangeUri")
         val exchangeBaseUrl = arguments?.getString("exchangeBaseUrl")
         val amount = arguments?.getString("amount")?.let { Amount.fromJSONString(it) }
+        val scope: ScopeInfo? = arguments?.getString("scopeInfo")?.let { BackendManager.json.decodeFromString(it) }
         editableCurrency = arguments?.getBoolean("editableCurrency") ?: true
-        val currencies = balanceManager.getCurrencies()
+        val scopes = balanceManager.getScopes()
 
         setContent {
             val status by withdrawManager.withdrawStatus.collectAsStateLifecycleAware()
+            val devMode by model.devMode.observeAsState()
 
             val exchange by remember(status.exchangeBaseUrl) {
                 status.exchangeBaseUrl
@@ -101,23 +104,24 @@ class PromptWithdrawFragment: Fragment() {
                     ?: MutableStateFlow(null)
             }.collectAsStateLifecycleAware(null)
 
-            val defaultCurrency = amount?.currency
-                ?: status.currency
-                ?: transactionManager.selectedScope.value?.currency
-                ?: currencies.firstOrNull()
+            val defaultScope = scope
+                ?: status.scopeInfo
+                ?: transactionManager.selectedScope.value
+                ?: scopes.firstOrNull()
 
             LaunchedEffect(status.status) {
                 if (status.status == None) {
                     if (withdrawUri != null) {
                         // get withdrawal details for taler://withdraw URI
-                        withdrawManager.getWithdrawalDetails(withdrawUri, loading = true)
+                        withdrawManager.prepareBankIntegratedWithdrawal(withdrawUri, loading = true)
                     } else if (withdrawExchangeUri != null) {
                         // get withdrawal details for taler://withdraw-exchange URI
                         withdrawManager.prepareManualWithdrawal(withdrawExchangeUri)
-                    } else if (defaultCurrency != null) {
+                    } else if (defaultScope != null && !status.isCashAcceptor) {
                         // get withdrawal details for available data
                         withdrawManager.getWithdrawalDetails(
-                            amount = amount ?: Amount.zero(defaultCurrency),
+                            amount = amount ?: Amount.zero(defaultScope.currency),
+                            scopeInfo = scope ?: defaultScope,
                             exchangeBaseUrl = exchangeBaseUrl,
                             loading = true,
                         )
@@ -125,44 +129,52 @@ class PromptWithdrawFragment: Fragment() {
                 }
             }
 
-            val currencySpec: CurrencySpecification? = remember(exchange?.scopeInfo) {
+            val currencySpec = remember(exchange?.scopeInfo) {
                 exchange?.scopeInfo?.let { scopeInfo ->
-                    balanceManager.getSpecForScopeInfo(scopeInfo)
+                    exchangeManager.getSpecForScopeInfo(scopeInfo)
                 } ?: status.currency?.let {
-                    balanceManager.getSpecForCurrency(it)
+                    exchangeManager.getSpecForCurrency(it)
                 }
             }
+
+            LaunchedEffect(currencySpec, amount) {
+                (requireActivity() as AppCompatActivity).apply {
+                    supportActionBar?.title = currencySpec?.symbol?.let { symbol ->
+                        getString(R.string.nav_prompt_withdraw_currency, symbol)
+                    } ?: amount?.currency?.let { currency ->
+                        getString(R.string.nav_prompt_withdraw_currency, currency)
+                    } ?: getString(R.string.nav_prompt_withdraw)
+                }
+            }
+
             TalerSurface {
                 status.let { s ->
-                    if (s.error != null) {
-                        WithdrawalError(error = s.error)
-                        return@let
-                    }
-
-                    if (defaultCurrency == null) {
+                    if (defaultScope == null) {
                         LoadingScreen()
                         return@let
                     }
 
                     when (s.status) {
-                        Loading -> LoadingScreen()
+                        Loading, AlreadyConfirmed -> LoadingScreen()
 
-                        None, InfoReceived, TosReviewRequired, Updating -> {
+                        None, Error, InfoReceived, TosReviewRequired, Updating -> {
                             // TODO: use scopeInfo instead of currency!
                             WithdrawalShowInfo(
                                 status = s,
-                                defaultCurrency = defaultCurrency,
-                                editableCurrency = editableCurrency,
-                                currencies = currencies,
+                                devMode = devMode ?: false,
+                                defaultScope = defaultScope,
+                                editableScope = editableCurrency,
+                                scopes = scopes,
                                 spec = currencySpec,
                                 onSelectExchange = {
                                     selectExchange()
                                 },
-                                onSelectAmount = { amount ->
+                                onSelectAmount = { amount, scope ->
                                     withdrawManager.getWithdrawalDetails(
                                         amount = amount,
+                                        scopeInfo = scope,
                                         // only show loading screen when switching currencies
-                                        loading = amount.currency != status.currency,
+                                        loading = scope != status.scopeInfo,
                                     )
                                 },
                                 onTosReview = {
@@ -189,18 +201,23 @@ class PromptWithdrawFragment: Fragment() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 withdrawManager.withdrawStatus.collect { status ->
-                    if (status.error != null) {
-                        showError(status.error)
-                    }
-
                     if (status.exchangeBaseUrl == null
                         && selectExchangeDialog.dialog?.isShowing != true) {
                         selectExchange()
                     }
 
                     when (status.status) {
-                        Success, ManualTransferRequired -> lifecycleScope.launch {
-                            Snackbar.make(requireView(), R.string.withdraw_initiated, LENGTH_LONG).show()
+                        Success, ManualTransferRequired, AlreadyConfirmed -> lifecycleScope.launch {
+                            Snackbar.make(
+                                requireView(),
+                                if (status.status == AlreadyConfirmed) {
+                                    R.string.withdraw_error_already_confirmed
+                                } else {
+                                    R.string.withdraw_initiated
+                                },
+                                LENGTH_LONG,
+                            ).show()
+
                             status.transactionId?.let {
                                 if (!navigating) {
                                     navigating = true
@@ -208,11 +225,7 @@ class PromptWithdrawFragment: Fragment() {
 
                                 if (transactionManager.selectTransaction(it)) {
                                     status.amountInfo?.scopeInfo?.let { s -> transactionManager.selectScope(s) }
-                                    if (status.status == Success) {
-                                        findNavController().navigate(R.id.action_promptWithdraw_to_nav_transactions_detail_withdrawal)
-                                    } else {
-                                        findNavController().navigate(R.id.action_promptWithdraw_to_nav_exchange_manual_withdrawal_success)
-                                    }
+                                    findNavController().navigate(R.id.action_promptWithdraw_to_nav_transactions_detail_withdrawal)
                                 } else {
                                     findNavController().navigate(R.id.action_promptWithdraw_to_nav_main)
                                 }
@@ -225,11 +238,27 @@ class PromptWithdrawFragment: Fragment() {
             }
         }
 
-        selectExchangeDialog.exchangeSelection.observe(
-            viewLifecycleOwner, EventObserver {
-                    exchange: ExchangeItem -> onExchangeSelected(exchange)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                withdrawManager.withdrawStatus.collect { status ->
+                    when (status.status) {
+                        TosReviewRequired -> {
+                            if (!acceptingTos && transactionManager.selectedScope.value != null) {
+                                acceptingTos = true
+                                val args = bundleOf("exchangeBaseUrl" to status.exchangeBaseUrl)
+                                findNavController().navigate(R.id.action_global_reviewExchangeTos, args)
+                            } else return@collect
+                        }
+
+                        else -> {}
+                    }
+                }
             }
-        )
+        }
+
+        selectExchangeDialog.exchangeSelection.observe(viewLifecycleOwner, EventObserver {
+            onExchangeSelected(it)
+        })
 
         exchangeManager.exchanges.observe(viewLifecycleOwner) { exchanges ->
             // detect ToS acceptation
@@ -264,66 +293,6 @@ fun WithdrawalError(
             text = error.userFacingMsg,
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.error,
-        )
-    }
-}
-
-@Preview
-@Composable
-fun WithdrawalShowInfoPreview() {
-    TalerSurface {
-        WithdrawalShowInfo(
-            WithdrawStatus(
-                status = Updating,
-                talerWithdrawUri = "taler://",
-                currency = "KUDOS",
-                exchangeBaseUrl = "exchange.head.taler.net",
-                transactionId = "tx:343434",
-                error = null,
-                uriInfo = WithdrawalDetailsForUri(
-                    amount = null,
-                    currency = "KUDOS",
-                    editableAmount = true,
-                    maxAmount = Amount.fromJSONString("KUDOS:10"),
-                    wireFee = Amount.fromJSONString("KUDOS:0.2"),
-                    defaultExchangeBaseUrl = "exchange.head.taler.net",
-                    possibleExchanges = listOf(
-                        ExchangeItem(
-                            exchangeBaseUrl = "exchange.demo.taler.net",
-                            currency = "KUDOS",
-                            paytoUris = emptyList(),
-                            scopeInfo = null,
-                            tosStatus = ExchangeTosStatus.Accepted,
-                        ),
-                        ExchangeItem(
-                            exchangeBaseUrl = "exchange.head.taler.net",
-                            currency = "KUDOS",
-                            paytoUris = emptyList(),
-                            scopeInfo = null,
-                            tosStatus = ExchangeTosStatus.Accepted,
-                        ),
-                    ),
-                ),
-                amountInfo = WithdrawalDetailsForAmount(
-                    tosAccepted = true,
-                    amountRaw = Amount.fromJSONString("KUDOS:10.1"),
-                    amountEffective = Amount.fromJSONString("KUDOS:10.2"),
-                    withdrawalAccountsList = emptyList(),
-                    ageRestrictionOptions = listOf(18, 23),
-                    scopeInfo = ScopeInfo.Exchange(
-                        currency = "KUDOS",
-                        url = "exchange.head.taler.net",
-                    ),
-                )
-            ),
-            defaultCurrency = "KUDOS",
-            editableCurrency = true,
-            currencies = listOf("KUDOS", "TESTKUDOS", "NETZBON"),
-            spec = null,
-            onSelectExchange = {},
-            onSelectAmount = {},
-            onTosReview = {},
-            onConfirm = {},
         )
     }
 }

@@ -23,27 +23,40 @@ import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import net.taler.database.data_models.*
-import net.taler.common.utils.model.ContractTerms
+import kotlinx.serialization.encodeToString
+import net.taler.common.Amount
+import net.taler.common.ContractInput
+import net.taler.common.ContractOutput
+import net.taler.common.ContractTerms
+import net.taler.common.TalerUtils.getLocalizedString
 import net.taler.wallet.TAG
 import net.taler.wallet.backend.BackendManager
 import net.taler.wallet.backend.TalerErrorInfo
 import net.taler.wallet.backend.WalletBackendApi
+import net.taler.wallet.balances.ScopeInfo
+import net.taler.wallet.exchanges.ExchangeManager
 import net.taler.wallet.payment.PayStatus.AlreadyPaid
 import net.taler.wallet.payment.PayStatus.InsufficientBalance
 import net.taler.wallet.payment.PreparePayResponse.AlreadyConfirmedResponse
 import net.taler.wallet.payment.PreparePayResponse.InsufficientBalanceResponse
 import net.taler.wallet.payment.PreparePayResponse.PaymentPossibleResponse
 import org.json.JSONObject
+import net.taler.wallet.payment.GetChoicesForPaymentResponse.ChoiceSelectionDetail
+import net.taler.wallet.payment.GetChoicesForPaymentResponse.ChoiceSelectionDetail.PaymentPossible
 
 sealed class PayStatus {
     data object None : PayStatus()
     data object Loading : PayStatus()
     data class Prepared(
-        val contractTerms: ContractTerms,
         val transactionId: String,
-        val amountRaw: Amount,
-        val amountEffective: Amount,
+        val contractTerms: ContractTerms,
+    ) : PayStatus()
+
+    data class Choices(
+        val transactionId: String,
+        val contractTerms: ContractTerms,
+        val choices: List<PayChoiceDetails>,
+        val defaultChoiceIndex: Int? = null,
     ) : PayStatus()
 
     data class Checked(
@@ -52,8 +65,10 @@ sealed class PayStatus {
     ) : PayStatus()
 
     data class InsufficientBalance(
+        val transactionId: String,
         val contractTerms: ContractTerms,
         val amountRaw: Amount,
+        val balanceDetails: PaymentInsufficientBalanceDetails,
     ) : PayStatus()
 
     data class AlreadyPaid(
@@ -66,8 +81,23 @@ sealed class PayStatus {
     ) : PayStatus()
     data class Success(
         val transactionId: String,
-        val currency: String,
+        val automaticExecution: Boolean,
     ) : PayStatus()
+}
+
+data class PayChoiceDetails(
+    val choiceIndex: Int,
+    val amountRaw: Amount,
+    val description: String? = null,
+    val descriptionI18n: Map<String, String>? = null,
+    val inputs: List<ContractInput>,
+    val outputs: List<ContractOutput>,
+    val details: ChoiceSelectionDetail,
+) {
+    val localizedDescription: String?
+        get() = description?.let {
+            getLocalizedString(descriptionI18n, it)
+        }
 }
 
 @Serializable
@@ -79,6 +109,7 @@ data class CheckPayTemplateResponse(
 class PaymentManager(
     private val api: WalletBackendApi,
     private val scope: CoroutineScope,
+    private val exchangeManager: ExchangeManager,
 ) {
 
     private val mPayStatus = MutableLiveData<PayStatus>(PayStatus.None)
@@ -92,21 +123,99 @@ class PaymentManager(
         }.onError {
             handleError("preparePayForUri", it)
         }.onSuccess { response ->
-            mPayStatus.value = when (response) {
-                is PaymentPossibleResponse -> response.toPayStatusPrepared()
-                is InsufficientBalanceResponse -> InsufficientBalance(
-                    contractTerms = response.contractTerms,
-                    amountRaw = response.amountRaw
-                )
-                is AlreadyConfirmedResponse -> AlreadyPaid(
-                    transactionId = response.transactionId,
-                )
+            if (response is AlreadyConfirmedResponse) {
+                mPayStatus.value = AlreadyPaid(response.transactionId)
+                return@onSuccess
             }
+
+            val transactionId = when (response) {
+                is PaymentPossibleResponse -> response.transactionId
+                is InsufficientBalanceResponse -> response.transactionId
+                is PreparePayResponse.ChoiceSelection -> response.transactionId
+                else -> return@onSuccess
+            }
+
+            preparePay(transactionId) {}
         }
     }
 
-    fun confirmPay(transactionId: String, currency: String) = scope.launch {
+    @UiThread
+    fun preparePay(
+        transactionId: String,
+        onSuccess: () -> Unit,
+    ) = scope.launch {
+        api.request("getChoicesForPayment", GetChoicesForPaymentResponse.serializer()) {
+            put("transactionId", transactionId)
+        }.onSuccess { res ->
+            if (res.automaticExecution == true && res.automaticExecutableIndex != null) {
+                confirmPay(transactionId, res.automaticExecutableIndex, automaticExecution = true)
+                return@onSuccess
+            }
+
+            mPayStatus.value = PayStatus.Choices(
+                transactionId = transactionId,
+                contractTerms = res.contractTerms,
+                defaultChoiceIndex = res.defaultChoiceIndex,
+                choices = res.choices.map { choice ->
+                    val spec = exchangeManager.getSpecForCurrency(
+                        choice.amountRaw.currency,
+                        res.contractTerms.exchanges.map {
+                            ScopeInfo.Exchange(choice.amountRaw.currency, it.url)
+                        },
+                    ) ?: exchangeManager.getSpecForCurrency(choice.amountRaw.currency)
+
+                    when (choice) {
+                        is PaymentPossible -> {
+                            choice.copy(
+                                amountRaw = choice.amountRaw.withSpec(spec),
+                                amountEffective = choice.amountEffective.withSpec(spec),
+                            )
+                        }
+
+                        is ChoiceSelectionDetail.InsufficientBalance -> {
+                            choice.copy(amountRaw = choice.amountRaw.withSpec(spec))
+                        }
+                    }
+                }.mapIndexed { i, choice ->
+                    PayChoiceDetails(
+                        choiceIndex = i,
+                        description = choice.description,
+                        descriptionI18n = choice.descriptionI18n,
+                        amountRaw = choice.amountRaw,
+                        inputs = (res.contractTerms as? ContractTerms.V1)
+                            ?.choices?.get(i)?.inputs ?: listOf(),
+                        outputs = (res.contractTerms as? ContractTerms.V1)
+                            ?.choices?.get(i)?.outputs ?: listOf(),
+                        details = choice,
+                    )
+                }.filter {
+                    // Hide auto executable choice
+                    res.automaticExecutableIndex != it.choiceIndex
+                }.sortedWith(
+                    compareByDescending<PayChoiceDetails> {
+                        it.choiceIndex == res.defaultChoiceIndex
+                    }.thenByDescending {
+                        it.details is PaymentPossible
+                    }.thenByDescending {
+                        it.amountRaw
+                    },
+                ),
+            )
+
+            onSuccess()
+        }.onError { error ->
+            handleError("getChoicesForPayment", error)
+        }
+    }
+
+    fun confirmPay(
+        transactionId: String,
+        choiceIndex: Int? = null,
+        automaticExecution: Boolean = false,
+    ) = scope.launch {
+        mPayStatus.postValue(PayStatus.Loading)
         api.request("confirmPay", ConfirmPayResult.serializer()) {
+            choiceIndex?.let { put("choiceIndex", it) }
             put("transactionId", transactionId)
         }.onError {
             handleError("confirmPay", it)
@@ -114,7 +223,7 @@ class PaymentManager(
             mPayStatus.postValue(when (response) {
                 is ConfirmPayResult.Done -> PayStatus.Success(
                     transactionId = response.transactionId,
-                    currency = currency,
+                    automaticExecution = automaticExecution,
                 )
                 is ConfirmPayResult.Pending -> PayStatus.Pending(
                     transactionId = response.transactionId,
@@ -149,13 +258,18 @@ class PaymentManager(
             mPayStatus.value = when (response) {
                 is PaymentPossibleResponse -> response.toPayStatusPrepared()
                 is InsufficientBalanceResponse -> InsufficientBalance(
+                    transactionId = response.transactionId,
                     contractTerms = response.contractTerms,
                     amountRaw = response.amountRaw,
+                    balanceDetails = response.balanceDetails,
                 )
 
                 is AlreadyConfirmedResponse -> AlreadyPaid(
                     transactionId = response.transactionId,
                 )
+
+                // only applies to regular payments
+                is PreparePayResponse.ChoiceSelection -> return@onSuccess
             }
         }
     }

@@ -16,7 +16,6 @@
 
 package net.taler.wallet.settings
 
-//import BalanceManager
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -24,23 +23,95 @@ import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.taler.wallet.R
 import net.taler.wallet.backend.WalletBackendApi
 import net.taler.wallet.backend.WalletResponse.Error
 import net.taler.wallet.backend.WalletResponse.Success
 import net.taler.wallet.balances.BalanceManager
+import net.taler.wallet.balances.ScopeInfo
 import org.json.JSONObject
 
 class SettingsManager(
     private val context: Context,
     private val api: WalletBackendApi,
     private val scope: CoroutineScope,
-    balanceManager: BalanceManager,
-//    private val balanceManager: BalanceManager,
+    private val balanceManager: BalanceManager,
 ) {
+    fun getSelectedScope(c: Context) = c.userPreferencesDataStore.data.map { prefs ->
+        if (prefs.hasSelectedScope()) {
+            ScopeInfo.fromPrefs(prefs.selectedScope)
+        } else {
+            null
+        }
+    }
+
+    fun saveSelectedScope(c: Context, scopeInfo: ScopeInfo?) = scope.launch {
+        c.userPreferencesDataStore.updateData { current ->
+            if (scopeInfo != null) {
+                current.toBuilder()
+                    .setSelectedScope(scopeInfo.toPrefs())
+                    .build()
+            } else {
+                current.toBuilder()
+                    .clearSelectedScope()
+                    .build()
+            }
+        }
+    }
+
+    fun getActionButtonUsed(c: Context) = c.userPreferencesDataStore.data.map { prefs ->
+        if (prefs.hasActionButtonUsed()) {
+            prefs.actionButtonUsed
+        } else {
+            false
+        }
+    }
+
+    fun saveActionButtonUsed(c: Context) = scope.launch {
+        c.userPreferencesDataStore.updateData { current ->
+            current.toBuilder()
+                .setActionButtonUsed(true)
+                .build()
+        }
+    }
+
+    fun getDevModeEnabled(c: Context) = c.userPreferencesDataStore.data.map { prefs ->
+        if (prefs.hasDevModeEnabled()) {
+            prefs.devModeEnabled
+        } else {
+            false
+        }
+    }
+
+    fun setDevModeEnabled(c: Context, enabled: Boolean) = scope.launch {
+        c.userPreferencesDataStore.updateData { current ->
+            current.toBuilder()
+                .setDevModeEnabled(enabled)
+                .build()
+        }
+    }
+
+    fun getBiometricLockEnabled(c: Context) = c.userPreferencesDataStore.data.map { prefs ->
+        if (prefs.hasBiometricLockEnabled()) {
+            prefs.biometricLockEnabled
+        } else {
+            false
+        }
+    }
+
+    fun setBiometricLockEnabled(c: Context, enabled: Boolean) = scope.launch {
+        c.userPreferencesDataStore.updateData { current ->
+            current.toBuilder()
+                .setBiometricLockEnabled(enabled)
+                .build()
+        }
+    }
+
     fun exportLogcat(uri: Uri?) {
         if (uri == null) {
             onLogExportError()
@@ -126,7 +197,7 @@ class SettingsManager(
                         is Success -> {
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(context, R.string.settings_db_import_success, LENGTH_LONG).show()
-//                                balanceManager.loadBalances()
+                                balanceManager.loadBalances()
                             }
                         }
                         is Error -> {
@@ -153,7 +224,7 @@ class SettingsManager(
             when (val response = api.rawRequest("clearDb")) {
                 is Success -> {
                     onSuccess()
-//                    balanceManager.resetBalances()
+                    balanceManager.resetBalances()
                 }
                 is Error -> {
                     Log.e(SettingsManager::class.simpleName, "Error cleaning db: ${response.error}")

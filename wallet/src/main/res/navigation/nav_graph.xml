@@ -101,13 +101,9 @@
         android:label="@string/exchange_list_title" />
 
     <fragment
-        android:id="@+id/nav_exchange_manual_withdrawal_success"
-        android:name="net.taler.wallet.withdraw.manual.ManualWithdrawSuccessFragment"
+        android:id="@+id/nav_wire_transfer_details"
+        android:name="net.taler.wallet.transfer.WireTransferDetailsFragment"
         android:label="@string/withdraw_manual_ready_details_intro">
-        <action
-            android:id="@+id/action_nav_exchange_manual_withdrawal_success_to_nav_main"
-            app:destination="@id/nav_main"
-            app:popUpTo="@id/nav_main" />
     </fragment>
 
     <fragment
@@ -132,6 +128,9 @@
             android:id="@+id/action_nav_deposit_to_nav_main"
             app:destination="@id/nav_main"
             app:popUpTo="@id/nav_main" />
+        <action
+            android:id="@+id/action_nav_deposit_to_known_bank_accounts"
+            app:destination="@id/bankAccountsFragment" />
     </fragment>
 
     <fragment
@@ -180,6 +179,10 @@
             android:id="@+id/action_promptPullPayment_to_nav_main"
             app:destination="@id/nav_main"
             app:popUpTo="@id/nav_main" />
+        <action
+            android:id="@+id/action_promptPullPayment_to_transaction_detail_peer"
+            app:destination="@id/nav_transactions_detail_peer"
+            app:popUpTo="@id/nav_main" />
     </fragment>
 
     <fragment
@@ -189,6 +192,10 @@
         <action
             android:id="@+id/action_promptPushPayment_to_nav_main"
             app:destination="@id/nav_main"
+            app:popUpTo="@id/nav_main" />
+        <action
+            android:id="@+id/action_promptPushPayment_to_transaction_detail_peer"
+            app:destination="@id/nav_transactions_detail_peer"
             app:popUpTo="@id/nav_main" />
     </fragment>
 
@@ -208,11 +215,7 @@
     <fragment
         android:id="@+id/nav_transactions_detail_withdrawal"
         android:name="net.taler.wallet.transactions.TransactionWithdrawalFragment"
-        android:label="@string/withdraw_title">
-        <action
-            android:id="@+id/action_nav_transactions_detail_withdrawal_to_nav_exchange_manual_withdrawal_success"
-            app:destination="@id/nav_exchange_manual_withdrawal_success" />
-    </fragment>
+        android:label="@string/withdraw_title" />
 
     <fragment
         android:id="@+id/nav_transactions_detail_payment"
@@ -278,10 +281,6 @@
             app:destination="@id/nav_main"
             app:popUpTo="@id/nav_main" />
         <action
-            android:id="@+id/action_promptWithdraw_to_nav_exchange_manual_withdrawal_success"
-            app:destination="@id/nav_exchange_manual_withdrawal_success"
-            app:popUpTo="@id/nav_main" />
-        <action
             android:id="@+id/action_promptWithdraw_to_nav_transactions_detail_withdrawal"
             app:destination="@id/nav_transactions_detail_withdrawal"
             app:popUpTo="@id/nav_main" />
@@ -313,6 +312,25 @@
         android:name="net.taler.wallet.withdraw.ErrorFragment"
         android:label="@string/nav_error"
         tools:layout="@layout/fragment_error" />
+
+    <fragment
+        android:id="@+id/bankAccountsFragment"
+        android:name="net.taler.wallet.accounts.BankAccountsFragment"
+        android:label="@string/send_deposit_known_bank_accounts">
+        <action
+            android:id="@+id/action_nav_bank_accounts_to_add_bank_account"
+            app:destination="@+id/addBankAccountFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addBankAccountFragment"
+        android:name="net.taler.wallet.accounts.AddAccountFragment"
+        android:label="@string/send_deposit_account_add">
+        <argument
+            android:name="bankAccountId"
+            app:nullable="true"
+            app:argType="string" />
+    </fragment>
 
     <action
         android:id="@+id/action_global_handle_uri"

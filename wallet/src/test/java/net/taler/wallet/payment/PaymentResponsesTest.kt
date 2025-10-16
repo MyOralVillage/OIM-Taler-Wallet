@@ -30,6 +30,7 @@ class PaymentResponsesTest {
         val jsonStr = """
         {
           "status": "insufficient-balance",
+          "transactionId": "txn:payment:ZVY9B3R99W5EGGTJJMK4JYVS726BS57T4MM6HS2DPE475NGDRDRG",
           "contractTerms": {
             "summary": "Gummy bears (BFH)",
             "amount": "CHF:0.3",
@@ -60,13 +61,27 @@ class PaymentResponsesTest {
               "name": "BFH Department Technik und Informatik",
               "instance": "department"
             },
+            "merchant_base_url": "https://backend.bfh.taler.net/",
             "exchanges": [],
             "auditors": [],
             "merchant_pub": "ZMVDPGGAESGYNMZTE4VHDE5QA5BMT7C9A6GR688KGBPMPATF4MKG",
             "nonce": "W4WNY6D82H3Y8AV57FBTW4M9YR633N1ARRMBJ6R22MWPYB51JS00"
           },
           "proposalId": "BYWTGTHW2TM1FJSM923KD5ZGGFACRYB8EFA461R8AHVK7T9S9ZZG",
-          "amountRaw": "CHF:0.3"
+          "amountRaw": "CHF:0.3",
+          "balanceDetails": {
+            "amountRequested": "CHF:0.3",
+            "wireMethod": "iban",
+            "causeHint": "merchant-deposit-insufficient",
+            "balanceAvailable": "CHF:0.3",
+            "balanceMaterial": "CHF:0.3",
+            "balanceAgeAcceptable": "CHF:0.3",
+            "balanceReceiverAcceptable": "CHF:0.3",
+            "balanceReceiverDepositable": "CHF:0.2",
+            "balanceExchangeDepositable": "CHF:0.2",
+            "maxEffectiveSpendAmount": "CHF:0.3",
+            "perExchange": {}
+          }
         }
     """.trimIndent()
         val response = json.decodeFromString(PreparePayResponse.serializer(), jsonStr)

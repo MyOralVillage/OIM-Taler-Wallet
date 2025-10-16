@@ -25,25 +25,9 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import net.taler.common.R
 import net.taler.common.databinding.BottomsheetErrorBinding
 
-/**
- * A simple [BottomSheetDialogFragment] for displaying error messages.
- *
- * Includes:
- * - A main message ([mainText]).
- * - An optional detailed message ([detailText]).
- * - Close button to dismiss the sheet.
- * - Share button to share the error message via other apps.
- */
 class ErrorBottomSheet : BottomSheetDialogFragment() {
 
     companion object {
-        /**
-         * Creates a new instance of [ErrorBottomSheet] with the given main and detailed texts.
-         *
-         * @param mainText The primary error message to display.
-         * @param detailText Optional detailed message.
-         * @return A configured [ErrorBottomSheet] instance.
-         */
         fun newInstance(mainText: String, detailText: String) = ErrorBottomSheet().apply {
             arguments = Bundle().apply {
                 putString("TEXT_MAIN", mainText)
@@ -62,14 +46,9 @@ class ErrorBottomSheet : BottomSheetDialogFragment() {
         val args = requireArguments()
         val mainText = args.getString("TEXT_MAIN")
         val detailText = args.getString("TEXT_DETAIL")
-
         ui.mainText.text = mainText
-        ui.detailText.text = detailText
-
-        // Close button dismisses the bottom sheet
         ui.closeButton.setOnClickListener { dismiss() }
-
-        // Share button allows sending the error message to other apps
+        ui.detailText.text = detailText
         ui.shareButton.setOnClickListener {
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
@@ -79,7 +58,7 @@ class ErrorBottomSheet : BottomSheetDialogFragment() {
             val shareIntent = Intent.createChooser(sendIntent, null)
             startActivity(shareIntent)
         }
-
         return ui.root
     }
+
 }

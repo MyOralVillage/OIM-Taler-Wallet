@@ -35,64 +35,82 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.database.data_models.Amount
-import net.taler.database.data_models.CurrencySpecification
+import net.taler.common.Amount
+import net.taler.common.CurrencySpecification
 import net.taler.wallet.R
+import net.taler.wallet.balances.ScopeInfo
 import net.taler.wallet.cleanExchange
-import net.taler.wallet.compose.AmountCurrencyField
+import net.taler.wallet.compose.AmountScope
+import net.taler.wallet.compose.AmountScopeField
 import net.taler.wallet.compose.BottomButtonBox
+import net.taler.wallet.compose.TalerSurface
+import net.taler.wallet.compose.WarningLabel
+import net.taler.wallet.exchanges.ExchangeItem
+import net.taler.wallet.exchanges.ExchangeTosStatus
 import net.taler.wallet.systemBarsPaddingBottom
 import net.taler.wallet.transactions.AmountType
 import net.taler.wallet.transactions.TransactionAmountComposable
 import net.taler.wallet.transactions.TransactionInfoComposable
 import net.taler.wallet.useDebounce
+import net.taler.wallet.withdraw.WithdrawStatus.Status.Error
 import net.taler.wallet.withdraw.WithdrawStatus.Status.TosReviewRequired
 import net.taler.wallet.withdraw.WithdrawStatus.Status.Updating
+import net.taler.wallet.withdraw.WithdrawalOperationStatusFlag.Pending
 
 @Composable
 fun WithdrawalShowInfo(
     status: WithdrawStatus,
-    defaultCurrency: String,
-    editableCurrency: Boolean,
-    currencies: List<String>,
+    devMode: Boolean,
+    defaultScope: ScopeInfo,
+    editableScope: Boolean,
+    scopes: List<ScopeInfo>,
     spec: CurrencySpecification?,
-    onSelectAmount: (amount: Amount) -> Unit,
+    onSelectAmount: (amount: Amount, scope: ScopeInfo) -> Unit,
     onSelectExchange: () -> Unit,
     onTosReview: () -> Unit,
     onConfirm: (age: Int?) -> Unit,
 ) {
     val defaultAmount = status.amountInfo?.amountRaw
         ?: status.uriInfo?.amount
-        ?: Amount.zero(defaultCurrency)
+        ?: Amount.zero(defaultScope.currency)
     val maxAmount = status.uriInfo?.maxAmount
     val editableAmount = status.uriInfo?.editableAmount ?: true
-    val wireFee = status.uriInfo?.wireFee ?: Amount.zero(defaultCurrency)
+    val wireFee = status.uriInfo?.wireFee ?: Amount.zero(defaultScope.currency)
     val exchange = status.exchangeBaseUrl
     val possibleExchanges = status.uriInfo?.possibleExchanges ?: emptyList()
     val ageRestrictionOptions = status.amountInfo?.ageRestrictionOptions ?: emptyList()
 
-    var startup by remember { mutableStateOf(true) }
-    var selectedAmount by remember { mutableStateOf(defaultAmount) }
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    var selectedAmount by remember { mutableStateOf(AmountScope(defaultAmount, defaultScope)) }
     var selectedAge by remember { mutableStateOf<Int?>(null) }
-    var error by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
     val insufficientBalance = remember(selectedAmount, maxAmount) {
-        maxAmount == null || selectedAmount > maxAmount
+        maxAmount == null || selectedAmount.amount > maxAmount
     }
 
+    var startup by remember { mutableStateOf(true) }
     selectedAmount.useDebounce {
         if (startup) { // do not fire at startup
             startup = false
         } else {
-            onSelectAmount(it)
+            onSelectAmount(
+                selectedAmount.amount,
+                selectedAmount.scope,
+            )
         }
     }
 
@@ -108,31 +126,76 @@ fun WithdrawalShowInfo(
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            if (editableAmount) {
-                AmountCurrencyField(
+            if (editableScope) AmountScopeField(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
+                amount = selectedAmount.copy(
+                    amount = selectedAmount.amount.withSpec(spec)
+                ),
+                scopes = scopes,
+                editableScope = true,
+                enabledAmount = false,
+                showShortcuts = false,
+                onAmountChanged = { amount ->
+                    selectedAmount = amount
+                },
+            )
+
+            if (status.status == Error && status.error != null) {
+                WithdrawalError(status.error)
+                return
+            } else if (status.isCashAcceptor) {
+                WarningLabel(
+                    label = stringResource(R.string.withdraw_cash_acceptor),
                     modifier = Modifier
                         .padding(16.dp)
                         .fillMaxWidth(),
-                    amount = selectedAmount.withSpec(spec),
-                    currencies = currencies,
-                    editableCurrency = editableCurrency,
-                    onAmountChanged = { untypedAmount: Amount ->
-                        val amount = untypedAmount
-                        selectedAmount = if (amount.currency != status.currency) {
+                )
+            } else if (editableAmount) {
+                AmountScopeField(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 16.dp)
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
+                    amount = selectedAmount.copy(
+                        amount = selectedAmount.amount.withSpec(spec)),
+                    scopes = scopes,
+                    editableScope = false,
+                    enabledAmount = status.status != TosReviewRequired,
+                    onAmountChanged = { amount ->
+                        selectedAmount = if (amount.scope != status.scopeInfo) {
                             // if amount changes, reset to zero!
-                            Amount.zero(amount.currency)
+                            amount.copy(amount = Amount.zero(amount.scope.currency))
                         } else {
                             amount
                         }
                     },
                     label = { Text(stringResource(R.string.amount_withdraw)) },
-                    isError = selectedAmount.isZero() || maxAmount != null && selectedAmount > maxAmount,
+                    isError = selectedAmount.amount.isZero()
+                            || maxAmount != null
+                            && selectedAmount.amount > maxAmount,
                     supportingText = {
                         if (insufficientBalance && maxAmount != null) {
                             Text(stringResource(R.string.amount_excess, maxAmount))
                         }
                     },
+                    showShortcuts = true,
+                    onShortcutSelected = { amount ->
+                        selectedAmount = amount
+                    }
                 )
+
+                if (status.status == TosReviewRequired) Text(
+                    modifier = Modifier.padding(22.dp),
+                    text = stringResource(R.string.withdraw_review_terms),
+                )
+
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus()
+                }
             } else {
                 TransactionAmountComposable(
                     label = if (wireFee.isZero()) {
@@ -140,7 +203,7 @@ fun WithdrawalShowInfo(
                     } else {
                         stringResource(R.string.amount_chosen)
                     },
-                    amount = selectedAmount,
+                    amount = selectedAmount.amount,
                     amountType = if (wireFee.isZero()) {
                         AmountType.Positive
                     } else {
@@ -149,7 +212,7 @@ fun WithdrawalShowInfo(
                 )
             }
 
-            if (!wireFee.isZero()) {
+            if (status.status != TosReviewRequired && !wireFee.isZero()) {
                 TransactionAmountComposable(
                     label = stringResource(R.string.amount_fee),
                     amount = wireFee,
@@ -158,7 +221,7 @@ fun WithdrawalShowInfo(
 
                 TransactionAmountComposable(
                     label = stringResource(R.string.amount_total),
-                    amount = selectedAmount + wireFee,
+                    amount = selectedAmount.amount + wireFee,
                     amountType = AmountType.Positive,
                 )
             }
@@ -168,7 +231,7 @@ fun WithdrawalShowInfo(
                     label = stringResource(R.string.withdraw_exchange),
                     info = cleanExchange(it),
                     trailing = {
-                        if (possibleExchanges.size > 1) {
+                        if (devMode && possibleExchanges.size > 1) {
                             IconButton(
                                 modifier = Modifier.padding(start = 8.dp),
                                 onClick = { onSelectExchange() },
@@ -185,7 +248,7 @@ fun WithdrawalShowInfo(
 
             var expanded by remember { mutableStateOf(false) }
 
-            if (ageRestrictionOptions.isNotEmpty()) {
+            if (status.status != TosReviewRequired && ageRestrictionOptions.isNotEmpty()) {
                 TransactionInfoComposable(
                     label = stringResource(R.string.withdraw_restrict_age),
                     info = selectedAge?.toString()
@@ -230,10 +293,12 @@ fun WithdrawalShowInfo(
             Button(
                 modifier = Modifier
                     .systemBarsPaddingBottom(),
-                enabled = !error
-                        && status.status != Updating
-                        && !selectedAmount.isZero(),
+                enabled = status.status != Updating
+                        && (status.isCashAcceptor
+                        || status.status == TosReviewRequired
+                        || !selectedAmount.amount.isZero()),
                 onClick = {
+                    keyboardController?.hide()
                     if (status.status == TosReviewRequired) {
                         onTosReview()
                     } else onConfirm(selectedAge)
@@ -246,5 +311,98 @@ fun WithdrawalShowInfo(
                 }
             }
         }
+    }
+}
+
+private fun buildPreviewWithdrawStatus(
+    status: WithdrawStatus.Status,
+) = WithdrawStatus(
+    status = status,
+    talerWithdrawUri = "taler://",
+    currency = "KUDOS",
+    exchangeBaseUrl = "exchange.head.taler.net",
+    transactionId = "tx:343434",
+    error = null,
+    uriInfo = WithdrawalDetailsForUri(
+        amount = null,
+        currency = "KUDOS",
+        editableAmount = true,
+        status = Pending,
+        maxAmount = Amount.fromJSONString("KUDOS:10"),
+        wireFee = Amount.fromJSONString("KUDOS:0.2"),
+        defaultExchangeBaseUrl = "exchange.head.taler.net",
+        possibleExchanges = listOf(
+            ExchangeItem(
+                exchangeBaseUrl = "exchange.demo.taler.net",
+                currency = "KUDOS",
+                paytoUris = emptyList(),
+                scopeInfo = null,
+                tosStatus = ExchangeTosStatus.Accepted,
+            ),
+            ExchangeItem(
+                exchangeBaseUrl = "exchange.head.taler.net",
+                currency = "KUDOS",
+                paytoUris = emptyList(),
+                scopeInfo = null,
+                tosStatus = ExchangeTosStatus.Accepted,
+            ),
+        ),
+    ),
+    amountInfo = WithdrawalDetailsForAmount(
+        tosAccepted = true,
+        amountRaw = Amount.fromJSONString("KUDOS:10.1"),
+        amountEffective = Amount.fromJSONString("KUDOS:10.2"),
+        withdrawalAccountsList = emptyList(),
+        ageRestrictionOptions = listOf(18, 23),
+        scopeInfo = ScopeInfo.Exchange(
+            currency = "KUDOS",
+            url = "exchange.head.taler.net",
+        ),
+    )
+)
+
+@Preview
+@Composable
+fun WithdrawalShowInfoUpdatingPreview() {
+    TalerSurface {
+        WithdrawalShowInfo(
+            status = buildPreviewWithdrawStatus(Updating),
+            devMode = true,
+            defaultScope = ScopeInfo.Exchange("KUDOS", "https://exchange.demo.taler.net/"),
+            editableScope = true,
+            scopes = listOf(
+                ScopeInfo.Exchange("KUDOS", "https://exchange.demo.taler.net/"),
+                ScopeInfo.Exchange("TESTKUDOS", "https://exchange.test.taler.net/"),
+                ScopeInfo.Global("CHF"),
+            ),
+            spec = null,
+            onSelectExchange = {},
+            onSelectAmount = { _, _ -> },
+            onTosReview = {},
+            onConfirm = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun WithdrawalShowInfoTosReviewPreview() {
+    TalerSurface {
+        WithdrawalShowInfo(
+            status = buildPreviewWithdrawStatus(TosReviewRequired),
+            devMode = true,
+            defaultScope = ScopeInfo.Exchange("KUDOS", "https://exchange.demo.taler.net/"),
+            editableScope = true,
+            scopes = listOf(
+                ScopeInfo.Exchange("KUDOS", "https://exchange.demo.taler.net/"),
+                ScopeInfo.Exchange("TESTKUDOS", "https://exchange.test.taler.net/"),
+                ScopeInfo.Global("CHF"),
+            ),
+            spec = null,
+            onSelectExchange = {},
+            onSelectAmount = { _, _ -> },
+            onTosReview = {},
+            onConfirm = {},
+        )
     }
 }
