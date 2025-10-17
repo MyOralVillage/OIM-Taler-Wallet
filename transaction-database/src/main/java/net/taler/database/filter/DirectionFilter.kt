@@ -1,6 +1,6 @@
 /*
  * This file is part of GNU Taler
- * (C) 2020 Taler Systems S.A.
+ * (C) 2025 Taler Systems S.A.
  *
  * GNU Taler is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -14,19 +14,16 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.common
+package net.taler.database.filter
 
-/** **This has been kept for API compatibility only.**
- *
- * see: [net.taler.database.data_models.AmountParserException] */
-typealias AmountParserException = net.taler.database.data_models.AmountParserException
+import net.taler.database.data_models.FilterableDirection
 
-/** **This has been kept for API compatibility only.**
- *
- * see: [net.taler.database.data_models.AmountOverflowException] */
-typealias AmountOverflowException = net.taler.database.data_models.AmountOverflowException
+/** Filters transactions by direction (incoming or outgoing). */
+sealed class DirectionFilter {
 
-/** **This has been kept for API compatibility only.**
- *
- * see: [net.taler.database.data_models.Amount] */
-typealias Amount = net.taler.database.data_models.Amount
+    /** Matches a specific direction. */
+    data class Exact(val direction: FilterableDirection) : DirectionFilter()
+
+    /** Matches both incoming and outgoing directions (no filtering). */
+    data object Both : DirectionFilter()
+}

@@ -1,6 +1,6 @@
 /*
  * This file is part of GNU Taler
- * (C) 2024 Taler Systems S.A.
+ * (C) 2025 Taler Systems S.A.
  *
  * GNU Taler is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -16,21 +16,7 @@
 
 package net.taler.common
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class CurrencySpecification(
-    val name: String,
-    @SerialName("num_fractional_input_digits")
-    val numFractionalInputDigits: Int,
-    @SerialName("num_fractional_normal_digits")
-    val numFractionalNormalDigits: Int,
-    @SerialName("num_fractional_trailing_zero_digits")
-    val numFractionalTrailingZeroDigits: Int,
-    @SerialName("alt_unit_names")
-    val altUnitNames: Map<Int, String>,
-) {
-    // TODO: add support for alt units
-    val symbol: String? get() = altUnitNames[0]
-}
+/** **This has been kept for API compatibility only.**
+ *
+ * see: [net.taler.database.data_models.CurrencySpecification] */
+typealias CurrencySpecification = net.taler.database.data_models.CurrencySpecification

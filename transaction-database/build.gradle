@@ -21,9 +21,8 @@ plugins {
 }
 
 android {
-    namespace 'net.taler.common'
-    compileSdk 34
-
+    namespace 'net.taler.database'
+    compileSdk 36
     flavorDimensions = ["distributionChannel"]
     productFlavors {
         fdroid {
@@ -39,19 +38,17 @@ android {
         }
     }
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 26
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
     }
 
     buildTypes {
         release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            minifyEnabled false
         }
         debug {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            minifyEnabled false
         }
     }
 
@@ -72,12 +69,11 @@ android {
     }
 }
 
+
 dependencies {
-    api project(':transaction-database')
-    implementation project(':transaction-database')
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation "androidx.constraintlayout:constraintlayout:$constraintlayout_version"
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'androidx.core:core-ktx:1.17.0'
+    implementation "androidx.constraintlayout:constraintlayout:2.2.1"
 
     // Navigation
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
@@ -87,12 +83,13 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
 
     // QR codes
-    implementation 'com.google.zxing:core:3.5.0'  // needs minSdkVersion 24+ or desugar
+    implementation 'com.google.zxing:core:3.5.3'  // needs minSdkVersion 24+ or desugar
 
     // JSON parsing and serialization
-    api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2'
+    api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0'
+    implementation 'androidx.test.ext:junit-ktx:1.3.0'
     testImplementation "junit:junit:$junit_version"
-    testImplementation 'org.json:json:20220320'
+    testImplementation 'org.json:json:20250517'
 
     // Networking
     api "io.ktor:ktor-client:$ktor_version"
@@ -101,4 +98,5 @@ dependencies {
     implementation "io.ktor:ktor-serialization-kotlinx-json:$ktor_version"
     implementation "io.ktor:ktor-client-content-negotiation:$ktor_version"
     implementation("io.ktor:ktor-client-logging:$ktor_version")
+    implementation 'org.jetbrains.kotlin:kotlin-test:2.2.20'
 }

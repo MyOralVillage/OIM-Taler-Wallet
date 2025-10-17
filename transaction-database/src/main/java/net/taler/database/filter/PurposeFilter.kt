@@ -1,6 +1,6 @@
 /*
  * This file is part of GNU Taler
- * (C) 2020 Taler Systems S.A.
+ * (C) 2025 Taler Systems S.A.
  *
  * GNU Taler is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -14,19 +14,22 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.common
+package net.taler.database.filter
+import net.taler.database.data_models.TranxPurp
 
-/** **This has been kept for API compatibility only.**
- *
- * see: [net.taler.database.data_models.AmountParserException] */
-typealias AmountParserException = net.taler.database.data_models.AmountParserException
+/** Filters transactions by purpose. */
+sealed class PurposeFilter {
 
-/** **This has been kept for API compatibility only.**
- *
- * see: [net.taler.database.data_models.AmountOverflowException] */
-typealias AmountOverflowException = net.taler.database.data_models.AmountOverflowException
+    /** Matches a specific transaction purpose. */
+    data class Exact(val purpose: TranxPurp) : PurposeFilter()
 
-/** **This has been kept for API compatibility only.**
- *
- * see: [net.taler.database.data_models.Amount] */
-typealias Amount = net.taler.database.data_models.Amount
+    /**
+     * Matches any of the given purposes.
+     * @throws IllegalArgumentException if [purposes] is empty
+     */
+    data class OneOrMoreOf(val purposes: Set<TranxPurp>) : PurposeFilter() {
+        init {
+            require(purposes.isNotEmpty()) { "Must have at least one purpose" }
+        }
+    }
+}
