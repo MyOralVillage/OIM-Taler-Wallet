@@ -1,1 +1,4 @@
-include ':taler-kotlin-android',  ':wallet', ':transaction-database'
+include ':wallet'
+include ':taler-kotlin-android'
+include ':transaction-database'
+

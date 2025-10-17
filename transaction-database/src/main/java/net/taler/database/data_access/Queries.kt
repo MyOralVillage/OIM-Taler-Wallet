@@ -19,6 +19,7 @@ package net.taler.database.data_access
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.taler.database.data_models.FilterableLocalDateTime
 import net.taler.database.data_models.Amount
@@ -138,7 +139,7 @@ fun queryTranx(
  * @throw SQLiteException if insertion failed */
 internal fun addTranx(db: SQLiteDatabase, trxn: Tranx) : Long {
     val values = ContentValues().apply {
-        put(Schema.EPOCH_MILLI_COL, trxn.dateTimeUTC.epochMillis())
+        put(Schema.EPOCH_MILLI_COL, trxn.datetime.epochMillis())
         put(Schema.CURRENCY_COL, trxn.amount.currency)
         put(Schema.TRNX_PURPOSE_COL, trxn.purpose?.cmp)
         put(Schema.TRNX_INCOMING_COL,  if (trxn.direction.getValue()) 1 else 0)

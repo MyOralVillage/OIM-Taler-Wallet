@@ -14,8 +14,6 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-@file:Suppress("unused")
-
 package net.taler.database.data_models
 
 import kotlinx.serialization.Serializable

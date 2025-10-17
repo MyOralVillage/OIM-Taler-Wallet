@@ -24,20 +24,6 @@ android {
     namespace 'net.taler.common'
     compileSdk 34
 
-    flavorDimensions = ["distributionChannel"]
-    productFlavors {
-        fdroid {
-            dimension "distributionChannel"
-            // version codes get multiplied by 10 and an ABI suffix gets added to the code
-            // if 'splitApk' property is set
-        }
-        google {
-            dimension "distributionChannel"
-        }
-        nightly {
-            dimension "distributionChannel"
-        }
-    }
     defaultConfig {
         minSdkVersion 21
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -46,11 +32,11 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -73,8 +59,9 @@ android {
 }
 
 dependencies {
+
     api project(':transaction-database')
-    implementation project(':transaction-database')
+
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation "androidx.constraintlayout:constraintlayout:$constraintlayout_version"

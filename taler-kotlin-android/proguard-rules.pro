@@ -24,3 +24,14 @@
 
 -keep class net.taler.common.** {*;}
 -keep class net.taler.lib.android.** {*;}
+
+# Keep classes from transaction-database that are exposed via typealiases
+-keep class net.taler.database.data_models.** { *; }
+-keep class net.taler.database.filter.** { *; }
+-keep class net.taler.database.TranxHistory { *; }
+
+# Keep all kotlinx.serialization generated code
+-keep class **$$serializer { *; }
+-keepclassmembers class net.taler.database.data_models.** {
+    *** Companion;
+}

@@ -56,7 +56,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -117,95 +117,67 @@ android {
         abortOnError true
         ignoreWarnings false
     }
-
 }
 
 dependencies {
-    // Projects
-    implementation project(":taler-kotlin-android")
-    implementation project(':transaction-database')
+    api project(":transaction-database")
+    api project(":taler-kotlin-android")
+
     implementation "net.taler:qtart:$qtart_version@aar"
 
-    // Core
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
-    // AndroidX Core
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.preference:preference-ktx:1.2.1'
-    implementation 'androidx.browser:browser:1.9.0'
-
-    // Material & Layout
     implementation "com.google.android.material:material:$material_version"
     implementation "androidx.constraintlayout:constraintlayout:$constraintlayout_version"
+    implementation "androidx.browser:browser:1.8.0"
+    implementation "androidx.biometric:biometric-ktx:1.4.0-alpha02"
 
-    // Compose (BOM approach)
-    implementation platform('androidx.compose:compose-bom:2025.10.00')
-    implementation 'androidx.compose.ui:ui'
-    implementation 'androidx.compose.ui:ui-graphics'
+    // Compose
+    implementation platform('androidx.compose:compose-bom:2025.05.00')
     implementation 'androidx.compose.material3:material3'
     implementation 'androidx.compose.material:material-icons-extended'
-    implementation 'androidx.compose.ui:ui-tooling-preview'
-    debugImplementation 'androidx.compose.ui:ui-tooling'
-    implementation 'androidx.activity:activity-compose:1.11.0'
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose"
     implementation "androidx.compose.runtime:runtime-livedata"
-    implementation "androidx.fragment:fragment-compose:1.8.9"
-    implementation 'androidx.compose.foundation:foundation'
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose"
+    implementation "com.google.accompanist:accompanist-themeadapter-material3:0.28.0"
+    implementation 'androidx.activity:activity-compose:1.10.1'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    implementation 'androidx.compose.ui:ui-viewbinding'
+    implementation "androidx.fragment:fragment-compose:1.8.6"
+    debugImplementation 'androidx.compose.ui:ui-tooling'
 
-    // Accompanist
-    implementation 'com.google.accompanist:accompanist-themeadapter-material3:0.36.0'
+    // Lists and Selection
+    implementation "androidx.recyclerview:recyclerview:1.4.0"
+    implementation "androidx.recyclerview:recyclerview-selection:1.1.0"
 
-    // Images (Coil for Compose)
-    implementation 'io.coil-kt:coil-compose:2.7.0'
-    implementation 'io.coil-kt:coil-svg:2.7.0'
-
-    // QR codes
-    implementation 'com.google.zxing:core:3.5.0'
-    implementation 'com.journeyapps:zxing-android-embedded:4.3.0@aar'
-
-    // RecyclerView
-    implementation 'androidx.recyclerview:recyclerview:1.4.0'
-    implementation 'androidx.recyclerview:recyclerview-selection:1.2.0'
-
-    // Navigation
+    // Navigation Library
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 
-    // Lifecycle / LiveData
+    // ViewModel and LiveData
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
 
-    // Progress bar
+    // QR codes
+    implementation 'com.journeyapps:zxing-android-embedded:4.3.0@aar'
+    // needed to support zxing library in taler-kotlin-android on API < 24
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+
+    // Nicer ProgressBar
     implementation 'me.zhanghai.android.materialprogressbar:library:1.6.1'
 
-    // Markdown
-    def markwon_version = '4.6.2'
+    // Markdown rendering
+    final def markwon_version = '4.6.2'
     implementation "io.noties.markwon:core:$markwon_version"
     implementation "io.noties.markwon:ext-tables:$markwon_version"
     implementation "io.noties.markwon:recycler:$markwon_version"
 
-    // JNA
-    implementation "net.java.dev.jna:jna:5.18.1@aar"
+    // Java Native Access (must always match JNA in qtart)
+    implementation "net.java.dev.jna:jna:5.17.0@aar"
 
-    // DataStore + Protobuf
+    // Shared preferences
     implementation "androidx.datastore:datastore:$datastore_version"
-    implementation "com.google.protobuf:protobuf-javalite:3.18.0"
+    implementation  "com.google.protobuf:protobuf-javalite:3.18.0"
 
-    // JSON parsing and serialization
-    api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2'
-
-    // Networking (Ktor)
-    api "io.ktor:ktor-client:$ktor_version"
-    api "io.ktor:ktor-client-okhttp:$ktor_version"
-    implementation "io.ktor:ktor-client-serialization-jvm:$ktor_version"
-    implementation "io.ktor:ktor-serialization-kotlinx-json:$ktor_version"
-    implementation "io.ktor:ktor-client-content-negotiation:$ktor_version"
-    implementation "io.ktor:ktor-client-logging:$ktor_version"
-
-    // Desugaring
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
-
-    // Tests
     testImplementation "junit:junit:$junit_version"
     testImplementation 'org.json:json:20220320'
 }
