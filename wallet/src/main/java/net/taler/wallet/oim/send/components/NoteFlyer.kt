@@ -1,5 +1,6 @@
 /*
 <<<<<<< HEAD
+<<<<<<< HEAD
  * This file is part of GNU Taler
  * (C) 2025 Taler Systems S.A.
  *
@@ -18,6 +19,8 @@
 /*
 =======
 >>>>>>> 5c7011a (fixed preview animations)
+=======
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
  * GPLv3-or-later
  */
 package net.taler.wallet.oim.send.components
@@ -34,35 +37,36 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
+/**
+ * Animated “flying banknote” using a provided bitmap.
+ */
 @Composable
 fun NoteFlyer(
-    path: String,
+    noteBitmap: ImageBitmap,
     startInRoot: Offset,
     endInRoot: Offset,
-    widthPx: Float,                  // flight width in PX
+    widthPx: Float,
     onArrive: () -> Unit
 ) {
-    // animate x and y separately (no VectorConverter headaches)
     val x = remember { Animatable(startInRoot.x) }
     val y = remember { Animatable(startInRoot.y) }
     val scale = remember { Animatable(0.7f) }
-    val alpha = remember { Animatable(0.0f) }
+    val alpha = remember { Animatable(0f) }
 
-    LaunchedEffect(path, startInRoot, endInRoot) {
-        // ensure we start from the provided origin each time
+    LaunchedEffect(noteBitmap, startInRoot, endInRoot) {
         x.snapTo(startInRoot.x)
         y.snapTo(startInRoot.y)
         alpha.animateTo(1f, tween(120))
         scale.animateTo(1f, tween(300))
-        // fly to target
         x.animateTo(endInRoot.x, tween(420))
         y.animateTo(endInRoot.y, tween(420))
-        // fade out as it “lands”
         alpha.animateTo(0f, tween(150))
         onArrive()
     }
@@ -74,10 +78,14 @@ fun NoteFlyer(
 
     Image(
 <<<<<<< HEAD
+<<<<<<< HEAD
         painter = assetPainterOrPreview(path),
 =======
         painter = assetPainterOrPreview(path, PreviewAssets.id(path)),
 >>>>>>> 5c7011a (fixed preview animations)
+=======
+        bitmap = noteBitmap,
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier = Modifier

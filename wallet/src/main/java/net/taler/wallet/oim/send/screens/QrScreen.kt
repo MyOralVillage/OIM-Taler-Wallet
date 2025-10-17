@@ -6,8 +6,12 @@
 /*
  * GPLv3-or-later
  */
+/*
+ * GPLv3-or-later
+ */
 package net.taler.wallet.oim.send.screens
 
+<<<<<<< HEAD
 //import androidx.compose.foundation.Image
 //import androidx.compose.foundation.layout.Arrangement
 //import androidx.compose.foundation.layout.Box
@@ -186,6 +190,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+=======
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.*
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -194,6 +206,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+<<<<<<< HEAD
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -209,6 +222,17 @@ import net.taler.wallet.oim.send.components.generateQrBitmap
  * You can pass display fields (amount/currency/purpose) separately while the QR
  * is generated from [talerUri]. If any display field is null, we try to infer it
  * from the URI (amount=SLE:3, summary=...).
+=======
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
+import net.taler.wallet.oim.res_mapping_extensions.Tables
+import net.taler.wallet.oim.send.components.generateQrBitmap
+
+/**
+ * QR screen with wood background (assets now from res_mapping_extensions).
+ * You can pass display fields separately while the QR is generated from [talerUri].
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
  */
 @Composable
 fun QrScreen(
@@ -219,7 +243,10 @@ fun QrScreen(
     purpose: String? = null,
     onBack: () -> Unit,
 ) {
+<<<<<<< HEAD
     // Parse what we can from the URI for display fallbacks
+=======
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
     val parsed = remember(talerUri) { parseFromTalerUri(talerUri) }
     val uiAmount = amountText ?: parsed.amountNumber
     val uiCurrency = currencyCode ?: parsed.currency
@@ -229,9 +256,14 @@ fun QrScreen(
     val qr = remember(talerUri) { generateQrBitmap(talerUri, 720) }
 
     Box(Modifier.fillMaxSize()) {
+<<<<<<< HEAD
         // SAME WOOD BACKGROUND AS BEFORE
         Image(
             painter = assetPainterOrPreview(WOOD_TABLE, PreviewAssets.id(WOOD_TABLE)),
+=======
+        Image(
+            bitmap = Tables(type = false).resourceMapper(),
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -301,8 +333,11 @@ fun QrScreen(
     }
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 5c7011a (fixed preview animations)
 =======
+=======
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 
 private data class ParsedDisplay(
     val amountNumber: String? = null,
@@ -312,7 +347,11 @@ private data class ParsedDisplay(
 
 /** Minimal parser to recover amount/currency/summary from common Taler URIs. */
 private fun parseFromTalerUri(talerUri: String): ParsedDisplay {
+<<<<<<< HEAD
     val uri = runCatching { Uri.parse(talerUri) }.getOrNull() ?: return ParsedDisplay()
+=======
+    val uri = runCatching { talerUri.toUri() }.getOrNull() ?: return ParsedDisplay()
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
     val amountParam = uri.getQueryParameter("amount") // "SLE:3" etc.
     val summary = uri.getQueryParameter("summary") ?: uri.getQueryParameter("subject")
 
@@ -328,4 +367,7 @@ private fun parseFromTalerUri(talerUri: String): ParsedDisplay {
     )
 }
 
+<<<<<<< HEAD
 >>>>>>> f512e18 (added backend integration and db transaction update)
+=======
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)

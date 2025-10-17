@@ -1,20 +1,4 @@
 /*
- * This file is part of GNU Taler
- * (C) 2025 Taler Systems S.A.
- *
- * GNU Taler is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 3, or (at your option) any later version.
- *
- * GNU Taler is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
- */
-
-/*
  * GPLv3-or-later
  */
 package net.taler.wallet.oim.send.components
@@ -33,16 +17,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-// TODO refactor to use res_mapping_extensions
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 //@Composable
 //fun NotesStrip(
@@ -112,6 +96,17 @@ import androidx.compose.ui.unit.dp
 fun NotesStrip(
     noteThumbWidth: Dp,
     onAddRequest: (value: Int, path: String, startCenterInRoot: Offset) -> Unit,
+=======
+/**
+ * Horizontal strip of note thumbnails (bitmap, value) that can be tapped
+ * to trigger a flying animation toward the amount total.
+ */
+@Composable
+fun NotesStrip(
+    noteThumbWidth: Dp,
+    notes: List<Pair<ImageBitmap, Int>>,
+    onAddRequest: (value: Int, startCenterInRoot: Offset) -> Unit,
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
     onRemoveLast: (removed: Int) -> Unit
 ) {
     val scroll = rememberScrollState()
@@ -121,6 +116,7 @@ fun NotesStrip(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(scroll)
+<<<<<<< HEAD
             .clip(RoundedCornerShape(20.dp))
             .background(Color(0x55000000))
             .padding(10.dp),
@@ -133,6 +129,19 @@ fun NotesStrip(
                 onTapWithPos = { centerInRoot ->
                     lastAdded = value
                     onAddRequest(value, path, centerInRoot)
+=======
+            .background(Color(0x55000000), RoundedCornerShape(20.dp))
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        notes.forEach { (bmp, value) ->
+            NoteThumb(
+                bmp = bmp,
+                width = noteThumbWidth,
+                onTapWithPos = { centerInRoot ->
+                    lastAdded = value
+                    onAddRequest(value, centerInRoot)
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
                 }
             )
             Spacer(Modifier.width(10.dp))
@@ -147,7 +156,11 @@ fun NotesStrip(
 
 @Composable
 private fun NoteThumb(
+<<<<<<< HEAD
     path: String,
+=======
+    bmp: ImageBitmap,
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
     width: Dp,
     onTapWithPos: (centerInRoot: Offset) -> Unit
 ) {
@@ -164,11 +177,18 @@ private fun NoteThumb(
         colors = CardDefaults.cardColors(containerColor = Color(0x22FFFFFF))
     ) {
         Image(
+<<<<<<< HEAD
             painter = assetPainterOrPreview(path, PreviewAssets.id(path)),
+=======
+            bitmap = bmp,
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
     }
 }
+<<<<<<< HEAD
 >>>>>>> 5c7011a (fixed preview animations)
+=======
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)

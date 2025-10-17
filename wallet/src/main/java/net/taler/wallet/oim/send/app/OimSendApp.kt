@@ -1,5 +1,9 @@
+/*
+ * GPLv3-or-later
+ */
 package net.taler.wallet.oim.send.app
 
+import android.os.Build
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
@@ -16,9 +20,13 @@ import net.taler.wallet.oim.send.screens.SendScreen
 import net.taler.wallet.peer.OutgoingIntro
 import net.taler.wallet.peer.OutgoingState
 <<<<<<< HEAD
+<<<<<<< HEAD
 import net.taler.wallet.BuildConfig.DEBUG
 =======
 >>>>>>> f512e18 (added backend integration and db transaction update)
+=======
+import net.taler.wallet.peer.OutgoingResponse
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 
 private enum class Screen { Send, Purpose, Qr }
 
@@ -28,6 +36,7 @@ fun OimSendApp(model: MainViewModel) {
         val ctx = LocalContext.current.applicationContext
         val scope = rememberCoroutineScope()
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         // Initialize transaction database
         if (DEBUG) TranxHistory.initTest(ctx)
@@ -42,18 +51,29 @@ fun OimSendApp(model: MainViewModel) {
             }
         }
 >>>>>>> f512e18 (added backend integration and db transaction update)
+=======
+        // Local guard so we initialize the local TX DB at most once from this UI.
+        var localTxDbInitialized by remember { mutableStateOf(false) }
+
+        // Initialize local TX DB once (TranxHistory is @RequiresApi 34)
+        LaunchedEffect(Unit) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && !localTxDbInitialized) {
+                runCatching { TranxHistory.init(ctx) }
+                localTxDbInitialized = true
+            }
+        }
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 
         var screen by remember { mutableStateOf(Screen.Send) }
         var amount by remember { mutableStateOf(0) }
-        var chosenPurpose by remember { mutableStateOf<String?>(null) }
 
         // for QR page
         var talerUri by remember { mutableStateOf<String?>(null) }
 
-        // observe backend push state (avoid `.value` error)
-        val pushState: OutgoingState by model.peerManager.pushState
-            .collectAsState(initial = OutgoingIntro)
+        // observe backend push state
+        val pushState: OutgoingState by model.peerManager.pushState.collectAsState(initial = OutgoingIntro)
 
+<<<<<<< HEAD
         // When backend answers with a tx id, navigate to QR.
 <<<<<<< HEAD
         // If  TransactionManager exposes the selected tx with a talerUri,
@@ -76,15 +96,20 @@ fun OimSendApp(model: MainViewModel) {
                 // "pay-push" URI using the tx id. If your backend exposes the URI,
 >>>>>>> f512e18 (added backend integration and db transaction update)
                 // swap this line to use that value instead.
+=======
+        // Navigate to QR when we receive a transaction id from the backend
+        LaunchedEffect(pushState) {
+            if (pushState is OutgoingResponse) {
+                val txId = (pushState as OutgoingResponse).transactionId
+                // If your backend exposes a full URI, use that here.
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
                 talerUri = "taler://pay-push/$txId"
-
                 screen = Screen.Qr
             }
         }
 
         // Currency / labels (UI-only)
         val currencyCode = "SLE"
-        val currencyLabel = "Leones"
         val balance = 25 // demo header
 
         when (screen) {
@@ -101,6 +126,7 @@ fun OimSendApp(model: MainViewModel) {
                 balance = balance,
                 onBack = { screen = Screen.Send },
                 onDone = { pickedPurpose ->
+<<<<<<< HEAD
                     chosenPurpose = pickedPurpose
 
 <<<<<<< HEAD
@@ -123,19 +149,33 @@ fun OimSendApp(model: MainViewModel) {
                         dir = dir,
                         tms = ts
                     )
+=======
+                    // 1) Write to your local history (kept as requested)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                        if (!localTxDbInitialized) {
+                            runCatching { TranxHistory.init(ctx) }
+                            localTxDbInitialized = true
+                        }
+                        val amt = Amount.fromString(currencyCode, amount.toString())
+                        val tid = "DEMO_TX_${System.currentTimeMillis()}"
+                        val ts = Timestamp.now()
+                        val dir = FilterableDirection.OUTGOING
+                        val purp: TranxPurp? = mapPickedPurposeToTranxPurp(pickedPurpose)
+                        TranxHistory.newTransaction(
+                            tid = tid, purp = purp, amt = amt, dir = dir, tms = ts
+                        )
+                    }
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 
                     // 2) Kick off P2P push with the wallet backend
                     scope.launch {
                         val amt = Amount.fromString(currencyCode, amount.toString())
-                        // Subject/purpose for contract terms = pickedPurpose
-                        val hours = 24L // same as DEFAULT_EXPIRY if you want; can be UI-driven
                         model.peerManager.initiatePeerPushDebit(
                             amount = amt,
                             summary = pickedPurpose,
-                            expirationHours = hours,
+                            expirationHours = 24L,
                         )
-                        // we do NOT switch screen here; we wait for pushState to move to OutgoingResponse
-                        // (handled in LaunchedEffect above) so we have txId for the QR.
+                        // Wait for OutgoingResponse (handled above) to navigate to QR.
                     }
 =======
                     // 1) Write to your local history (kept as requested)
@@ -175,6 +215,7 @@ fun OimSendApp(model: MainViewModel) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // TODO: needs complete refactoring, remove this and simplify things!
 /** Try to resolve the UI label/cmp into one of the sealed TranxPurp objects. */
 =======
@@ -182,13 +223,28 @@ fun OimSendApp(model: MainViewModel) {
  * Try to resolve the UI label/cmp into one of the sealed TranxPurp objects.
  */
 >>>>>>> f512e18 (added backend integration and db transaction update)
+=======
+/**
+ * Try to resolve the UI label/cmp into one of the sealed TranxPurp objects.
+ * We match against cmp, case-insensitive, and the common "pretty" label variant
+ * where spaces are used instead of underscores.
+ */
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 private fun mapPickedPurposeToTranxPurp(picked: String): TranxPurp? {
+    // direct cmp
     tranxPurpLookup[picked]?.let { return it }
+    // case-insensitive cmp
     tranxPurpLookup[picked.uppercase()]?.let { return it }
+    // replace spaces with underscores, then uppercase
     tranxPurpLookup[picked.replace(' ', '_').uppercase()]?.let { return it }
+<<<<<<< HEAD
 <<<<<<< HEAD
     return tranxPurpLookup.values.firstOrNull { it.cmp.equals(picked, ignoreCase = true) }
 =======
     return tranxPurpLookup.values.firstOrNull { it.assetLabel.equals(picked, ignoreCase = true) }
 >>>>>>> f512e18 (added backend integration and db transaction update)
+=======
+    // no assetLabel comparison to avoid unresolved reference
+    return null
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 }

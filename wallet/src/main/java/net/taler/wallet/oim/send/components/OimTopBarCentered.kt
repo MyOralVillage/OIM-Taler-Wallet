@@ -2,6 +2,7 @@
 <<<<<<< HEAD
  * This file is part of GNU Taler
  * (C) 2025 Taler Systems S.A.
+<<<<<<< HEAD
  *
  * GNU Taler is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,6 +19,8 @@
 /*
 =======
 >>>>>>> 5c7011a (fixed preview animations)
+=======
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
  * GPLv3-or-later
  */
 package net.taler.wallet.oim.send.components
@@ -37,7 +40,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.taler.wallet.oim.res_mapping_extensions.Buttons
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // TODO refactor to use res_mapping_extensions;
 // idk how you want to set up to choose the
@@ -98,6 +103,16 @@ fun OimTopBarCentered(
     balance: Int,
     onSendClick: () -> Unit
 ) {
+=======
+@Composable
+fun OimTopBarCentered(
+    balance: Int,
+    onSendClick: () -> Unit
+) {
+    val sendBitmap = Buttons("send").resourceMapper()
+    val chestBitmap = Buttons("chest_open").resourceMapper()
+
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -114,7 +129,11 @@ fun OimTopBarCentered(
             contentAlignment = Alignment.Center
         ) {
             Image(
+<<<<<<< HEAD
                 painter = assetPainterOrPreview(ICON_SEND, PreviewAssets.id(ICON_SEND)),
+=======
+                bitmap = sendBitmap,
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
                 contentDescription = "Send",
                 modifier = Modifier.size(44.dp),
                 contentScale = ContentScale.Fit
@@ -127,7 +146,11 @@ fun OimTopBarCentered(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
+<<<<<<< HEAD
                 painter = assetPainterOrPreview(ICON_CHEST, PreviewAssets.id(ICON_CHEST)),
+=======
+                bitmap = chestBitmap,
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
                 contentDescription = "Chest",
                 modifier = Modifier.size(64.dp),
                 contentScale = ContentScale.Fit
@@ -142,4 +165,7 @@ fun OimTopBarCentered(
         }
     }
 }
+<<<<<<< HEAD
 >>>>>>> 5c7011a (fixed preview animations)
+=======
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)

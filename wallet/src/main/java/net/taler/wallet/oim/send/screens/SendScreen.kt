@@ -3,33 +3,54 @@
  */
 package net.taler.wallet.oim.send.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.tooling.preview.Preview
 import net.taler.wallet.oim.send.components.*
+import net.taler.wallet.oim.res_mapping_extensions.SLE_BILLS_CENTS
+import net.taler.common.R
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // TODO refactor to use res_mapping_extensions
+=======
+/**
+ * Main send screen (drawable-backed UI using res_mapping_extensions).
+ */
+@Composable
+fun SendScreen(
+    balance: Int,
+    amount: Int,
+    onAdd: (Int) -> Unit,
+    onRemoveLast: (Int) -> Unit,
+    onChoosePurpose: () -> Unit,
+    onSend: () -> Unit
+) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        // Background (dark wood variant)
+        WoodTableBackground(modifier = Modifier.fillMaxSize(), light = false)
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 
+        // Animated note state
+        data class Pending(val value: Int, val bmp: ImageBitmap, val start: Offset)
+        var pending by remember { mutableStateOf<Pending?>(null) }
+        val density = LocalDensity.current
 
+<<<<<<< HEAD
 ///**
 // * Main screen for sending money with a visual note-based interface.
 // *
@@ -181,6 +202,13 @@ fun SendScreen(
             val x = with(density) { (maxWidth / 2).toPx() }
             val y = with(density) { (maxHeight * 0.38f).toPx() }
             Offset(x, y)
+=======
+        val endCenter = with(density) {
+            Offset(
+                x = (this@BoxWithConstraints.maxWidth / 2).toPx(),
+                y = (this@BoxWithConstraints.maxHeight * 0.38f).toPx()
+            )
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
         }
 
         Column(
@@ -188,10 +216,18 @@ fun SendScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
+<<<<<<< HEAD
+=======
+            // Top bar with balance + send
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
             OimTopBarCentered(balance = balance, onSendClick = onSend)
 
             Spacer(Modifier.weight(1f))
 
+<<<<<<< HEAD
+=======
+            // Amount + actions
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -213,12 +249,20 @@ fun SendScreen(
                         fontSize = 32.sp
                     )
                 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
                 Column(horizontalAlignment = Alignment.End) {
                     Button(onClick = onChoosePurpose) { Text("Choose purpose") }
                     Spacer(Modifier.height(12.dp))
                     ExtendedFloatingActionButton(
                         onClick = onSend,
+<<<<<<< HEAD
                         icon = { androidx.compose.material3.Icon(Icons.Filled.Send, null) },
+=======
+                        icon = { Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null) },
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
                         text = { Text("Send") },
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = Color.Black
@@ -226,20 +270,49 @@ fun SendScreen(
                 }
             }
 
+<<<<<<< HEAD
             NotesStrip(
                 noteThumbWidth = 120.dp,
                 onAddRequest = { value, path, startCenter ->
                     pending = Pending(value, path, startCenter)
+=======
+            // Build note thumbnails in *composable* scope (no remember; imageResource is @Composable)
+            val thumbNotes: List<Pair<ImageBitmap, Int>> =
+                SLE_BILLS_CENTS
+                    .filter { it.first >= 100 }               // >= 1 SLE (values are cents)
+                    .take(7)
+                    .map { (cents, resId) ->
+                        ImageBitmap.imageResource(resId) to (cents / 100)
+                    }
+
+            // Fallback bitmap computed in composable scope (not inside lambda)
+            val fallbackBmp = ImageBitmap.imageResource(R.drawable.sle_one)
+
+            NotesStrip(
+                noteThumbWidth = 120.dp,
+                notes = thumbNotes,
+                onAddRequest = { value, startCenter ->
+                    val bmp = thumbNotes.firstOrNull { it.second == value }?.first ?: fallbackBmp
+                    pending = Pending(value, bmp, startCenter)
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
                 },
                 onRemoveLast = onRemoveLast
             )
             Spacer(Modifier.height(8.dp))
         }
 
+<<<<<<< HEAD
         pending?.let { p ->
             val widthPx = with(density) { 160.dp.toPx() }
             NoteFlyer(
                 path = p.path,
+=======
+        // Flying note animation
+        pending?.let { p ->
+            val widthPx = with(density) { 160.dp.toPx() }
+            NoteFlyer(
+                noteBitmap = p.bmp,
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
                 startInRoot = p.start,
                 endInRoot = endCenter,
                 widthPx = widthPx,
@@ -251,4 +324,22 @@ fun SendScreen(
         }
     }
 }
+<<<<<<< HEAD
 >>>>>>> 5c7011a (fixed preview animations)
+=======
+
+@Preview(showBackground = true, widthDp = 1280, heightDp = 800)
+@Composable
+private fun SendScreenPreview() {
+    MaterialTheme {
+        SendScreen(
+            balance = 25,
+            amount = 7,
+            onAdd = {},
+            onRemoveLast = {},
+            onChoosePurpose = {},
+            onSend = {}
+        )
+    }
+}
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)

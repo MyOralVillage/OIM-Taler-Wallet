@@ -1,5 +1,6 @@
 /*
 <<<<<<< HEAD
+<<<<<<< HEAD
  * This file is part of GNU Taler
  * (C) 2025 Taler Systems S.A.
  *
@@ -18,6 +19,8 @@
 /*
 =======
 >>>>>>> 5c7011a (fixed preview animations)
+=======
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
  * GPLv3-or-later
  */
 package net.taler.wallet.oim.send.screens
@@ -33,9 +36,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+<<<<<<< HEAD
 import net.taler.wallet.oim.send.components.*
 <<<<<<< HEAD
 // TODO refactor to use res_mapping_extensions
@@ -127,6 +132,14 @@ import net.taler.wallet.oim.send.components.*
 //}
 =======
 
+=======
+import net.taler.database.data_models.*
+import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.oim.send.components.OimTopBarCentered
+import net.taler.wallet.oim.send.components.PurposeTile
+import net.taler.wallet.oim.send.components.WoodTableBackground
+
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PurposeScreen(
@@ -135,12 +148,16 @@ fun PurposeScreen(
     onDone: (String) -> Unit
 ) {
     Box(Modifier.fillMaxSize()) {
+<<<<<<< HEAD
         Image(
             painter = assetPainterOrPreview(WOOD_TABLE, PreviewAssets.id(WOOD_TABLE)),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+=======
+        WoodTableBackground(Modifier.fillMaxSize(), light = false)
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 
         IconButton(
             onClick = onBack,
@@ -165,6 +182,19 @@ fun PurposeScreen(
 
             Spacer(Modifier.height(8.dp))
 
+<<<<<<< HEAD
+=======
+            val allPurposes = remember {
+                listOf(
+                    EDUC_CLTH, EDUC_SCHL, EDUC_SUPL,
+                    EXPN_CELL, EXPN_DEBT, EXPN_FARM, EXPN_GRCR, EXP_MRKT,
+                    EXPN_PTRL, EXPN_RENT, EXPN_TOOL, EXPN_TRPT,
+                    HLTH_DOCT, HLTH_MEDS, TRNS_RECV, TRNS_SEND,
+                    UTIL_ELEC, UTIL_WATR
+                )
+            }
+
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
             FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -172,9 +202,17 @@ fun PurposeScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+<<<<<<< HEAD
                 PurposeIcons.forEach { (path, label) ->
                     PurposeTile(
                         path = path,
+=======
+                allPurposes.forEach { purp ->
+                    val bmp = purp.resourceMapper()
+                    val label = purpUiLabel(purp)
+                    PurposeTile(
+                        bitmap = bmp,
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
                         label = label,
                         modifier = Modifier
                             .width(140.dp)
@@ -202,4 +240,28 @@ fun PurposeScreen(
         }
     }
 }
+<<<<<<< HEAD
 >>>>>>> 5c7011a (fixed preview animations)
+=======
+
+private fun purpUiLabel(p: TranxPurp): String = when (p) {
+    EDUC_CLTH -> "School Uniforms"
+    EDUC_SCHL -> "School"
+    EDUC_SUPL -> "School Supplies"
+    EXPN_CELL -> "Phone"
+    EXPN_DEBT -> "Remittance"
+    EXPN_FARM -> "Farming"
+    EXPN_GRCR -> "Groceries"
+    EXP_MRKT  -> "Market"
+    EXPN_PTRL -> "Fuel"
+    EXPN_RENT -> "Housing"
+    EXPN_TOOL -> "Tools"
+    EXPN_TRPT -> "Transport"
+    HLTH_DOCT -> "Doctor"
+    HLTH_MEDS -> "Medicine"
+    TRNS_RECV -> "Receive"
+    TRNS_SEND -> "Send"
+    UTIL_ELEC -> "Electricity"
+    UTIL_WATR -> "Water"
+}
+>>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
