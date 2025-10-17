@@ -1,79 +1,124 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AndroidLayouts">
+    <shared>
+      <config />
+    </shared>
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="66fbe6e7-8af2-4ff5-bd24-d8a1ad2bb9a9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/transaction-database/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/build.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/consumer-rules.pro" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/AndroidManifest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/doctor_appointment.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/electricity.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/farming.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/gas.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/groceries.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/housing.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/loan.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/market_stall.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/medicine.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/phone.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/receive.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/school_supplies.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/school_uniforms.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/schooling.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/send.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/test/v0_1_0/transaction_history.db" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/test/v0_1_0/transaction_history.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/tools.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/transportation.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/water.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/TranxHistory.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_access/CursorGetters.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_access/Queries.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_access/TranxDatabase.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_models/Amount.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_models/Filterable.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_models/FilterableDirection.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_models/FilterableLocalDateTime.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_models/Time.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_models/Tranx.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_models/TranxPurp.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/filter/AmountFilter.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/filter/DatetimeFilter.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/filter/DirectionFilter.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/filter/PurposeFilter.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/filter/TranxFilter.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/schema/Schema.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitlab-ci.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/checksums/checksums.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/checksums/md5-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/checksums/md5-checksums.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/checksums/sha1-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/checksums/sha1-checksums.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/executionHistory/executionHistory.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/executionHistory/executionHistory.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/expanded/expanded.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/expanded/expanded.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/resourceHashesCache.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/backgrounds/tables/andrey-haimin-VFUTPASjhB8-unsplash.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/backgrounds/tables/tara-meinczinger-G_yCplAsnB4-unsplash.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/chests/closed/ChestCHclosed.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/chests/closed/ChestCIclosed.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/chests/closed/ChestClosed.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/chests/closed/ChestDEclosed.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/chests/closed/ChestEUclosed.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/chests/closed/ChestEUclosed1.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/chests/closed/ChestSLclosed.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/chests/open/ChestCHopen.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/chests/open/ChestCIopen.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/chests/open/ChestDEopen.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/chests/open/ChestEUopen.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/chests/open/ChestEUopen1.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/chests/open/ChestOpen.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/chests/open/ChestSLopen.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/deposit.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/request-01.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/send-01.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/buttons/withdrawal.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/CHF-1000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/CHF-10000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/CHF-100000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/CHF-2000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/CHF-20000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/CHF-5000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/chf-1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/chf-10.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/chf-100.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/chf-2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/chf-20.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/chf-200.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/chf-5.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/chf-50.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/CHF/chf-500.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/EUR/EUR-005.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/EUR/EUR-010.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/EUR/EUR-020.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/EUR/EUR-050.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/EUR/EUR-100.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/EUR/EUR-200.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/EUR/c-eur-001.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/EUR/c-eur-002.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/EUR/c-eur-005.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/EUR/c-eur-010.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/EUR/c-eur-020.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/EUR/c-eur-050.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/EUR/c-eur-100.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/EUR/c-eur-200.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/SLE/SLE-100.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/SLE/SLE-1000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/SLE/SLE-10000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/SLE/SLE-200.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/SLE/SLE-2000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/SLE/SLE-20000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/SLE/SLE-500.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/SLE/SLE-5000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/SLE/sle-1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/SLE/sle-10.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/SLE/sle-25.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/SLE/sle-5.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/SLE/sle-50.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/XOF/XOF-1000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/XOF/XOF-10000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/XOF/XOF-2000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/XOF/XOF-500.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/XOF/XOF-5000.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/XOF/cfa-1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/XOF/cfa-10.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/XOF/cfa-100.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/XOF/cfa-200.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/XOF/cfa-25.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/XOF/cfa-5.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/XOF/cfa-50.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/OIM/currency/XOF/cfa-500.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/ic_bottom_left.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/ic_bottom_right.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/ic_launcher_cashier.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/taler/colour-sets/default.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/taler/colour-sets/error.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/taler/colour-sets/incoming.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/taler/colour-sets/outgoing.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/taler/colour-sets/pending_incoming.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/taler/colour-sets/pending_outgoing.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/taler/colour-sets/success.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/taler/taler-logo/taler-logo-2023-black.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/taler/taler-logo/taler-logo-2023-blue.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/taler/taler-logo/taler-logo-2023-light-blue.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/taler/taler-logo/taler-logo-2023-red.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/taler/taler-logo/taler-logo-2023-white.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/PeerBridge.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/app/OimSendActivity.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/app/OimSendApp.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/app/OimSendHostActivity.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/app/OimTheme.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/components/Assests.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/components/NotesStrip.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/components/PurposeTile.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/components/Qr.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/components/TopBar.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/preview/PurposeScreenPreview.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/preview/QrScreenPreview.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/preview/SendScreenPreview.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/screens/PurposeScreen.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/screens/QrScreen.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/screens/SendScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/deploymentTargetSelector.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deploymentTargetSelector.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/COPYING" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/settings.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taler-kotlin-android/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/taler-kotlin-android/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taler-kotlin-android/proguard-rules.pro" beforeDir="false" afterPath="$PROJECT_DIR$/taler-kotlin-android/proguard-rules.pro" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taler-kotlin-android/src/main/java/net/taler/common/Amount.kt" beforeDir="false" afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/java/net/taler/common/Amount.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taler-kotlin-android/src/main/java/net/taler/common/CurrencySpecification.kt" beforeDir="false" afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/java/net/taler/common/CurrencySpecification.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taler-kotlin-android/src/main/java/net/taler/common/Time.kt" beforeDir="false" afterPath="$PROJECT_DIR$/taler-kotlin-android/src/main/java/net/taler/common/Time.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wallet/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/wallet/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wallet/proguard-rules.pro" beforeDir="false" afterPath="$PROJECT_DIR$/wallet/proguard-rules.pro" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wallet/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/wallet/src/main/AndroidManifest.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -131,31 +176,249 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;wip__fix__protocol__errors&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/oson/computer_science/orali-project-android/transaction-database&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.17&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;recommended.upgrade.do.not.ask.for.project&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Compose Preview.PurposeScreenPreview.executor": "Run",
+    "Compose Preview.SendScreenPreview.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "wip__fix__protocol__errors",
+    "last_opened_file_path": "/home/oson/computer_science/orali-project-android/transaction-database",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.17",
+    "project.structure.side.proportion": "0.2",
+    "recommended.upgrade.do.not.ask.for.project": "true",
+    "settings.editor.selected.configurable": "preferences.keymap"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/transaction-database" />
     </key>
   </component>
-  <component name="RunManager" selected="Android App.wallet">
+  <component name="RunManager" selected="Compose Preview.SendScreenPreview">
+    <configuration name="OimSendActivity (1)" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false" temporary="true">
+      <module name="orali-project-android.wallet" />
+      <option name="ANDROID_RUN_CONFIGURATION_SCHEMA_VERSION" value="1" />
+      <option name="DEPLOY" value="true" />
+      <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
+      <option name="DEPLOY_AS_INSTANT" value="false" />
+      <option name="ARTIFACT_NAME" value="" />
+      <option name="PM_INSTALL_OPTIONS" value="" />
+      <option name="ALL_USERS" value="false" />
+      <option name="ALWAYS_INSTALL_WITH_PM" value="false" />
+      <option name="ALLOW_ASSUME_VERIFIED" value="false" />
+      <option name="CLEAR_APP_STORAGE" value="false" />
+      <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
+      <option name="ACTIVITY_EXTRA_FLAGS" value="" />
+      <option name="MODE" value="specific_activity" />
+      <option name="RESTORE_ENABLED" value="false" />
+      <option name="RESTORE_FILE" value="" />
+      <option name="RESTORE_FRESH_INSTALL_ONLY" value="false" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
+      <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
+      <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
+      <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
+      <option name="DEBUGGER_TYPE" value="Auto" />
+      <Auto>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Auto>
+      <Hybrid>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Hybrid>
+      <Java>
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Java>
+      <Native>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Native>
+      <Profilers>
+        <option name="ADVANCED_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Java/Kotlin Method Sample (legacy)" />
+        <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
+        <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
+      </Profilers>
+      <option name="DEEP_LINK" value="" />
+      <option name="ACTIVITY" value="" />
+      <option name="ACTIVITY_CLASS" value="net.taler.wallet.oim.send.app.OimSendActivity" />
+      <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="false" />
+      <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
+      <method v="2">
+        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="OimSendActivity (2)" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false" temporary="true">
+      <module name="orali-project-android.wallet" />
+      <option name="ANDROID_RUN_CONFIGURATION_SCHEMA_VERSION" value="1" />
+      <option name="DEPLOY" value="true" />
+      <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
+      <option name="DEPLOY_AS_INSTANT" value="false" />
+      <option name="ARTIFACT_NAME" value="" />
+      <option name="PM_INSTALL_OPTIONS" value="" />
+      <option name="ALL_USERS" value="false" />
+      <option name="ALWAYS_INSTALL_WITH_PM" value="false" />
+      <option name="ALLOW_ASSUME_VERIFIED" value="false" />
+      <option name="CLEAR_APP_STORAGE" value="false" />
+      <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
+      <option name="ACTIVITY_EXTRA_FLAGS" value="" />
+      <option name="MODE" value="specific_activity" />
+      <option name="RESTORE_ENABLED" value="false" />
+      <option name="RESTORE_FILE" value="" />
+      <option name="RESTORE_FRESH_INSTALL_ONLY" value="false" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
+      <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
+      <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
+      <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
+      <option name="DEBUGGER_TYPE" value="Auto" />
+      <Auto>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Auto>
+      <Hybrid>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Hybrid>
+      <Java>
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Java>
+      <Native>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Native>
+      <Profilers>
+        <option name="ADVANCED_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Java/Kotlin Method Sample (legacy)" />
+        <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
+        <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
+      </Profilers>
+      <option name="DEEP_LINK" value="" />
+      <option name="ACTIVITY" value="" />
+      <option name="ACTIVITY_CLASS" value="net.taler.wallet.oim.send.app.OimSendActivity" />
+      <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="false" />
+      <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
+      <method v="2">
+        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="OimSendActivity" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false" temporary="true">
+      <module name="orali-project-android.wallet" />
+      <option name="ANDROID_RUN_CONFIGURATION_SCHEMA_VERSION" value="1" />
+      <option name="DEPLOY" value="true" />
+      <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
+      <option name="DEPLOY_AS_INSTANT" value="false" />
+      <option name="ARTIFACT_NAME" value="" />
+      <option name="PM_INSTALL_OPTIONS" value="" />
+      <option name="ALL_USERS" value="false" />
+      <option name="ALWAYS_INSTALL_WITH_PM" value="false" />
+      <option name="ALLOW_ASSUME_VERIFIED" value="false" />
+      <option name="CLEAR_APP_STORAGE" value="false" />
+      <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
+      <option name="ACTIVITY_EXTRA_FLAGS" value="" />
+      <option name="MODE" value="specific_activity" />
+      <option name="RESTORE_ENABLED" value="false" />
+      <option name="RESTORE_FILE" value="" />
+      <option name="RESTORE_FRESH_INSTALL_ONLY" value="false" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
+      <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
+      <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
+      <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
+      <option name="DEBUGGER_TYPE" value="Auto" />
+      <Auto>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Auto>
+      <Hybrid>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Hybrid>
+      <Java>
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Java>
+      <Native>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Native>
+      <Profilers>
+        <option name="ADVANCED_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Java/Kotlin Method Sample (legacy)" />
+        <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
+        <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
+      </Profilers>
+      <option name="DEEP_LINK" value="" />
+      <option name="ACTIVITY" value="" />
+      <option name="ACTIVITY_CLASS" value="net.taler.wallet.oim.send.app.OimSendActivity" />
+      <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="false" />
+      <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
+      <method v="2">
+        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="wallet" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
       <module name="orali-project-android.wallet" />
       <option name="ANDROID_RUN_CONFIGURATION_SCHEMA_VERSION" value="1" />
@@ -228,6 +491,161 @@
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="PurposeScreenPreview" type="ComposePreviewRunConfiguration" temporary="true">
+      <module name="orali-project-android.wallet" />
+      <option name="ANDROID_RUN_CONFIGURATION_SCHEMA_VERSION" value="1" />
+      <option name="DEPLOY" value="true" />
+      <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
+      <option name="DEPLOY_AS_INSTANT" value="false" />
+      <option name="ARTIFACT_NAME" value="" />
+      <option name="PM_INSTALL_OPTIONS" value="" />
+      <option name="ALL_USERS" value="false" />
+      <option name="ALWAYS_INSTALL_WITH_PM" value="false" />
+      <option name="ALLOW_ASSUME_VERIFIED" value="false" />
+      <option name="CLEAR_APP_STORAGE" value="false" />
+      <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
+      <option name="ACTIVITY_EXTRA_FLAGS" value="--es composable net.taler.wallet.oim.send.preview.PurposeScreenPreviewKt.PurposeScreenPreview" />
+      <option name="MODE" value="specific_activity" />
+      <option name="RESTORE_ENABLED" value="false" />
+      <option name="RESTORE_FILE" value="" />
+      <option name="RESTORE_FRESH_INSTALL_ONLY" value="false" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
+      <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
+      <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
+      <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
+      <option name="DEBUGGER_TYPE" value="Auto" />
+      <Auto>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Auto>
+      <Hybrid>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Hybrid>
+      <Java>
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Java>
+      <Native>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Native>
+      <Profilers>
+        <option name="ADVANCED_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Java/Kotlin Method Sample (legacy)" />
+        <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
+        <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
+      </Profilers>
+      <option name="DEEP_LINK" value="" />
+      <option name="ACTIVITY" value="" />
+      <option name="ACTIVITY_CLASS" value="androidx.compose.ui.tooling.PreviewActivity" />
+      <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="true" />
+      <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
+      <compose-preview-run-configuration composable-fqn="net.taler.wallet.oim.send.preview.PurposeScreenPreviewKt.PurposeScreenPreview" />
+      <method v="2">
+        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SendScreenPreview" type="ComposePreviewRunConfiguration" temporary="true">
+      <module name="orali-project-android.wallet" />
+      <option name="ANDROID_RUN_CONFIGURATION_SCHEMA_VERSION" value="1" />
+      <option name="DEPLOY" value="true" />
+      <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
+      <option name="DEPLOY_AS_INSTANT" value="false" />
+      <option name="ARTIFACT_NAME" value="" />
+      <option name="PM_INSTALL_OPTIONS" value="" />
+      <option name="ALL_USERS" value="false" />
+      <option name="ALWAYS_INSTALL_WITH_PM" value="false" />
+      <option name="ALLOW_ASSUME_VERIFIED" value="false" />
+      <option name="CLEAR_APP_STORAGE" value="false" />
+      <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
+      <option name="ACTIVITY_EXTRA_FLAGS" value="--es composable net.taler.wallet.oim.send.preview.SendScreenPreviewKt.SendScreenPreview" />
+      <option name="MODE" value="specific_activity" />
+      <option name="RESTORE_ENABLED" value="false" />
+      <option name="RESTORE_FILE" value="" />
+      <option name="RESTORE_FRESH_INSTALL_ONLY" value="false" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
+      <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
+      <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
+      <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
+      <option name="DEBUGGER_TYPE" value="Auto" />
+      <Auto>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Auto>
+      <Hybrid>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Hybrid>
+      <Java>
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Java>
+      <Native>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Native>
+      <Profilers>
+        <option name="ADVANCED_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Java/Kotlin Method Sample (legacy)" />
+        <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
+        <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
+      </Profilers>
+      <option name="DEEP_LINK" value="" />
+      <option name="ACTIVITY" value="" />
+      <option name="ACTIVITY_CLASS" value="androidx.compose.ui.tooling.PreviewActivity" />
+      <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="true" />
+      <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
+      <compose-preview-run-configuration composable-fqn="net.taler.wallet.oim.send.preview.SendScreenPreviewKt.SendScreenPreview" />
+      <method v="2">
+        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Compose Preview.SendScreenPreview" />
+        <item itemvalue="Android App.OimSendActivity (2)" />
+        <item itemvalue="Compose Preview.PurposeScreenPreview" />
+        <item itemvalue="Android App.OimSendActivity (1)" />
+        <item itemvalue="Android App.OimSendActivity" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -238,5 +656,41 @@
       <updated>1760665225720</updated>
     </task>
     <servers />
+  </component>
+  <component name="play_dynamic_filters_status">
+    <option name="appIdToCheckInfo">
+      <map>
+        <entry key="net.taler.wallet">
+          <value>
+            <CheckInfo lastCheckTimestamp="1760691558923" />
+          </value>
+        </entry>
+        <entry key="net.taler.wallet.fdroid">
+          <value>
+            <CheckInfo lastCheckTimestamp="1760691558922" />
+          </value>
+        </entry>
+        <entry key="net.taler.wallet.fdroid.test">
+          <value>
+            <CheckInfo lastCheckTimestamp="1760691558924" />
+          </value>
+        </entry>
+        <entry key="net.taler.wallet.nightly">
+          <value>
+            <CheckInfo lastCheckTimestamp="1760691558923" />
+          </value>
+        </entry>
+        <entry key="net.taler.wallet.nightly.test">
+          <value>
+            <CheckInfo lastCheckTimestamp="1760691558925" />
+          </value>
+        </entry>
+        <entry key="net.taler.wallet.test">
+          <value>
+            <CheckInfo lastCheckTimestamp="1760691558922" />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>
