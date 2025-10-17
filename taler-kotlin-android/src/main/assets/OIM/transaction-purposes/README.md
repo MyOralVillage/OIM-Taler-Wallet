@@ -1,0 +1,23 @@
+# Description
+These are assets for "transaction purposes", which are a way to visually
+catalogue transactions by common purposes.
+
+# Attributions
+All of the assets are based off of the official OIM Salome library.
+
+The following pngs were designed by Freepik:
+    electricity.png
+    water.png
+    phone.png
+<br>
+The following pngs were designed by Google Gemini:
+    gas.png
+    school_uniforms.png
+    doctor_appointment.png
+    farming.png
+    medicine.png
+    market_stall.png
+    tools.png
+    school_supplies.png
+    transportation.png
+    send.png

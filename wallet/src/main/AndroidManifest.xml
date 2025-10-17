@@ -77,13 +77,6 @@
             </intent-filter>
         </activity>
 
-        <!-- NEW: Optional OIM host activity for your Compose send flow (no launcher icon) -->
-        <activity
-            android:name=".oim.send.app.OimSendHostActivity"
-            android:exported="false"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:screenOrientation="sensorLandscape" />
-
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="fullSensor"

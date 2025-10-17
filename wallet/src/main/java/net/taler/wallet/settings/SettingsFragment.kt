@@ -52,13 +52,15 @@ import kotlinx.coroutines.launch
 import net.taler.common.showError
 import net.taler.wallet.BuildConfig.FLAVOR
 import net.taler.wallet.BuildConfig.VERSION_CODE
-import net.taler.wallet.BuildConfig.VERSION_NAME
+// import net.taler.wallet.BuildConfig.VERSION_NAME
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
 import net.taler.wallet.showError
 import net.taler.wallet.withdraw.TestWithdrawStatus
 import java.lang.System.currentTimeMillis
 
+/** hard coded */
+const val VERSION_NAME = "OIM-v0.1.0-tʋɩɩse"
 
 class SettingsFragment : PreferenceFragmentCompat() {
 

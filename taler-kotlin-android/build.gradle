@@ -25,7 +25,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 26
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
     }
@@ -62,7 +62,6 @@ dependencies {
 
     api project(':transaction-database')
 
-    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation "androidx.constraintlayout:constraintlayout:$constraintlayout_version"
 
@@ -74,10 +73,10 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
 
     // QR codes
-    implementation 'com.google.zxing:core:3.5.0'  // needs minSdkVersion 24+ or desugar
+    implementation 'com.google.zxing:core:3.5.2'
 
     // JSON parsing and serialization
-    api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2'
+    api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3'
     testImplementation "junit:junit:$junit_version"
     testImplementation 'org.json:json:20220320'
 

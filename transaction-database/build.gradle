@@ -25,7 +25,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 26
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
     }
@@ -58,30 +58,10 @@ android {
 
 dependencies {
 
-    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.core:core-ktx:1.13.1'
-    implementation "androidx.constraintlayout:constraintlayout:$constraintlayout_version"
-
-    // Navigation
-    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
-    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
-
-    // ViewModel and LiveData
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
-
-    // QR codes
-    implementation 'com.google.zxing:core:3.5.0'  // needs minSdkVersion 24+ or desugar
 
     // JSON parsing and serialization
-    api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2'
+    api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3'
     testImplementation "junit:junit:$junit_version"
     testImplementation 'org.json:json:20220320'
-
-    // Networking
-    api "io.ktor:ktor-client:$ktor_version"
-    api "io.ktor:ktor-client-okhttp:$ktor_version"
-    implementation "io.ktor:ktor-client-serialization-jvm:$ktor_version"
-    implementation "io.ktor:ktor-serialization-kotlinx-json:$ktor_version"
-    implementation "io.ktor:ktor-client-content-negotiation:$ktor_version"
-    implementation("io.ktor:ktor-client-logging:$ktor_version")
 }
