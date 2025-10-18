@@ -28,7 +28,7 @@ Each team member was responsible for **one user story**, while a few team leads 
 Having a **dedicated Discord channel** for bugs proved highly effective. Team members reported bugs as soon as they were found, explained how they were fixed, and discussed potential causes. This real-time tracking prevented repeated issues and acted as a lightweight bug log without redundant documentation.
 
 ### 4. Multi-Platform Communication (WhatsApp + Discord)  
-Using both **WhatsApp and Discord** worked well for different purposes — WhatsApp for quick updates and scheduling, and Discord for technical collaboration. This dual setup made communication efficient and context-appropriate.
+Using both **WhatsApp and Discord** worked well for different purposes. WhatsApp for quick updates and scheduling, and Discord for technical collaboration. This dual setup made communication efficient and context-appropriate.
 
 
 #### Q2. What did not work well
