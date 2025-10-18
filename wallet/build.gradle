@@ -30,10 +30,12 @@ android {
         applicationId "net.taler.wallet"
         minSdkVersion 26
         targetSdkVersion 35
-        versionCode 67
-        versionName "1.0.11"
+        versionCode 68
+        versionName "OIM-v0.1.0-tʋɩɩse"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
     }
+
     buildTypes {
         release {
             minifyEnabled true
@@ -45,6 +47,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     flavorDimensions = ["distributionChannel"]
     productFlavors {
         fdroid {
@@ -96,7 +99,7 @@ android {
         abi {
             enable true
             reset()
-            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"  // All architectures
             universalApk false
         }
     }
@@ -104,6 +107,7 @@ android {
     lint {
         abortOnError true
         ignoreWarnings false
+        checkGeneratedSources false  // ADDED: Ignore lint in generated code
     }
 }
 
@@ -112,16 +116,17 @@ dependencies {
     api project(":taler-kotlin-android")
 
     implementation "net.taler:qtart:$qtart_version@aar"
-
     implementation("io.coil-kt:coil-compose:2.4.0") {
         exclude group: 'androidx.lifecycle', module: 'lifecycle-viewmodel-ktx'
     }
+
     implementation 'androidx.preference:preference-ktx:1.2.1'
     implementation "com.google.android.material:material:$material_version"
     implementation "androidx.constraintlayout:constraintlayout:$constraintlayout_version"
     implementation "androidx.browser:browser:1.8.0"
     implementation "androidx.biometric:biometric-ktx:1.4.0-alpha02"
 
+    // Compose
     implementation platform('androidx.compose:compose-bom:2025.05.00')
     implementation 'androidx.compose.material3:material3'
     implementation 'androidx.compose.material:material-icons-extended'
@@ -134,29 +139,38 @@ dependencies {
     implementation "androidx.fragment:fragment-compose:1.8.6"
     debugImplementation 'androidx.compose.ui:ui-tooling'
 
+    // Lists
     implementation "androidx.recyclerview:recyclerview:1.4.0"
 
+    // Navigation
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 
+    // ViewModel and LiveData
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
 
+    // QR codes
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0@aar'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
     implementation 'com.google.zxing:core:3.5.2'
 
+    // Progress bar
     implementation 'me.zhanghai.android.materialprogressbar:library:1.6.1'
 
+    // Markdown rendering
     final def markwon_version = '4.6.2'
     implementation "io.noties.markwon:core:$markwon_version"
     implementation "io.noties.markwon:ext-tables:$markwon_version"
     implementation "io.noties.markwon:recycler:$markwon_version"
 
+    // JNA
     implementation "net.java.dev.jna:jna:5.17.0@aar"
 
+    // DataStore
     implementation "androidx.datastore:datastore:$datastore_version"
     implementation "com.google.protobuf:protobuf-javalite:3.18.0"
 
+    // Testing
     testImplementation "junit:junit:$junit_version"
     testImplementation 'org.json:json:20220320'
 }
@@ -167,12 +181,11 @@ tasks.withType(KotlinCompile).configureEach {
     }
 }
 
+// All architectures including x86 for emulators
 ext.abiCodes = ['armeabi-v7a': 1, 'arm64-v8a': 2, x86: 3, x86_64: 4]
-
 android.applicationVariants.configureEach { variant ->
     variant.outputs.each { output ->
-        def baseAbiVersionCode =
-                project.ext.abiCodes.get(output.getFilter(com.android.build.OutputFile.ABI))
+        def baseAbiVersionCode = project.ext.abiCodes.get(output.getFilter(com.android.build.OutputFile.ABI))
         if (baseAbiVersionCode != null) {
             output.versionCodeOverride = 10 * variant.versionCode + baseAbiVersionCode
         }

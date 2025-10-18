@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?>
+<!--
   ~ This file is part of GNU Taler
   ~ (C) 2020 Taler Systems S.A.
   ~
@@ -11,12 +12,13 @@
   ~ A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   ~
   ~ You should have received a copy of the GNU General Public License along with
-  ~ GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
+  ~ GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -27,6 +29,7 @@
         tools:replace="android:maxSdkVersion" />
     <uses-permission android:name="android.permission.NFC" />
 
+    <!-- Optional features -->
     <uses-feature
         android:name="android.hardware.telephony"
         android:required="false" />
@@ -34,6 +37,7 @@
         android:name="android.hardware.nfc.hce"
         android:required="false" />
 
+    <!-- Application definition -->
     <application
         android:name=".WalletApp"
         android:allowBackup="true"
@@ -46,7 +50,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
 
-        <!-- Existing launcher activity (unchanged) -->
+        <!-- Main launcher activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -66,22 +70,20 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="taler" />
-                <data
-                    android:scheme="TALER"
-                    tools:ignore="AppLinkUrlError" />
+                <data android:scheme="TALER" tools:ignore="AppLinkUrlError" />
                 <data android:scheme="ext+taler" />
-                <data
-                    android:scheme="EXT+TALER"
-                    tools:ignore="AppLinkUrlError" />
+                <data android:scheme="EXT+TALER" tools:ignore="AppLinkUrlError" />
                 <data android:scheme="payto" />
             </intent-filter>
         </activity>
 
+        <!-- Barcode scanner capture activity -->
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="fullSensor"
             tools:replace="screenOrientation" />
 
+        <!-- NFC service -->
         <service
             android:name="net.taler.lib.android.TalerNfcService"
             android:exported="true"
@@ -97,6 +99,7 @@
         </service>
     </application>
 
+    <!-- External query permissions -->
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />

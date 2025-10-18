@@ -46,7 +46,7 @@ import net.taler.database.schema.Schema
  * @throws IllegalArgumentException if any required columns are missing.
  * @throws SQLiteException if a database access error occurs.
  */
-fun getExtrema(db: SQLiteDatabase) :
+internal fun getExtrema(db: SQLiteDatabase) :
         Pair<Pair<FilterableLocalDateTime, FilterableLocalDateTime>, Pair<Amount, Amount>>? {
 
     // initialize variables
@@ -54,7 +54,6 @@ fun getExtrema(db: SQLiteDatabase) :
     var _maxDtm : FilterableLocalDateTime
     var _minAmt : Amount
     var _maxAmt : Amount
-
 
     // query minimum datetime
     val minDatetimeQuery =
@@ -124,7 +123,7 @@ fun getExtrema(db: SQLiteDatabase) :
  * @return a [List] of [Tranx] objects matching the query.
  *         Returns an empty list if no rows match.
  */
-fun queryTranx(
+internal fun queryTranx(
     db: SQLiteDatabase,
     sql: String,
     selectionArgs: Array<String>? = null

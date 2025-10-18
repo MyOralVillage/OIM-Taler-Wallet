@@ -14,10 +14,19 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
+/*
+ * This file is part of GNU Taler
+ * (C) 2020–2025 Taler Systems S.A.
+ *
+ * GNU Taler is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3, or (at your option) any later version.
+ */
+
 plugins {
     id 'com.android.library'
-    id 'kotlin-android'
-    id 'kotlinx-serialization'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 android {
@@ -25,7 +34,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        minSdkVersion 26
+        minSdk 26
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
     }
@@ -41,15 +50,20 @@ android {
 
     buildFeatures {
         viewBinding = true
+        // Important: ensures BuildConfig is generated for library modules
+        buildConfig = true
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
         jvmTarget = "17"
     }
-    packagingOptions {
+
+    packaging {
         resources {
             excludes += ['META-INF/*.kotlin_module']
         }
@@ -57,11 +71,12 @@ android {
 }
 
 dependencies {
-
     implementation 'androidx.core:core-ktx:1.13.1'
 
     // JSON parsing and serialization
     api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3'
+
     testImplementation "junit:junit:$junit_version"
     testImplementation 'org.json:json:20220320'
 }
+

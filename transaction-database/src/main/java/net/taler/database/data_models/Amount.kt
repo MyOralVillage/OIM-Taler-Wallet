@@ -84,13 +84,13 @@ data class Amount(
 
         /** Currency validation regex: allows letters, digits,
          * underscores, and hyphens. */
-        private val REGEX_CURRENCY = Regex("""^[-_*A-Za-z0-9]{1,12}$""")
+        val REGEX_CURRENCY = Regex("""^[-_*A-Za-z0-9]{1,12}$""")
 
         /** Maximum allowable integral amount (2^52). */
         val MAX_VALUE: Long = 2.0.pow(52).toLong()
 
         /** Maximum supported length of the fractional part (8 digits). */
-        private const val MAX_FRACTION_LENGTH = 8
+        const val MAX_FRACTION_LENGTH = 8
 
         /** Maximum valid fractional value (99_999_999). */
         const val MAX_FRACTION: Int = 99_999_999

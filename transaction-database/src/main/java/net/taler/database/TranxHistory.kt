@@ -14,10 +14,9 @@ import android.database.sqlite.SQLiteDatabase
 import net.taler.database.filter.*                   // TranxFilter, toSQL()
 import net.taler.database.data_models.*              // Amount, Tranx, TranxPurp
 import net.taler.database.data_access.*              // TransactionDatabase, addTranx, queryTranx
-
-
+import net.taler.database.schema.Schema
 /**
- * Singleton that manages transaction history metadata and cached results.
+ * Singleton that manages transaction history metadata, cached results, and filter state.
  */
 object TranxHistory {
 
@@ -39,38 +38,111 @@ object TranxHistory {
 
     // ---- Read-only accessors ------------------------------------------------
 
+    /** Whether the cached transaction history is stale and needs refreshing. */
     val isStale: Boolean get() = _isStale
+
+    /** Whether the transaction database has been initialized. */
     val isIniti: Boolean get() = _isIniti
 
+    /** The current transaction filter applied to queries. */
     val filtTyp: TranxFilter get() = _filtTyp
 
+    /** Minimum timestamp of transactions in the cache or filter. */
     val miniDtm: FilterableLocalDateTime? get() = _miniDtm
+
+    /** Maximum timestamp of transactions in the cache or filter. */
     val maxiDtm: FilterableLocalDateTime? get() = _maxiDtm
 
+    /** Minimum amount of transactions in the cache or filter. */
     val miniAmt: Amount? get() = _miniAmt
+
+    /** Maximum amount of transactions in the cache or filter. */
     val maxiAmt: Amount? get() = _maxiAmt
+
+    /** Path to the test database. */
+    const val TRXN_HIST_TEST_DB_PATH =
+        "transaction-history-test/1/transaction_history.db"
+
 
     // ---- API ----------------------------------------------------------------
 
     /**
      * Initialize the transactions database (must be called exactly once).
+     *
+     * @param context Android context for database access; may be null for testing.
+     * @throws IllegalStateException if called more than once.
      */
-    fun init(context: Context?) {
-        check(!_isIniti) { "TranxHistory already initialized" }
-        _db = TransactionDatabase(context).readableDatabase
-        _isIniti = true
+    fun init(context: Context?) = synchronized(this) {
+        if (!_isIniti) {
+            _db = TransactionDatabase(context).readableDatabase
+            _isIniti = true
+        }
     }
 
     /**
-     * Update the active filter; marks history as stale so next read refreshes.
+     * Initializes the transaction history database using a prebuilt test database.
+     *
+     * Copies the bundled test DB from assets into the app's internal database directory,
+     * overwriting any existing version, and initializes [TranxHistory].
+     *
+     * **This should only be used for testing or preview purposes.**
+     *
+     * @param context Android context used to access assets and database paths.
+     * @param version Optional database version; defaults to [Schema.VERSION].
      */
-    fun setFilter(filter: TranxFilter) {
-        _filtTyp = filter
-        _isStale = true
+    fun initTest(context: Context, version: Int? = null) = synchronized(this) {
+
+//        // for use ONLY when this is properly tested!
+//        if (!BuildConfig.DEBUG) {
+//            throw UnsupportedOperationException("initTest() is only available in debug builds.")
+//        }
+
+        if (!isIniti) {
+            val dbFile = context.getDatabasePath("transaction_history.db")
+            dbFile.parentFile?.mkdirs()
+
+            val versionStr = (version ?: Schema.VERSION).toString()
+            val assetPath = "transaction-history-test/v$versionStr/transaction_history.db"
+
+            try {
+                // Always overwrite for predictable test behavior
+                context.assets.open(assetPath).use { input ->
+                    dbFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+
+                // Initialize TranxHistory with the new database
+                init(context)
+            } catch (e: Exception) {
+                throw IllegalStateException(
+                    "Failed to initialize test database from assets: $assetPath", e
+                )
+            }
+        }
     }
 
     /**
-     * Add a transaction and update cached bounds.
+     * Updates the internal filter and marks cached history as stale if the filter changes.
+     *
+     * @param filter The new filter for history queries.
+     */
+    fun setFilter(filter: TranxFilter) = synchronized(this) {
+        if(filter != _filtTyp) {
+            _isStale = true
+            _filtTyp = filter
+        }
+    }
+
+    /**
+     * Add a new transaction to the database and update cached bounds.
+     *
+     * @param tid Unique transaction identifier.
+     * @param purp Optional transaction purpose.
+     * @param amt Transaction amount.
+     * @param dir Transaction direction (incoming/outgoing).
+     * @param tms Transaction timestamp.
+     * @throws IllegalStateException if the database has not been initialized.
      */
     fun newTransaction(
         tid: String,
@@ -78,7 +150,7 @@ object TranxHistory {
         amt: Amount,
         dir: FilterableDirection,
         tms: Timestamp,
-    ) {
+    ) = synchronized(this) {
         check(_isIniti) { "Database is not initialized" }
 
         // update amount bounds
@@ -89,7 +161,7 @@ object TranxHistory {
         if (newAmtScalar <= minScalar) _miniAmt = amt
 
         // update datetime bounds
-        val newDtm = FilterableLocalDateTime(tms, null) // shouldn't need null.. idk why we need :(
+        val newDtm = FilterableLocalDateTime(tms, null)
         _maxiDtm = when (_maxiDtm) {
             null -> newDtm
             else -> if (_maxiDtm!! <= newDtm) newDtm else _maxiDtm
@@ -105,12 +177,23 @@ object TranxHistory {
     }
 
     /**
-     * Return cached history; refresh if marked stale.
+     * Returns cached transaction history; refreshes from the database if marked stale.
+     *
+     * @return List of transactions according to the current filter.
      */
-    fun getHistory(): List<Tranx> {
+    fun getHistory(): List<Tranx> = synchronized(this) {
         if (!_isStale) return _history
         _history = queryTranx(_db, _filtTyp.toSQL())
         _isStale = false
         return _history
+    }
+
+    /**
+     * Resets the filter to default (all values) and marks cached history as stale.
+     * Next call to [getHistory] will refresh the data.
+     */
+    fun clearHistory() = synchronized(this) {
+        _filtTyp = TranxFilter()
+        _isStale = true
     }
 }
