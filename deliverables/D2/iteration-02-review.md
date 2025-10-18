@@ -59,6 +59,8 @@ Briefly explain how you integrated the previously developed individuals componen
 
  * Keep this very short (1-3 lines).
 
+We split work by user stories (Send, Receive, Transactions, GUI) and assigned them to different members. Each part was developed on separate branches, then merged into the main project, with integration coordinated through UML diagrams and meetings to resolve any conflicts (though none arose).
+
 
 ## Product - Review
 
