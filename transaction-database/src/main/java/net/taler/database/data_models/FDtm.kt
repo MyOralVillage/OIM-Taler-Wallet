@@ -14,10 +14,10 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
+
 package net.taler.database.data_models
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
@@ -32,24 +32,43 @@ import java.time.ZoneId
 import java.time.Instant
 
 /**
- * Wrapper class for [LocalDateTime] which
- * implements the [Filterable] interface.
- */
-@Serializable(with = FilterableLocalDateTimeSerializer::class)
-class FilterableLocalDateTime : Filterable<FilterableLocalDateTime> {
 
-    /** The LocalDateTime instance being wrapped. */
+ * Represents a filterable date–time value with a fixed time zone and
+ * epoch millisecond precision.
+ *
+ * This class acts as a lightweight, serializable wrapper around [LocalDateTime]
+ * that implements the [Filterable] interface, enabling database-compatible
+ * filtering, ordering, and serialization of time-based values.
+ *
+ * Unlike plain [LocalDateTime], instances of [FDtm] include:
+ * * A stable [ZoneId] to preserve the original time context.
+ * * A cached epoch millisecond value for efficient comparisons and storage.
+ *
+ * The class supports construction from multiple sources (epoch milliseconds,
+ * [LocalDateTime], [Timestamp]) and ensures all representations remain
+ * internally consistent. It is primarily used for representing transaction
+ * timestamps in the GNU Taler wallet database layer.
+ */
+@Serializable(with = FDtmSerializer::class)
+class FDtm : Filterable<FDtm> {
+
+    /** The [LocalDateTime] instance being wrapped. */
     private val _dt: LocalDateTime
 
-    /** The ZoneID being wrapped.
-     * If none is passed, _tz set to system default. */
+    /** The [ZoneId] of the wrapped date–time.
+
+     * Defaults to the system time zone if not specified. */
     private val _tz: ZoneId
-    private val _ms: Long // in epoch
+
+    /** Epoch time in milliseconds corresponding to [_dt] and [_tz]. */
+    private val _ms: Long
 
     /**
-     * Constructs a new `FilterableLocalDateTime` initialized to
-     * the current datetime in the specified [ZoneId].
-     * @param tz the time zone to use for the current date-time
+
+     * Constructs a new [FDtm] initialized to the current date–time
+     * in the specified [ZoneId].
+     *
+     * @param tz the time zone to use for the current date–time.
      */
     constructor(tz: ZoneId) {
         _dt = LocalDateTime.now()
@@ -58,8 +77,9 @@ class FilterableLocalDateTime : Filterable<FilterableLocalDateTime> {
     }
 
     /**
-     * Constructs a new `FilterableLocalDateTime` initialized
-     * to the current date-time in the system default time zone.
+
+     * Constructs a new [FDtm] initialized to the current date–time
+     * in the system default time zone.
      */
     constructor() {
         _dt = LocalDateTime.now()
@@ -68,10 +88,11 @@ class FilterableLocalDateTime : Filterable<FilterableLocalDateTime> {
     }
 
     /**
-     * Constructs a new `FilterableLocalDateTime` wrapping
-     * an existing [LocalDateTime].
+
+     * Constructs a new [FDtm] wrapping an existing [LocalDateTime].
+     *
      * @param dateTime the [LocalDateTime] to wrap.
-     * @param timeZone the [ZoneId] to wrap. if none passed, defaults to sys default.
+     * @param timeZone the [ZoneId] to associate with it; if `null`, uses the system default.
      */
     constructor(dateTime: LocalDateTime, timeZone: ZoneId?) {
         _dt = dateTime
@@ -80,10 +101,12 @@ class FilterableLocalDateTime : Filterable<FilterableLocalDateTime> {
     }
 
     /**
-     * Constructs a new `FilterableLocalDateTime` from a [Timestamp],
-     * with the timezone set to the system default.
-     * @param timeStamp the [Timestamp] to wrap
-     * @param timeZone the [ZoneId] to wrap. if none passed, defaults to sys default.
+
+     * Constructs a new [FDtm] from a [Timestamp], converting the provided epoch
+     * milliseconds into a [LocalDateTime] in the given or system default [ZoneId].
+     *
+     * @param timeStamp the [Timestamp] to wrap.
+     * @param timeZone the [ZoneId] to associate with it; if `null`, uses the system default.
      */
     constructor(timeStamp: Timestamp, timeZone: ZoneId?) {
         _tz = timeZone ?: ZoneId.systemDefault()
@@ -92,10 +115,12 @@ class FilterableLocalDateTime : Filterable<FilterableLocalDateTime> {
     }
 
     /**
-     * Constructs a new `FilterableLocalDateTime` from a [Timestamp],
-     * with the timezone set to the system default.
-     * @param epochMillis the time in epoch milliseconds
-     * @param timeZone the [ZoneId] to wrap. if none passed, defaults to sys default.
+
+     * Constructs a new [FDtm] from raw epoch milliseconds, using the provided or
+     * system default [ZoneId].
+     *
+     * @param epochMillis the time in epoch milliseconds.
+     * @param timeZone the [ZoneId] to associate with it; if `null`, uses the system default.
      */
     constructor(epochMillis: Long, timeZone: ZoneId?) {
         _tz = timeZone ?: ZoneId.systemDefault()
@@ -103,63 +128,72 @@ class FilterableLocalDateTime : Filterable<FilterableLocalDateTime> {
         _ms = epochMillis
     }
 
-    /** @return the wrapped [LocalDateTime] */
+    /** Returns the wrapped [LocalDateTime] instance. */
     fun unwrap(): LocalDateTime = _dt
 
-    /** @return the [ZoneId] of the wrapped [LocalDateTime] */
+    /** Returns the [ZoneId] associated with this date–time. */
     fun timeZone(): ZoneId = _tz
 
-    /** @return the epoch milliseconds of the wrapped [LocalDateTime] */
+    /** Returns the epoch millisecond representation of this date–time. */
     fun epochMillis(): Long = _ms
 
     /**
-     * Compares this `FilterableLocalDateTime` with another.
-     * @param other the other `FilterableLocalDateTime` to compare against
-     * @return a negative integer, zero, or a positive integer if this
-     *         is less than, equal to, or greater than fdt.
+
+     * Compares this [FDtm] instance with another for chronological ordering.
+     *
+     * @param other the other [FDtm] to compare against.
+     * @return a negative integer, zero, or a positive integer if this instance
+     * ```
+    is less than, equal to, or greater than [other].
+    ```
+
      */
-    override fun compareTo(other: FilterableLocalDateTime): Int =
+    override fun compareTo(other: FDtm): Int =
         unwrap().compareTo(other.unwrap())
 
     companion object {
         /**
-         * A unique identifier for this class used during the Java serialization and
-         * deserialization process to verify compatibility between the sender and
-         * receiver of a serialized object.
+         * Unique version identifier used during Java serialization.
+         * Ensures compatibility between serialized instances of [FDtm].
          */
         private const val serialVersionUID: Long = 1L
     }
 }
 
 /**
- * Kotlinx serializer for [FilterableLocalDateTime] that serializes
- * the internal structure (epoch milliseconds and time zone ID) for
- * efficient and precise storage/transmission.
+
+ * Custom [KSerializer] implementation for [FDtm].
  *
- * Serialized format:
+ * Serializes and deserializes [FDtm] objects as a compact JSON object containing
+ * the epoch millisecond timestamp and zone identifier, ensuring high precision
+ * and full round-trip fidelity.
+ *
+ * Example serialized form:
  * ```json
+```
  * {
- *   "epoch_ms": 1729088100000,
- *   "zone_id": "UTC"
+ * "epoch_ms": 1729088100000,
+ * "zone_id": "UTC"
  * }
  * ```
- */
-object FilterableLocalDateTimeSerializer : KSerializer<FilterableLocalDateTime> {
+```
 
+ */
+object FDtmSerializer : KSerializer<FDtm> {
     override val descriptor: SerialDescriptor =
         buildClassSerialDescriptor("FilterableLocalDateTime") {
-        element<Long>("epoch_ms")
-        element<String>("zone_id")
-    }
+            element<Long>("epoch_ms")
+            element<String>("zone_id")
+        }
 
-    override fun serialize(encoder: Encoder, value: FilterableLocalDateTime) {
+    override fun serialize(encoder: Encoder, value: FDtm) {
         encoder.encodeStructure(descriptor) {
             encodeLongElement(descriptor, 0, value.epochMillis())
             encodeStringElement(descriptor, 1, value.timeZone().id)
         }
     }
 
-    override fun deserialize(decoder: Decoder): FilterableLocalDateTime {
+    override fun deserialize(decoder: Decoder): FDtm {
         return decoder.decodeStructure(descriptor) {
             var epochMs: Long? = null
             var zoneId: String? = null
@@ -178,7 +212,7 @@ object FilterableLocalDateTimeSerializer : KSerializer<FilterableLocalDateTime> 
 
             val zone = ZoneId.of(zoneId)
             val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMs), zone)
-            FilterableLocalDateTime(dateTime, zone)
+            FDtm(dateTime, zone)
         }
     }
 }

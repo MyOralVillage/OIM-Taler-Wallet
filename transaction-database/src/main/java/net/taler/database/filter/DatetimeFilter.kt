@@ -16,21 +16,21 @@
 
 package net.taler.database.filter
 
-import net.taler.database.data_models.FilterableLocalDateTime
+import net.taler.database.data_models.FDtm
 
 /** Filters transactions by datetime. */
 sealed class DatetimeFilter {
 
     /** Matches a single datetime. */
-    data class Exact(val datetime: FilterableLocalDateTime) : DatetimeFilter()
+    data class Exact(val datetime: FDtm) : DatetimeFilter()
 
     /**
      * Matches a datetime range (inclusive).
      * @throws IllegalArgumentException if [start] > [end]
      */
     data class Range(
-        val start: FilterableLocalDateTime,
-        val end: FilterableLocalDateTime
+        val start: FDtm,
+        val end: FDtm
     ) : DatetimeFilter() {
         init {
             require(start <= end) { "Start must be less than or equal to end" }

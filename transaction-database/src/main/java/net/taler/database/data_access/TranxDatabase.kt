@@ -63,7 +63,7 @@ import net.taler.database.schema.Schema
  *
  * @since API 26 (Android 8.0)
  */
-class TransactionDatabase(context: Context?)
+internal class TransactionDatabase(context: Context?)
     : SQLiteOpenHelper(
     context,
     if (context == null) null else Schema.DATABASE_NAME,

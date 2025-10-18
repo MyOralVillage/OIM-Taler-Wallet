@@ -26,7 +26,7 @@ import net.taler.database.schema.Schema
  * ```kotlin
  * // Filter by a single datetime
  * val filter1 = TranxFilter(
- *     datetime = DatetimeFilter.Exact(FilterableLocalDateTime("2023-01-01T00:00"))
+ *     datetime = DatetimeFilter.Exact(FDtm("2023-01-01T00:00"))
  * )
  *
  * // Filter by amount range and direction

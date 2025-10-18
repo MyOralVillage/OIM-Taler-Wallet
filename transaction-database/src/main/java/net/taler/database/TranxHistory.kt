@@ -11,13 +11,16 @@ package net.taler.database
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import kotlinx.serialization.InternalSerializationApi
 import net.taler.database.filter.*                   // TranxFilter, toSQL()
 import net.taler.database.data_models.*              // Amount, Tranx, TranxPurp
 import net.taler.database.data_access.*              // TransactionDatabase, addTranx, queryTranx
 import net.taler.database.schema.Schema
+
 /**
  * Singleton that manages transaction history metadata, cached results, and filter state.
  */
+@OptIn(InternalSerializationApi::class)
 object TranxHistory {
 
     // ---- Internal state -----------------------------------------------------
@@ -25,33 +28,23 @@ object TranxHistory {
     private var _isStale: Boolean = true
     private var _isIniti: Boolean = false
     private var _history: List<Tranx> = emptyList()
-
     private var _filtTyp: TranxFilter = TranxFilter() // initial state
-
-    private var _miniDtm: FilterableLocalDateTime? = null
-    private var _maxiDtm: FilterableLocalDateTime? = null
-
+    private var _miniDtm: FDtm? = null
+    private var _maxiDtm: FDtm? = null
     private var _miniAmt: Amount? = null
     private var _maxiAmt: Amount? = null
-
     private lateinit var _db: SQLiteDatabase
 
     // ---- Read-only accessors ------------------------------------------------
-
-    /** Whether the cached transaction history is stale and needs refreshing. */
-    val isStale: Boolean get() = _isStale
-
-    /** Whether the transaction database has been initialized. */
-    val isIniti: Boolean get() = _isIniti
 
     /** The current transaction filter applied to queries. */
     val filtTyp: TranxFilter get() = _filtTyp
 
     /** Minimum timestamp of transactions in the cache or filter. */
-    val miniDtm: FilterableLocalDateTime? get() = _miniDtm
+    val miniDtm: FDtm? get() = _miniDtm
 
     /** Maximum timestamp of transactions in the cache or filter. */
-    val maxiDtm: FilterableLocalDateTime? get() = _maxiDtm
+    val maxiDtm: FDtm? get() = _maxiDtm
 
     /** Minimum amount of transactions in the cache or filter. */
     val miniAmt: Amount? get() = _miniAmt
@@ -67,14 +60,27 @@ object TranxHistory {
     // ---- API ----------------------------------------------------------------
 
     /**
-     * Initialize the transactions database (must be called exactly once).
+     * Initialize the transactions database.
      *
      * @param context Android context for database access; may be null for testing.
-     * @throws IllegalStateException if called more than once.
      */
     fun init(context: Context?) = synchronized(this) {
         if (!_isIniti) {
+
+            // load database
             _db = TransactionDatabase(context).readableDatabase
+
+            // query extrema from db
+            val extrema : Pair<Pair<FDtm, FDtm>, Pair<Amount, Amount>>? = getExtrema(_db)
+
+            // set extrema values; if db empty extrema is null
+            when (extrema) {
+                null -> { _miniDtm = null; _maxiDtm = null; _miniAmt = null; _maxiAmt = null }
+                else -> { _miniDtm = extrema.first.first;  _maxiDtm = extrema.first.second
+                          _miniAmt = extrema.second.first; _maxiAmt = extrema.second.second }
+            }
+
+            // initialize database
             _isIniti = true
         }
     }
@@ -96,8 +102,7 @@ object TranxHistory {
 //        if (!BuildConfig.DEBUG) {
 //            throw UnsupportedOperationException("initTest() is only available in debug builds.")
 //        }
-
-        if (!isIniti) {
+        if (!_isIniti) {
             val dbFile = context.getDatabasePath("transaction_history.db")
             dbFile.parentFile?.mkdirs()
 
@@ -114,6 +119,7 @@ object TranxHistory {
 
                 // Initialize TranxHistory with the new database
                 init(context)
+
             } catch (e: Exception) {
                 throw IllegalStateException(
                     "Failed to initialize test database from assets: $assetPath", e
@@ -161,7 +167,7 @@ object TranxHistory {
         if (newAmtScalar <= minScalar) _miniAmt = amt
 
         // update datetime bounds
-        val newDtm = FilterableLocalDateTime(tms, null)
+        val newDtm = FDtm(tms, null)
         _maxiDtm = when (_maxiDtm) {
             null -> newDtm
             else -> if (_maxiDtm!! <= newDtm) newDtm else _maxiDtm

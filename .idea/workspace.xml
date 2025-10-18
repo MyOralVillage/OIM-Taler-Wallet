@@ -10,21 +10,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="66fbe6e7-8af2-4ff5-bd24-d8a1ad2bb9a9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/transaction_history/components/TransactionHistoryGUIAssets.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/transaction_history/components/TransactionList.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/deploymentTargetSelector.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deploymentTargetSelector.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/receive/OIMChestScreenActivity.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/receive/OIMHomeScreenActivity.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/receive/OIMQrScannerActivity.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/receive/ui_compose/OIMHomeScreen.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/receive/ui_compose/OIMPaymentDialog.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/transaction-history-test/OIM-v0_1_0/transaction_history.db" beforeDir="false" afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/transaction-history-test/v1/transaction_history.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taler-kotlin-android/src/main/assets/transaction-history-test/OIM-v0_1_0/transaction_history.sql" beforeDir="false" afterPath="$PROJECT_DIR$/transaction-database/src/main/assets/transaction-history-test/v1/transaction_history.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/transaction-database/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/transaction-database/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/TranxHistory.kt" beforeDir="false" afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/TranxHistory.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_access/CursorGetters.kt" beforeDir="false" afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_access/CursorGetters.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_access/Queries.kt" beforeDir="false" afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_access/Queries.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_models/Amount.kt" beforeDir="false" afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_models/Amount.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wallet/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/wallet/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/app/OimSendApp.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/app/OimSendApp.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/app/OimTheme.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/app/OimTheme.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/app/SendPeerViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/send/app/SendPeerViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/settings/SettingsFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/settings/SettingsFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_access/TranxDatabase.kt" beforeDir="false" afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_access/TranxDatabase.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_models/FilterableLocalDateTime.kt" beforeDir="false" afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_models/FDtm.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_models/Tranx.kt" beforeDir="false" afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/data_models/Tranx.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/filter/DatetimeFilter.kt" beforeDir="false" afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/filter/DatetimeFilter.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/filter/TranxFilter.kt" beforeDir="false" afterPath="$PROJECT_DIR$/transaction-database/src/main/java/net/taler/database/filter/TranxFilter.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/transaction_history/components/TransactionHistoryGUIAssets.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/history/components/TransactionHistoryGUIAssets.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/transaction_history/components/TransactionList.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wallet/src/main/java/net/taler/wallet/oim/history/components/TransactionList.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

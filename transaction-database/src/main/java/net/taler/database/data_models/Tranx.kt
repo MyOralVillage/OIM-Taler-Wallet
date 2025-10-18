@@ -34,13 +34,14 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 @SerialName("transaction")
+@kotlinx.serialization.InternalSerializationApi
 data class Tranx(
 
     @SerialName("transaction_id")
     val TID: String,
 
     @SerialName("transaction_datetime")
-    val datetime: FilterableLocalDateTime,
+    val datetime: FDtm,
 
     @SerialName("transaction_purpose")
     val purpose: TranxPurp?,

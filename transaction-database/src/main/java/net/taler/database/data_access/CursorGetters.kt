@@ -17,10 +17,11 @@
 package net.taler.database.data_access
 
 import android.database.Cursor
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import net.taler.database.data_models.FilterableDirection
-import net.taler.database.data_models.FilterableLocalDateTime
+import net.taler.database.data_models.FDtm
 import net.taler.database.data_models.Amount
 import net.taler.database.data_models.CURRENCY_DIVISOR
 import net.taler.database.data_models.CurrencySpecification
@@ -113,11 +114,11 @@ internal fun Cursor.getDir(): FilterableDirection =
 
 /**
  * @receiver [Cursor] positioned at a valid transaction row.
- * @return a [FilterableLocalDateTime] value initialized to [Schema.DEFAULT_TIME_ZONE].
+ * @return a [FDtm] value initialized to [Schema.DEFAULT_TIME_ZONE].
  * @throws IllegalArgumentException if [Schema.EPOCH_MILLI_COL] does not exist.
  */
-internal fun Cursor.getDtm(): FilterableLocalDateTime =
-     FilterableLocalDateTime(
+internal fun Cursor.getDtm(): FDtm =
+     FDtm(
         LocalDateTime.ofInstant(
             Instant.ofEpochMilli(
                 this.getLong(
@@ -145,6 +146,7 @@ internal fun Cursor.getTID(): String = this.getString(this.getColumnIndexOrThrow
  * @return a [Tranx] object representing the current row.
  * @throws IllegalStateException if the required columns are missing or invalid.
  */
+@OptIn(InternalSerializationApi::class)
 internal fun Cursor.toTranx(): Tranx =
     Tranx(this.getTID(), this.getDtm(), this.getPurp(), this.getAmt(), this.getDir())
 
@@ -155,6 +157,7 @@ internal fun Cursor.toTranx(): Tranx =
  * @return a [List] of [Tranx] objects for all rows in the cursor.
  *         Returns an empty list if the cursor has no rows.
  */
+@OptIn(InternalSerializationApi::class)
 internal fun Cursor.toTranxList(): List<Tranx> {
     val result = mutableListOf<Tranx>()
     if (this.moveToFirst()) { do {result += this.toTranx()} while (this.moveToNext()) }

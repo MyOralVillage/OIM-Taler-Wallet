@@ -14,7 +14,7 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.wallet.oim.transaction_history.components
+package net.taler.wallet.oim.history.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color

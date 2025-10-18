@@ -19,9 +19,10 @@ package net.taler.database.data_access
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import net.taler.database.data_models.FilterableLocalDateTime
+import net.taler.database.data_models.FDtm
 import net.taler.database.data_models.Amount
 import net.taler.database.data_models.Tranx
 import net.taler.database.schema.Schema
@@ -39,19 +40,20 @@ import net.taler.database.schema.Schema
  *
  * @param db The [SQLiteDatabase] instance containing the transaction table.
  * @return A [Pair] containing:
- *   - First: a [Pair] of [FilterableLocalDateTime] representing (minDatetime, maxDatetime)
+ *   - First: a [Pair] of [FDtm] representing (minDatetime, maxDatetime)
  *   - Second: a [Pair] of [Amount] representing (minAmount, maxAmount)
  *   Returns `null` if the table is empty.
  *
  * @throws IllegalArgumentException if any required columns are missing.
  * @throws SQLiteException if a database access error occurs.
  */
+@kotlinx.serialization.InternalSerializationApi
 internal fun getExtrema(db: SQLiteDatabase) :
-        Pair<Pair<FilterableLocalDateTime, FilterableLocalDateTime>, Pair<Amount, Amount>>? {
+        Pair<Pair<FDtm, FDtm>, Pair<Amount, Amount>>? {
 
     // initialize variables
-    var _minDtm : FilterableLocalDateTime
-    var _maxDtm : FilterableLocalDateTime
+    var _minDtm : FDtm
+    var _maxDtm : FDtm
     var _minAmt : Amount
     var _maxAmt : Amount
 
@@ -123,6 +125,7 @@ internal fun getExtrema(db: SQLiteDatabase) :
  * @return a [List] of [Tranx] objects matching the query.
  *         Returns an empty list if no rows match.
  */
+@OptIn(InternalSerializationApi::class)
 internal fun queryTranx(
     db: SQLiteDatabase,
     sql: String,
@@ -136,6 +139,7 @@ internal fun queryTranx(
  * @param trxn a transaction to insert
  * @return the index of the inserted value
  * @throw SQLiteException if insertion failed */
+@OptIn(InternalSerializationApi::class)
 internal fun addTranx(db: SQLiteDatabase, trxn: Tranx) : Long {
     val values = ContentValues().apply {
         put(Schema.EPOCH_MILLI_COL, trxn.datetime.epochMillis())
