@@ -25,12 +25,10 @@ fun OimSendApp(model: MainViewModel) {
         val ctx = LocalContext.current.applicationContext
         val scope = rememberCoroutineScope()
 
-        // Initialize local TX DB once
-        LaunchedEffect(Unit) {
-            if (DEBUG) TranxHistory.initTest(ctx)
-            else TranxHistory.initTest(ctx)
+        // Initialize transaction database
+        if (DEBUG) TranxHistory.initTest(ctx)
+        else TranxHistory.initTest(ctx)
         //  in future releases/builds, do TranxHistory.init(ctx)
-        }
 
         var screen by remember { mutableStateOf(Screen.Send) }
         var amount by remember { mutableStateOf(0) }

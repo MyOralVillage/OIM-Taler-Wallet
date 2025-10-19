@@ -30,6 +30,7 @@ import kotlinx.serialization.encoding.encodeStructure
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.Instant
+import java.time.format.DateTimeFormatter
 
 /**
 
@@ -136,6 +137,11 @@ class FDtm : Filterable<FDtm> {
 
     /** Returns the epoch millisecond representation of this date–time. */
     fun epochMillis(): Long = _ms
+
+    /**
+     * Formats a [FDtm] object into the desired format
+     */
+    fun fmtString(fmt: DateTimeFormatter) : String =  _dt.format(fmt)
 
     /**
 

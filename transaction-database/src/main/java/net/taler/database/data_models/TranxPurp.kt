@@ -16,6 +16,7 @@
 package net.taler.database.data_models
 
 import kotlinx.serialization.Serializable
+import androidx.core.graphics.toColorInt
 
 /**
  * Marker interface for representing transaction purposes
@@ -34,167 +35,208 @@ sealed interface TranxPurp : Filterable<TranxPurp> {
     /** Comparison key (alphabetical) */
     val cmp: String
 
-    /** Path to the asset for this purpose
-     *
-     *
-     *  **NOTE** Currently unused (assets pulled directly; look into removing)
-     *  */
+    /** Path to the asset for this purpose (in res) */
     val assetPath: String
 
     /** Label of the asset
      *
-     * **NOTE** Currently unused (assets pulled directly; look into removing)
+     * **NOTE** Currently unused (look into removing)
      * */
     val assetLabel: String
+
+    /** group of similar types the purpose belongs to */
+    val tranxGroup: String
+
+    /** hex colour of string */
+    val colourHex: String
 
     override fun compareTo(other: TranxPurp):
             Int = cmp.compareTo(other.cmp)
 
-    companion object {val BASE : String = "OIM/transaction-purposes/"}
+    /** @return the colour int */
+    fun colourInt(): Int = colourHex.toColorInt()
 }
+
 
 /** School uniforms */
 @Serializable
 object EDUC_CLTH : TranxPurp {
     override val cmp = "EDUC_CLTH"
-    override val assetPath = TranxPurp.BASE + TranxPurp.BASE + "OIM/transaction-purposes/school_uniforms.png"
+    override val assetPath = "school_uniforms.png"
     override val assetLabel = "school_uniforms"
+    override val tranxGroup = "Education"
+    override val colourHex = "#ccddff"
 }
 
 /** Tuition or general schooling fees */
 @Serializable
 object EDUC_SCHL : TranxPurp {
     override val cmp = "EDUC_SCHL"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/schooling.png"
+    override val assetPath = "schooling.png"
     override val assetLabel = "tuition_fees"
+    override val tranxGroup = "Education"
+    override val colourHex = "#ccddff"
+
 }
 
 /** School supplies */
 @Serializable
 object EDUC_SUPL : TranxPurp {
     override val cmp = "EDUC_SUPL"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/school_supplies.png"
+    override val assetPath = "school_supplies.png"
     override val assetLabel = "school_supplies"
+    override val tranxGroup = "Education"
+    override val colourHex = "#ccddff"
 }
 
 /** Phone expenses */
 @Serializable
 object EXPN_CELL : TranxPurp {
     override val cmp = "EXPN_CELL"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/phone.png"
+    override val assetPath = "phone.png"
     override val assetLabel = "phone_bill"
+    override val tranxGroup = "Expenses"
+    override val colourHex = "#e9bac5"
 }
 
 /** Loan repayment / debt expenses */
 @Serializable
 object EXPN_DEBT : TranxPurp {
     override val cmp = "EXPN_DEBT"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/loan.png"
+    override val assetPath = "loan.png"
     override val assetLabel = "debt"
+    override val tranxGroup = "Expenses"
+    override val colourHex = "#e9bac5"
 }
 
 /** Farming expenses (tools, seeds, maintenance) */
 @Serializable
 object EXPN_FARM : TranxPurp {
     override val cmp = "EXPN_FARM"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/farming.png"
+    override val assetPath = "farming.png"
     override val assetLabel = "farming"
+    override val tranxGroup = "Expenses"
+    override val colourHex = "#e9bac5"
 }
 
 /** Grocery expenses */
 @Serializable
 object EXPN_GRCR : TranxPurp {
     override val cmp = "EXPN_GRCR"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/groceries.png"
+    override val assetPath = "groceries.png"
     override val assetLabel = "groceries"
+    override val tranxGroup = "Expenses"
+    override val colourHex = "#e9bac5"
 }
 
 /** Market fee expenses */
 @Serializable
 object EXP_MRKT : TranxPurp {
     override val cmp = "EXP_MRKT"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/market_stall.png"
+    override val assetPath = "market_stall.png"
     override val assetLabel = "market_fees"
+    override val tranxGroup = "Expenses"
+    override val colourHex = "#e9bac5"
 }
 
 /** Gas/petrol expenses */
 @Serializable
 object EXPN_PTRL : TranxPurp {
     override val cmp = "EXPN_PTRL"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/gas.png"
+    override val assetPath = "gas.png"
     override val assetLabel = "gas"
+    override val tranxGroup = "Expenses"
+    override val colourHex = "#e9bac5"
 }
 
 /** Housing expenses */
 @Serializable
 object EXPN_RENT : TranxPurp {
     override val cmp = "EXPN_RENT"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/housing.png"
+    override val assetPath = "housing.png"
     override val assetLabel = "housing_expenses"
+    override val tranxGroup = "Expenses"
+    override val colourHex = "#e9bac5"
 }
 
 /** Tool/equipment expenses */
 @Serializable
 object EXPN_TOOL : TranxPurp {
     override val cmp = "EXPN_TOOL"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/tools.png"
+    override val assetPath = "tools.png"
     override val assetLabel = "tools_and_equipment"
+    override val tranxGroup = "Expenses"
+    override val colourHex = "#e9bac5"
 }
 
 /** Transportation-related expenses */
 @Serializable
 object EXPN_TRPT : TranxPurp {
     override val cmp = "EXPN_TRPT"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/transportation.png"
+    override val assetPath = "transportation.png"
     override val assetLabel = "transportation"
+    override val tranxGroup = "Expenses"
+    override val colourHex = "#e9bac5"
 }
 
 /** Doctor/clinic visits */
 @Serializable
 object HLTH_DOCT : TranxPurp {
     override val cmp = "HLTH_DOCT"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/doctor_appointment.png"
+    override val assetPath = "doctor_appointment.png"
     override val assetLabel = "doctors_appointment"
+    override val tranxGroup = "Healthcare"
+    override val colourHex = "#74fac8"
 }
 
 /** Medicine */
 @Serializable
 object HLTH_MEDS : TranxPurp {
     override val cmp = "HLTH_MEDS"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/medicine.png"
+    override val assetPath = "medicine.png"
     override val assetLabel = "medicine"
+    override val tranxGroup = "Healthcare"
+    override val colourHex = "#74fac8"
 }
 
 /** Receive money via transaction */
 @Serializable
 object TRNS_RECV : TranxPurp {
     override val cmp = "TRNS_RECV"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/receive.png"
+    override val assetPath = "receive.png"
     override val assetLabel = "receive_money"
+    override val tranxGroup = "Transactions"
+    override val colourHex = "#ae9ffa"
 }
 
 /** Send money via transaction */
 @Serializable
 object TRNS_SEND : TranxPurp {
     override val cmp = "TRNS_SEND"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/send.png"
+    override val assetPath = "send.png"
     override val assetLabel = "send_money"
+    override val tranxGroup = "Transactions"
+    override val colourHex = "#ae9ffa"
 }
 
 /** Electricity/power utilities */
 @Serializable
 object UTIL_ELEC : TranxPurp {
     override val cmp = "UTIL_ELEC"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/electricity.png"
+    override val assetPath = "electricity.png"
     override val assetLabel = "electricity_and_power"
+    override val tranxGroup = "Utilities"
+    override val colourHex = "#ffcff0"
 }
 
 /** Water utilities */
 @Serializable
 object UTIL_WATR : TranxPurp {
     override val cmp = "UTIL_WATR"
-    override val assetPath = TranxPurp.BASE + "OIM/transaction-purposes/water.png"
+    override val assetPath = "water.png"
     override val assetLabel = "water"
+    override val tranxGroup = "Utilities"
+    override val colourHex = "#ffcff0"
 }
 
 /**

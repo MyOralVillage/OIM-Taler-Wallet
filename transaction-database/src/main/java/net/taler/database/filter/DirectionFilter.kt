@@ -26,4 +26,5 @@ sealed class DirectionFilter {
 
     /** Matches both incoming and outgoing directions (no filtering). */
     data object Both : DirectionFilter()
+
 }
