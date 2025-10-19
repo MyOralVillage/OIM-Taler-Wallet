@@ -125,10 +125,11 @@ fun OimSendApp(model: MainViewModel) {
     }
 }
 
+// TODO: needs complete refactoring, remove this and simplify things!
 /** Try to resolve the UI label/cmp into one of the sealed TranxPurp objects. */
 private fun mapPickedPurposeToTranxPurp(picked: String): TranxPurp? {
     tranxPurpLookup[picked]?.let { return it }
     tranxPurpLookup[picked.uppercase()]?.let { return it }
     tranxPurpLookup[picked.replace(' ', '_').uppercase()]?.let { return it }
-    return tranxPurpLookup.values.firstOrNull { it.assetLabel.equals(picked, ignoreCase = true) }
+    return tranxPurpLookup.values.firstOrNull { it.cmp.equals(picked, ignoreCase = true) }
 }

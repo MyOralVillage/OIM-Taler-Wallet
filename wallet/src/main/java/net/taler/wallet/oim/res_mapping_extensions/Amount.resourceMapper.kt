@@ -1,0 +1,140 @@
+package net.taler.wallet.oim.res_mapping_extensions
+/*
+ * This file is part of GNU Taler
+ * (C) 2025 Taler Systems S.A.
+ *
+ * GNU Taler is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3, or (at your option) any later version.
+ *
+ * GNU Taler is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.ImageBitmap
+import net.taler.common.R
+import androidx.compose.ui.res.imageResource
+import net.taler.database.data_models.*
+
+@Composable
+internal fun Amount.resourceMapper(): Set<ImageBitmap> {
+    val result = mutableSetOf<ImageBitmap>()
+
+    when (currency) {
+        "CHF" -> {
+            // Convert CHF to half-franc units
+            val totalHalfFrancs = value * 2 + fraction * 2
+            result.addAll(mapToBills(totalHalfFrancs, CHF_BILLS))
+        }
+        "XOF" -> {
+            if (fraction != 0)
+                throw IllegalArgumentException("XOF does not support fractional amounts")
+            result.addAll(mapToBills(value, XOF_BILLS))
+        }
+        "EUR" -> {
+            val totalCents = value * 100 + fraction
+            result.addAll(mapToBills(totalCents, EUR_BILLS_CENTS))
+        }
+        "SLE" -> {
+            val totalCents = value * 100 + fraction
+            result.addAll(mapToBills(totalCents, SLE_BILLS_CENTS))
+        }
+        else -> throw IllegalArgumentException("Unsupported currency: $currency")
+    }
+
+    return result
+}
+
+/** Map amount to bills/coins using provided denominations (descending order). */
+@Composable
+private fun mapToBills(amount: Long, bills: List<Pair<Int, Int>>): Set<ImageBitmap> {
+    val result = mutableSetOf<ImageBitmap>()
+    var remaining = amount
+
+
+    for ((billValue, resId) in bills) {
+        while (remaining >= billValue) {
+            remaining -= billValue
+            val bitmap: ImageBitmap = ImageBitmap.imageResource(resId)
+            result.add(bitmap)
+        }
+    }
+
+    if (remaining > 0) {
+        throw IllegalArgumentException(
+            "Cannot represent remaining amount $remaining with available bills"
+        )
+    }
+
+    return result
+}
+
+// === CHF denominations in half-franc units ===
+val CHF_BILLS = listOf(
+    200_000 to R.drawable.chf_hundred_thousand, // 1000 CHF
+    40_000  to R.drawable.chf_twenty_thousand,  // 200 CHF
+    20_000  to R.drawable.chf_ten_thousand,     // 100 CHF
+    10_000  to R.drawable.chf_five_thousand,    // 50 CHF
+    4_000   to R.drawable.chf_two_thousand,     // 20 CHF
+    2_000   to R.drawable.chf_one_thousand,     // 10 CHF
+    1_000   to R.drawable.chf_five_hundred,     // 5 CHF
+    400     to R.drawable.chf_two_hundred,      // 2 CHF
+    200     to R.drawable.chf_one_hundred,      // 1 CHF
+    2       to R.drawable.chf_one,              // 1 CHF coin
+    1       to R.drawable.chf_zero_point_five   // 0.5 CHF coin
+)
+
+
+// === XOF denominations (integer values only) ===
+val XOF_BILLS = listOf(
+    10_000 to R.drawable.xof_ten_thousand,
+    5_000  to R.drawable.xof_five_thousand,
+    2_000  to R.drawable.xof_two_thousand,
+    1_000  to R.drawable.xof_one_thousand,
+    500    to R.drawable.xof_five_hundred,
+    200    to R.drawable.xof_two_hundred,
+    100    to R.drawable.xof_one_hundred,
+    25     to R.drawable.xof_twenty_five,
+    10     to R.drawable.xof_ten,
+    5      to R.drawable.xof_five,
+    1      to R.drawable.xof_one
+)
+
+// === EUR denominations (in cents) ===
+val EUR_BILLS_CENTS = listOf(
+    20_000 to R.drawable.eur_two_hundred,
+    10_000 to R.drawable.eur_one_hundred,
+    5_000  to R.drawable.eur_fifty,
+    2_000  to R.drawable.eur_twenty,
+    1_000  to R.drawable.eur_ten,
+    500    to R.drawable.eur_five,
+    200    to R.drawable.eur_two,
+    100    to R.drawable.eur_one,
+    50     to R.drawable.eur_zero_point_five,
+    20     to R.drawable.eur_zero_point_two,
+    10     to R.drawable.eur_zero_point_one,
+    5      to R.drawable.eur_zero_point_zero_five,
+    2      to R.drawable.eur_zero_point_zero_two,
+    1      to R.drawable.eur_zero_point_zero_one
+)
+
+// === SLE denominations (in cents, supports fractions) ===
+val SLE_BILLS_CENTS = listOf(
+    1_000_00 to R.drawable.sle_one_thousand,
+    40_00    to R.drawable.sle_forty,
+    20_00    to R.drawable.sle_twenty,
+    10_00    to R.drawable.sle_ten,
+    5_00     to R.drawable.sle_five,
+    2_00     to R.drawable.sle_two,
+    1_00     to R.drawable.sle_one,
+    50       to R.drawable.sle_zero_point_five,
+    25       to R.drawable.sle_zero_point_twenty_five,
+    10       to R.drawable.sle_zero_point_one,
+    5        to R.drawable.sle_zero_point_zero_five,
+    1        to R.drawable.sle_zero_point_zero_one
+)

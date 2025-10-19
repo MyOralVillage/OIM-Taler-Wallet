@@ -22,7 +22,6 @@
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3, or (at your option) any later version.
  */
-
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
@@ -50,8 +49,7 @@ android {
 
     buildFeatures {
         viewBinding = true
-        // Important: ensures BuildConfig is generated for library modules
-        buildConfig = true
+        buildConfig = true // ensures BuildConfig is generated for library modules
     }
 
     compileOptions {
@@ -71,12 +69,13 @@ android {
 }
 
 dependencies {
+    // Core Android
     implementation 'androidx.core:core-ktx:1.13.1'
 
     // JSON parsing and serialization
     api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3'
 
-    testImplementation "junit:junit:$junit_version"
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.json:json:20220320'
 }
-

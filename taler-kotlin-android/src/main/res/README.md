@@ -1,9 +1,9 @@
 ## Description
-These are assets for "transaction purposes", which are a way to visually
+This README is meant for "transaction purpose" resources, which are a way to visually
 catalogue transactions by common purposes.
 
 ## Attributions
-All of the assets are based off of the official OIM Salome library.
+All of the purposes are based off of the official OIM Salome library.
 
 The following pngs were designed by Freepik:
 - electricity.png

@@ -23,19 +23,19 @@ const val ICON_SEND  = "OIM/buttons/send-01.svg"
 
 // ---- SLE note images (path -> value) ----------------------------------------
 val SleNotes: List<Pair<String, Int>> = listOf(
-    "OIM/currency/SLE/sle-1.png" to 1,
-    "OIM/currency/SLE/sle-5.png" to 5,
-    "OIM/currency/SLE/sle-10.png" to 10,
-    "OIM/currency/SLE/sle-25.png" to 25,
-    "OIM/currency/SLE/sle-50.png" to 50,
-    "OIM/currency/SLE/SLE-100.png" to 100,
-    "OIM/currency/SLE/SLE-200.png" to 200,
-    "OIM/currency/SLE/SLE-500.png" to 500,
-    "OIM/currency/SLE/SLE-1000.png" to 1000,
-    "OIM/currency/SLE/SLE-2000.png" to 2000,
-    "OIM/currency/SLE/SLE-5000.png" to 5000,
-    "OIM/currency/SLE/SLE-10000.png" to 10000,
-    "OIM/currency/SLE/SLE-20000.png" to 20000,
+    "OIM/currency/SLE/sle_zero_point_zero_one.png" to 1,
+    "OIM/currency/SLE/sle_zero_point_zero_five.png" to 5,
+    "OIM/currency/SLE/sle_zero_point_one.png" to 10,
+    "OIM/currency/SLE/sle_zero_point_twenty_five.png" to 25,
+    "OIM/currency/SLE/sle_zero_point_five.png" to 50,
+    "OIM/currency/SLE/sle_one.png" to 100,
+    "OIM/currency/SLE/sle_two.png" to 200,
+    "OIM/currency/SLE/sle_five.png" to 500,
+    "OIM/currency/SLE/sle_ten.png" to 1000,
+    "OIM/currency/SLE/sle_twenty.png" to 2000,
+    "OIM/currency/SLE/sle_ten.png" to 5000,
+    "OIM/currency/SLE/sle_one_thousand.png" to 10000,
+    "OIM/currency/SLE/sle_forty.png" to 20000,
 )
 
 // ---- Purpose icons (path -> label) ------------------------------------------

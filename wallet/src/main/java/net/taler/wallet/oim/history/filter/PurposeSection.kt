@@ -16,7 +16,6 @@
 
 package net.taler.wallet.oim.history.filter
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,40 +24,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import net.taler.database.data_models.TranxPurp
 import net.taler.database.filter.PurposeFilter
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.imageResource
-import previewMapper
+import androidx.compose.ui.tooling.preview.Preview
+import net.taler.database.data_models.EDUC_SCHL
+import net.taler.database.data_models.EXPN_GRCR
+import net.taler.database.data_models.HLTH_DOCT
+import net.taler.database.data_models.UTIL_WATR
+import net.taler.database.data_models.tranxPurpLookup
+import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 
-/**
- * Loads an image bitmap from a [TranxPurp]
- * @return ImageBitmap
- */
-@SuppressLint("DiscouragedApi", "LocalContextResourcesRead")
-@Composable
-fun TranxPurp.loadBitmap(isPreview: Boolean = false): ImageBitmap {
-    return if (isPreview) {
-        this.previewMapper()
-    } else {
-        val context = LocalContext.current
-        val resId = context.resources.getIdentifier(
-            this.assetPath,
-            "drawable",
-            context.packageName
-        )
-        ImageBitmap.imageResource(resId)
-    }
-}
 
 /**
  * Individual purpose card displaying a bitmap image.
@@ -74,7 +62,6 @@ internal fun PurposeCard(
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isPreview: Boolean = false
 ) {
     val colour = Color(tranxPurp.colourInt())
     Card(
@@ -100,7 +87,7 @@ internal fun PurposeCard(
             contentAlignment = Alignment.Center
         ) {
             Image(
-                bitmap = tranxPurp.loadBitmap(isPreview),
+                bitmap = tranxPurp.resourceMapper(),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit
@@ -126,7 +113,6 @@ internal fun PurposeGrid(
     onPurposeSelected: (PurposeFilter?) -> Unit,
     purposeMap: Map<String, TranxPurp>,
     columns: Int = 4,
-    isPreview : Boolean
 ) {
     // Determine which purposes are currently selected
     val selectedPurposes = when (purposeFilter) {
@@ -160,7 +146,6 @@ internal fun PurposeGrid(
                             onPurposeSelected(newFilter)
                         },
                         modifier = Modifier.weight(1f),
-                        isPreview = isPreview
                     )
                 }
                 repeat(columns - rowPurposes.size) {
@@ -213,4 +198,68 @@ private fun togglePurpose(
     }
 }
 
-// preview map: should be replaced when prod ready
+@Preview(showBackground = true, name = "Purpose Grid - No Selection", heightDp = 800)
+@Composable
+private fun PurposeGridPreview() {
+    var purposeFilter by remember { mutableStateOf<PurposeFilter?>(null) }
+
+    MaterialTheme {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            PurposeGrid(
+                purposeFilter = purposeFilter,
+                onPurposeSelected = { purposeFilter = it },
+                purposeMap = tranxPurpLookup
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Purpose Grid - Single Selection", heightDp = 800)
+@Composable
+private fun PurposeGridPreviewSingleSelect() {
+    var purposeFilter by remember {
+        mutableStateOf<PurposeFilter?>(PurposeFilter.Exact(HLTH_DOCT))
+    }
+
+    MaterialTheme {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            PurposeGrid(
+                purposeFilter = purposeFilter,
+                onPurposeSelected = { purposeFilter = it },
+                purposeMap = tranxPurpLookup,
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Purpose Grid - Multiple Selection", heightDp = 800)
+@Composable
+private fun PurposeGridPreviewMultiSelect() {
+    var purposeFilter by remember {
+        mutableStateOf<PurposeFilter?>(
+            PurposeFilter.OneOrMoreOf(setOf(HLTH_DOCT, EDUC_SCHL, EXPN_GRCR, UTIL_WATR))
+        )
+    }
+
+    MaterialTheme {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            PurposeGrid(
+                purposeFilter = purposeFilter,
+                onPurposeSelected = { purposeFilter = it },
+                purposeMap = tranxPurpLookup,
+            )
+        }
+    }
+}
