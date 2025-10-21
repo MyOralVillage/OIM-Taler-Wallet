@@ -1,4 +1,5 @@
 /*
+<<<<<<< HEAD
  * This file is part of GNU Taler
  * (C) 2025 Taler Systems S.A.
  *
@@ -15,6 +16,8 @@
  */
 
 /*
+=======
+>>>>>>> 5c7011a (fixed preview animations)
  * GPLv3-or-later
  */
 package net.taler.wallet.oim.send.screens
@@ -34,17 +37,96 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import net.taler.wallet.oim.send.components.*
+<<<<<<< HEAD
+// TODO refactor to use res_mapping_extensions
 
-/**
- * Screen for selecting or entering the purpose of a payment.
- *
- * Users can pick from predefined purpose icons or enter a custom purpose.
- *
- * @param balance The current balance of the user, displayed in the top bar.
- * @param onBack Callback invoked when the back button is pressed.
- * @param onDone Callback invoked when the user selects a purpose or enters a custom one.
- *               The selected or entered purpose string is passed as a parameter.
- */
+///**
+// * Screen for selecting or entering the purpose of a payment.
+// *
+// * Users can pick from predefined purpose icons or enter a custom purpose.
+// *
+// * @param balance The current balance of the user, displayed in the top bar.
+// * @param onBack Callback invoked when the back button is pressed.
+// * @param onDone Callback invoked when the user selects a purpose or enters a custom one.
+// *               The selected or entered purpose string is passed as a parameter.
+// */
+//@OptIn(ExperimentalLayoutApi::class)
+//@Composable
+//fun PurposeScreen(
+//    balance: Int,
+//    onBack: () -> Unit,
+//    onDone: (String) -> Unit
+//) {
+//    Box(Modifier.fillMaxSize()) {
+//        Image(
+//            painter = assetPainterOrPreview(WOOD_TABLE),
+//            contentDescription = null,
+//            modifier = Modifier.fillMaxSize(),
+//            contentScale = ContentScale.Crop
+//        )
+//
+//        IconButton(
+//            onClick = onBack,
+//            modifier = Modifier
+//                .padding(8.dp)
+//                .size(40.dp)
+//                .align(Alignment.TopStart)
+//        ) {
+//            Icon(
+//                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+//                contentDescription = "Back",
+//                tint = androidx.compose.ui.graphics.Color.White
+//            )
+//        }
+//
+//        Column(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .padding(horizontal = 16.dp, vertical = 8.dp)
+//        ) {
+//            OimTopBarCentered(balance = balance, onSendClick = { })
+//
+//            Spacer(Modifier.height(8.dp))
+//
+//            FlowRow(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .weight(1f),
+//                horizontalArrangement = Arrangement.spacedBy(12.dp),
+//                verticalArrangement = Arrangement.spacedBy(12.dp)
+//            ) {
+//                PurposeIcons.forEach { (path, label) ->
+//                    PurposeTile(
+//                        path = path,
+//                        label = label,
+//                        modifier = Modifier
+//                            .width(140.dp)
+//                            .height(140.dp),
+//                        onPick = { onDone(label) }
+//                    )
+//                }
+//            }
+//
+//            var custom by remember { mutableStateOf(TextFieldValue()) }
+//            OutlinedTextField(
+//                value = custom,
+//                onValueChange = { custom = it },
+//                label = { Text("Custom purpose") },
+//                singleLine = true,
+//                modifier = Modifier.fillMaxWidth()
+//            )
+//            Spacer(Modifier.height(10.dp))
+//            Button(
+//                onClick = { onDone(custom.text.ifBlank { "Payment" }) },
+//                modifier = Modifier.align(Alignment.End)
+//            ) { Text("Continue") }
+//
+//            Spacer(Modifier.height(8.dp))
+//        }
+//    }
+//}
+=======
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PurposeScreen(
@@ -54,7 +136,7 @@ fun PurposeScreen(
 ) {
     Box(Modifier.fillMaxSize()) {
         Image(
-            painter = assetPainterOrPreview(WOOD_TABLE),
+            painter = assetPainterOrPreview(WOOD_TABLE, PreviewAssets.id(WOOD_TABLE)),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -120,3 +202,4 @@ fun PurposeScreen(
         }
     }
 }
+>>>>>>> 5c7011a (fixed preview animations)

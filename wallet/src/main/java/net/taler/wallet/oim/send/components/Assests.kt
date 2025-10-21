@@ -13,30 +13,32 @@ import androidx.compose.ui.res.painterResource
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 
-// ---- Backgrounds ------------------------------------------------------------
-const val WOOD_TABLE =
-    "OIM/backgrounds/tables/tara-meinczinger-G_yCplAsnB4-unsplash.jpg"
+// TODO refactor to use res_mapping_extensions
 
-// ---- Icons ------------------------------------------------------------------
-const val ICON_CHEST = "OIM/buttons/chests/open/ChestOpen.svg"
-const val ICON_SEND  = "OIM/buttons/send-01.svg"
-
-// ---- SLE note images (path -> value) ----------------------------------------
-val SleNotes: List<Pair<String, Int>> = listOf(
-    "OIM/currency/SLE/sle_zero_point_zero_one.png" to 1,
-    "OIM/currency/SLE/sle_zero_point_zero_five.png" to 5,
-    "OIM/currency/SLE/sle_zero_point_one.png" to 10,
-    "OIM/currency/SLE/sle_zero_point_twenty_five.png" to 25,
-    "OIM/currency/SLE/sle_zero_point_five.png" to 50,
-    "OIM/currency/SLE/sle_one.png" to 100,
-    "OIM/currency/SLE/sle_two.png" to 200,
-    "OIM/currency/SLE/sle_five.png" to 500,
-    "OIM/currency/SLE/sle_ten.png" to 1000,
-    "OIM/currency/SLE/sle_twenty.png" to 2000,
-    "OIM/currency/SLE/sle_ten.png" to 5000,
-    "OIM/currency/SLE/sle_one_thousand.png" to 10000,
-    "OIM/currency/SLE/sle_forty.png" to 20000,
-)
+//// ---- Backgrounds ------------------------------------------------------------
+//const val WOOD_TABLE =
+//    "OIM/backgrounds/tables/tara-meinczinger-G_yCplAsnB4-unsplash.jpg"
+//
+//// ---- Icons ------------------------------------------------------------------
+//const val ICON_CHEST = "OIM/buttons/chests/open/ChestOpen.svg"
+//const val ICON_SEND  = "OIM/buttons/send-01.svg"
+//
+//// ---- SLE note images (path -> value) ----------------------------------------
+//val SleNotes: List<Pair<String, Int>> = listOf(
+//    "OIM/currency/SLE/sle_zero_point_zero_one.png" to 1,
+//    "OIM/currency/SLE/sle_zero_point_zero_five.png" to 5,
+//    "OIM/currency/SLE/sle_zero_point_one.png" to 10,
+//    "OIM/currency/SLE/sle_zero_point_twenty_five.png" to 25,
+//    "OIM/currency/SLE/sle_zero_point_five.png" to 50,
+//    "OIM/currency/SLE/sle_one.png" to 100,
+//    "OIM/currency/SLE/sle_two.png" to 200,
+//    "OIM/currency/SLE/sle_five.png" to 500,
+//    "OIM/currency/SLE/sle_ten.png" to 1000,
+//    "OIM/currency/SLE/sle_twenty.png" to 2000,
+//    "OIM/currency/SLE/sle_ten.png" to 5000,
+//    "OIM/currency/SLE/sle_one_thousand.png" to 10000,
+//    "OIM/currency/SLE/sle_forty.png" to 20000,
+//)
 
 // ---- Purpose icons (path -> label) ------------------------------------------
 val PurposeIcons: List<Pair<String, String>> = listOf(

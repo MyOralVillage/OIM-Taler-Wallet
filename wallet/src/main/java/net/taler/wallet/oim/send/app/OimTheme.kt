@@ -16,8 +16,12 @@
 
 package net.taler.wallet.oim.send.app
 
+<<<<<<< HEAD:wallet/src/main/java/net/taler/wallet/oim/send/app/OimTheme.kt
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+=======
+import net.taler.common.transaction.Amount
+>>>>>>> eb37a10 (finally got gradle working):cashier/src/main/java/net/taler/cashier/SignedAmount.kt
 
 @Composable
 fun OimTheme(content: @Composable () -> Unit) { MaterialTheme(content = content) }

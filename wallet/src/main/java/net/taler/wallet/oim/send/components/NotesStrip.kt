@@ -41,7 +41,73 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+// TODO refactor to use res_mapping_extensions
 
+<<<<<<< HEAD
+//@Composable
+//fun NotesStrip(
+//    noteThumbWidth: Dp,
+//    onAddRequest: (value: Int, path: String, startCenterInRoot: Offset) -> Unit,
+//    onRemoveLast: (removed: Int) -> Unit
+//) {
+//    val scroll = rememberScrollState()
+//    var lastAdded by remember { mutableStateOf(0) }
+//
+//    Row(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .horizontalScroll(scroll)
+//            .clip(RoundedCornerShape(20.dp))
+//            .background(Color(0x55000000))
+//            .padding(10.dp),
+//        verticalAlignment = Alignment.CenterVertically
+//    ) {
+//        SleNotes.forEach { (path, value) ->
+//            NoteThumb(
+//                path = path,
+//                width = noteThumbWidth,
+//                onTapWithPos = { centerInRoot ->
+//                    lastAdded = value
+//                    onAddRequest(value, path, centerInRoot)
+//                }
+//            )
+//            Spacer(Modifier.width(10.dp))
+//        }
+//
+//        Button(
+//            onClick = { if (lastAdded != 0) onRemoveLast(lastAdded) },
+//            modifier = Modifier.padding(start = 6.dp)
+//        ) { Text("Undo") }
+//    }
+//}
+//
+//@Composable
+//private fun NoteThumb(
+//    path: String,
+//    width: Dp,
+//    onTapWithPos: (centerInRoot: Offset) -> Unit
+//) {
+//    var center by remember { mutableStateOf(Offset.Zero) }
+//
+//    Card(
+//        modifier = Modifier
+//            .width(width)
+//            .height(width * 0.55f)
+//            .onGloballyPositioned { lc -> center = lc.boundsInRoot().center }
+//            .clickable { onTapWithPos(center) },
+//        shape = RoundedCornerShape(12.dp),
+//        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+//        colors = CardDefaults.cardColors(containerColor = Color(0x22FFFFFF))
+//    ) {
+//        Image(
+//            painter = assetPainterOrPreview(path),
+//            contentDescription = null,
+//            modifier = Modifier.fillMaxSize(),
+//            contentScale = ContentScale.Crop
+//        )
+//    }
+//}
+=======
 @Composable
 fun NotesStrip(
     noteThumbWidth: Dp,
@@ -98,10 +164,11 @@ private fun NoteThumb(
         colors = CardDefaults.cardColors(containerColor = Color(0x22FFFFFF))
     ) {
         Image(
-            painter = assetPainterOrPreview(path),
+            painter = assetPainterOrPreview(path, PreviewAssets.id(path)),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
     }
 }
+>>>>>>> 5c7011a (fixed preview animations)

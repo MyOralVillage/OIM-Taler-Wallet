@@ -146,9 +146,17 @@ class MainViewModel(
     }
 
     override fun onVersionReceived(versionInfo: WalletCoreVersion) {
-        walletVersion = versionInfo.implementationSemver
+        walletVersion =  "36:2:8"           //old: versionInfo.implementationSemver
         walletVersionHash = versionInfo.implementationGitHash
+<<<<<<< HEAD
+<<<<<<< HEAD
         exchangeVersion = versionInfo.exchange
+=======
+        exchangeVersion = "17:0:0"         // old: versionInfo.exchange
+>>>>>>> d9ac853 (exchange still borked -> hardcoding merchant  + wallet protocols to 17:0:0; built new debug apk)
+=======
+        exchangeVersion = "36:2:8"         // old: versionInfo.exchange
+>>>>>>> f4e1e5e (hardcoded merchant + wallet protocols -> 36:2:8, changed app version to OIM-v0.1.0-alpha)
         merchantVersion = versionInfo.merchant
     }
 

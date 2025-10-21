@@ -16,10 +16,23 @@
 
 package net.taler.common
 
+<<<<<<< HEAD:taler-kotlin-android/src/main/java/net/taler/common/Time.kt
 /** **This has been kept for API compatibility only.**
  *
  * see: [net.taler.database.data_models.Timestamp] */
 typealias Timestamp = net.taler.database.data_models.Timestamp
+=======
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import net.taler.common.transaction.Amount
+
+@Serializable
+data class RefundRequest(
+    /**
+     * Amount to be refunded
+     */
+    val refund: Amount,
+>>>>>>> eb37a10 (finally got gradle working):merchant-lib/src/main/java/net/taler/merchantlib/Refunds.kt
 
 /** **This has been kept for API compatibility only.**
  *

@@ -19,8 +19,40 @@ used for financial transactions, sensitive financial information, nor as a suppl
 GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT MAY BREAK EXISTING GNU TALER ANDROID BUILDS!**
 
 ## this version has known issues:
+<<<<<<< HEAD
+<<<<<<< HEAD
 - [Hardcoded app version](wallet/src/main/java/net/taler/wallet/settings/SettingsFragment.kt) 
   - Old version: BuildConfig.VERSION_NAME; changed to hard coded string
+=======
+
+- User preferences (selected scope, action button state) are stored in memory only
+  + Preferences will be lost when app restarts
+  + This is a temporary workaround - proper persistence will be added in future versions
+=======
+- [Protobuf is borked](/wallet/src/main/proto) 
+  - we've patched together a temporary fix but it comes with downsides...
+  - user preferences (selected scope, action button state) are stored in memory only
+    -due to protobuf not working in current build
+      + preferences will be lost when app restarts
+      + his is a temporary workaround - proper persistence will be added in future versions
+>>>>>>> f4e1e5e (hardcoded merchant + wallet protocols -> 36:2:8, changed app version to OIM-v0.1.0-alpha)
+- Not compatible with GNU Taler Android 
+  + list issues here 
+  + and more issues
+  + proposed solutions?
+- Gradle version (possible upgrade?)
+- Database is hardcoded and not yet integrated with main wallet app
+- [App version is hardcoded](/wallet/src/main/java/net/taler/wallet/settings/SettingsFragment.kt) 
+  - BuildConfig_PLACEHOLDER = "OIM-v0.1.0-alpha" 
+  - due to issues with protobuf 
+- [Merchant and wallet protocols are hardcoded](/wallet/src/main/java/net/taler/wallet/MainViewModel.kt) 
+  - hardcodes to protocol version 32:2:8 
+  - walletVersionHash is not synced to walletVersion
+  - borking very likely due to gradle/agp/sdk updates breaking protobuf
+- Minification is disabled 
+  - causing very large APKs
+  - likely to be reimplemented when integration with existing GNU Taler Android is completed
+>>>>>>> d9ac853 (exchange still borked -> hardcoding merchant  + wallet protocols to 17:0:0; built new debug apk)
 ---
 # Building and Structure
 

@@ -56,7 +56,11 @@ fun PurposeTile(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
+<<<<<<< HEAD
                 painter = assetPainterOrPreview(path),
+=======
+                painter = assetPainterOrPreview(path, PreviewAssets.id(path)),
+>>>>>>> 5c7011a (fixed preview animations)
                 contentDescription = label,
                 modifier = Modifier
                     .fillMaxWidth()

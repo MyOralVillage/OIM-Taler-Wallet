@@ -1,4 +1,13 @@
+<<<<<<< HEAD
 include ':wallet'
 include ':taler-kotlin-android'
 include ':transaction-database'
 
+=======
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+include ':cashier', ':merchant-terminal', ':wallet'
+include ':taler-kotlin-android', ':merchant-lib'
+>>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)

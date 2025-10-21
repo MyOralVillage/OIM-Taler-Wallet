@@ -49,16 +49,32 @@ import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
+<<<<<<< HEAD
 import net.taler.common.showError
 import net.taler.wallet.BuildConfig.FLAVOR
 import net.taler.wallet.BuildConfig.VERSION_CODE
 import net.taler.wallet.BuildConfig.VERSION_NAME
+=======
+import net.taler.utils.android.showError
+>>>>>>> f4e1e5e (hardcoded merchant + wallet protocols -> 36:2:8, changed app version to OIM-v0.1.0-alpha)
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.R
 import net.taler.wallet.showError
 import net.taler.wallet.withdraw.TestWithdrawStatus
 import java.lang.System.currentTimeMillis
 
+<<<<<<< HEAD
+=======
+// these are borked (protobuf needs fixing):
+//import net.taler.common.showError
+//import net.taler.wallet.BuildConfig.FLAVOR
+//import net.taler.wallet.BuildConfig.VERSION_CODE
+//import net.taler.wallet.BuildConfig.VERSION_NAME
+
+
+const val BuildConfig_PLACEHOLDER = "OIM-v0.1.0-alpha"
+
+>>>>>>> f4e1e5e (hardcoded merchant + wallet protocols -> 36:2:8, changed app version to OIM-v0.1.0-alpha)
 class SettingsFragment : PreferenceFragmentCompat() {
 
     private val model: MainViewModel by activityViewModels()

@@ -1,4 +1,5 @@
 /*
+<<<<<<< HEAD
  * This file is part of GNU Taler
  * (C) 2025 Taler Systems S.A.
  *
@@ -15,6 +16,8 @@
  */
 
 /*
+=======
+>>>>>>> 5c7011a (fixed preview animations)
  * GPLv3-or-later
  */
 package net.taler.wallet.oim.send.components
@@ -70,7 +73,11 @@ fun NoteFlyer(
     val heightDp = with(density) { hPx.toDp() }
 
     Image(
+<<<<<<< HEAD
         painter = assetPainterOrPreview(path),
+=======
+        painter = assetPainterOrPreview(path, PreviewAssets.id(path)),
+>>>>>>> 5c7011a (fixed preview animations)
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier = Modifier
