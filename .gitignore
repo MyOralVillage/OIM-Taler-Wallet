@@ -138,46 +138,7 @@ coverage/
 ## IDEs ##
 
 # IntelliJ / Android Studio / JetBrains / Fastlane
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/**/usage.statistics.xml
-.idea/**/dictionaries
-.idea/**/shelf
-.idea/**/aws.xml
-.idea/**/contentModel.xml
-.idea/**/dataSources/
-.idea/**/dataSources.ids
-.idea/**/dataSources.local.xml
-.idea/**/sqlDataSources.xml
-.idea/**/dynamic.xml
-.idea/**/uiDesigner.xml
-.idea/**/dbnavigator.xml
-.idea/**/gradle.xml
-.idea/**/libraries
-.idea/**/mongoSettings.xml
-.idea/**/httpRequests
-.idea/httpRequests
-.idea/caches/build_file_checksums.ser
-.idea/.cache/.Apifox_Helper
-.idea/ApifoxUploaderProjectSetting.xml
-.idea_modules/
-.idea/replstate.xml
-.idea/sonarlint/
-.idea/sonarlint.xml
-*.iws
-*.iml
-.gradle
-/local.properties
-/.idea/artifacts
-/.idea/caches
-/.idea/libraries
-/.idea/misc.xml
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-/.idea/runConfigurations.xml
-/.idea/vcs.xml
+.idea
 /build
 /captures
 .externalNativeBuild

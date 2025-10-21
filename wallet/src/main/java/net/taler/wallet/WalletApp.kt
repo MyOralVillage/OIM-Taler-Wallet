@@ -14,14 +14,24 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.wallet
+ package net.taler.wallet
 
-import android.app.Application
-import com.google.android.material.color.DynamicColors
-
-class WalletApp : Application() {
-    override fun onCreate() {
-        super.onCreate()
-//        DynamicColors.applyToActivitiesIfAvailable(this)
-    }
-}
+ import android.app.Application
+ import androidx.lifecycle.ViewModelProvider
+ import androidx.lifecycle.ViewModelStore
+ import com.google.android.material.color.DynamicColors
+ 
+ class WalletApp : Application() {
+     // Shared ViewModelStore for app-wide ViewModels (e.g., MainViewModel)
+     val appViewModelStore = ViewModelStore()
+ 
+     fun appViewModelProvider(): ViewModelProvider = ViewModelProvider(
+         appViewModelStore,
+         ViewModelProvider.AndroidViewModelFactory.getInstance(this)
+     )
+ 
+     override fun onCreate() {
+         super.onCreate()
+ //        DynamicColors.applyToActivitiesIfAvailable(this)
+     }
+ }

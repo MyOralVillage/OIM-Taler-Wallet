@@ -28,7 +28,7 @@ import coil.request.ImageRequest
 
 // ---- Backgrounds ------------------------------------------------------------
 const val WOOD_TABLE =
-    "OIM/backgrounds/tables/tara-meinczinger-G_yCplAsnB4-unsplash.jpg"
+    "taler-kotlin-android/src/main/res/drawable/table_dark_wood_tara_meinczinger.jpg"
 
 // ---- Icons ------------------------------------------------------------------
 const val ICON_CHEST = "OIM/buttons/chests/open/ChestOpen.svg"
@@ -75,7 +75,7 @@ val PurposeIcons: List<Pair<String, String>> = listOf(
 @Composable
 fun assetPainter(assetPath: String) = rememberAsyncImagePainter(
     ImageRequest.Builder(LocalContext.current)
-        .data("file:///android_asset/$assetPath")
+        .data("file:///$assetPath")
         .build()
 )
 

@@ -192,12 +192,24 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 =======
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+<<<<<<< HEAD
 import androidx.compose.material3.*
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+>>>>>>> 321d128 (updated send to be more dynamic)
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -205,6 +217,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+<<<<<<< HEAD
 import androidx.compose.ui.text.font.FontWeight
 <<<<<<< HEAD
 import androidx.compose.ui.tooling.preview.Preview
@@ -223,26 +236,33 @@ import net.taler.wallet.oim.send.components.generateQrBitmap
  * is generated from [talerUri]. If any display field is null, we try to infer it
  * from the URI (amount=SLE:3, summary=...).
 =======
+=======
+import androidx.compose.ui.tooling.preview.Preview
+>>>>>>> 321d128 (updated send to be more dynamic)
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.EXPN_GRCR
+import net.taler.database.data_models.TranxPurp
 import net.taler.wallet.oim.res_mapping_extensions.Tables
 import net.taler.wallet.oim.send.components.generateQrBitmap
 
 /**
+<<<<<<< HEAD
  * QR screen with wood background (assets now from res_mapping_extensions).
  * You can pass display fields separately while the QR is generated from [talerUri].
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+ * QR screen with wood background.
+>>>>>>> 321d128 (updated send to be more dynamic)
  */
 @Composable
 fun QrScreen(
     talerUri: String,
-    amountText: String? = null,
-    currencyCode: String? = null,
-    displayLabel: String? = null,
-    purpose: String? = null,
+    amount: Amount,
+    purpose: TranxPurp?,
     onBack: () -> Unit,
 ) {
+<<<<<<< HEAD
 <<<<<<< HEAD
     // Parse what we can from the URI for display fallbacks
 =======
@@ -253,6 +273,8 @@ fun QrScreen(
     val uiLabel = displayLabel ?: uiCurrency
     val uiPurpose = purpose ?: parsed.summary
 
+=======
+>>>>>>> 321d128 (updated send to be more dynamic)
     val qr = remember(talerUri) { generateQrBitmap(talerUri, 720) }
 
     Box(Modifier.fillMaxSize()) {
@@ -302,33 +324,7 @@ fun QrScreen(
                 )
             }
 
-            Column(horizontalAlignment = Alignment.End) {
-                uiAmount?.let {
-                    Text(
-                        text = it,
-                        color = Color.White,
-                        fontSize = 64.sp,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                }
-                uiLabel?.let {
-                    Text(
-                        text = it,
-                        color = Color.White,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-                uiPurpose?.let {
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = it,
-                        color = Color.White.copy(alpha = 0.9f),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
+            // No text display - QR code only
         }
     }
 }
@@ -339,6 +335,7 @@ fun QrScreen(
 =======
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 
+<<<<<<< HEAD
 private data class ParsedDisplay(
     val amountNumber: String? = null,
     val currency: String? = null,
@@ -371,3 +368,17 @@ private fun parseFromTalerUri(talerUri: String): ParsedDisplay {
 >>>>>>> f512e18 (added backend integration and db transaction update)
 =======
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+@Preview(name = "QR Screen", showBackground = true, widthDp = 1280, heightDp = 800)
+@Composable
+private fun QrScreenPreview() {
+    MaterialTheme {
+        QrScreen(
+            talerUri = "taler://pay-push?amount=SLE:3.00&summary=Groceries",
+            amount = Amount.fromString("SLE", "3"),
+            purpose = EXPN_GRCR,
+            onBack = {}
+        )
+    }
+}
+>>>>>>> 321d128 (updated send to be more dynamic)

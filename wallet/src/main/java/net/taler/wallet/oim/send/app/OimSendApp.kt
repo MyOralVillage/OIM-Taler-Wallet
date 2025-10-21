@@ -2,21 +2,17 @@
  * GPLv3-or-later
  */
 package net.taler.wallet.oim.send.app
-
-import android.os.Build
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import com.google.zxing.client.android.BuildConfig
 import kotlinx.coroutines.launch
-import net.taler.database.TranxHistory
-import net.taler.database.data_models.Amount
-import net.taler.database.data_models.FilterableDirection
-import net.taler.database.data_models.Timestamp
-import net.taler.database.data_models.TranxPurp
-import net.taler.database.data_models.tranxPurpLookup
+import net.taler.database.data_models.*
 import net.taler.wallet.MainViewModel
+import net.taler.database.TranxHistory
 import net.taler.wallet.oim.send.screens.PurposeScreen
 import net.taler.wallet.oim.send.screens.QrScreen
 import net.taler.wallet.oim.send.screens.SendScreen
+<<<<<<< HEAD
 import net.taler.wallet.peer.OutgoingIntro
 import net.taler.wallet.peer.OutgoingState
 <<<<<<< HEAD
@@ -27,6 +23,9 @@ import net.taler.wallet.BuildConfig.DEBUG
 =======
 import net.taler.wallet.peer.OutgoingResponse
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+import net.taler.wallet.peer.*
+>>>>>>> 321d128 (updated send to be more dynamic)
 
 private enum class Screen { Send, Purpose, Qr }
 
@@ -36,6 +35,7 @@ fun OimSendApp(model: MainViewModel) {
         val ctx = LocalContext.current.applicationContext
         val scope = rememberCoroutineScope()
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         // Initialize transaction database
@@ -56,22 +56,28 @@ fun OimSendApp(model: MainViewModel) {
         var localTxDbInitialized by remember { mutableStateOf(false) }
 
         // Initialize local TX DB once (TranxHistory is @RequiresApi 34)
+=======
+        // Initialize local TX DB once
+>>>>>>> 321d128 (updated send to be more dynamic)
         LaunchedEffect(Unit) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && !localTxDbInitialized) {
-                runCatching { TranxHistory.init(ctx) }
-                localTxDbInitialized = true
-            }
+            // TODO: change else to TranxHistory.init(ctx) for prod
+            if (BuildConfig.DEBUG) runCatching { TranxHistory.initTest(ctx) }
+            else runCatching { TranxHistory.initTest(ctx) }
         }
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 
         var screen by remember { mutableStateOf(Screen.Send) }
-        var amount by remember { mutableStateOf(0) }
 
-        // for QR page
+        // Use Amount API instead of raw integers
+        var amount by remember { mutableStateOf(Amount.fromString("SLE", "0")) }
+        val balance = Amount.fromString("SLE", "25") // TODO: Get from actual wallet balance
+
+        var chosenPurpose by remember { mutableStateOf<TranxPurp?>(null) }
         var talerUri by remember { mutableStateOf<String?>(null) }
 
-        // observe backend push state
-        val pushState: OutgoingState by model.peerManager.pushState.collectAsState(initial = OutgoingIntro)
+        // Observe backend push state
+        val pushState: OutgoingState by model.peerManager.pushState
+            .collectAsState(initial = OutgoingIntro)
 
 <<<<<<< HEAD
         // When backend answers with a tx id, navigate to QR.
@@ -101,23 +107,29 @@ fun OimSendApp(model: MainViewModel) {
         LaunchedEffect(pushState) {
             if (pushState is OutgoingResponse) {
                 val txId = (pushState as OutgoingResponse).transactionId
+<<<<<<< HEAD
                 // If your backend exposes a full URI, use that here.
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+>>>>>>> 321d128 (updated send to be more dynamic)
                 talerUri = "taler://pay-push/$txId"
                 screen = Screen.Qr
             }
         }
 
-        // Currency / labels (UI-only)
-        val currencyCode = "SLE"
-        val balance = 25 // demo header
-
         when (screen) {
             Screen.Send -> SendScreen(
                 balance = balance,
                 amount = amount,
-                onAdd = { amount += it },
-                onRemoveLast = { removed -> amount = (amount - removed).coerceAtLeast(0) },
+                onAdd = { addedAmount ->
+                    amount = runCatching { amount + addedAmount }.getOrElse { amount }
+                },
+                onRemoveLast = { removedAmount ->
+                    amount = runCatching {
+                        val result = amount - removedAmount
+                        if (result.isZero()) Amount.zero(amount.currency) else result
+                    }.getOrElse { amount }
+                },
                 onChoosePurpose = { screen = Screen.Purpose },
                 onSend = { screen = Screen.Purpose }
             )
@@ -126,6 +138,7 @@ fun OimSendApp(model: MainViewModel) {
                 balance = balance,
                 onBack = { screen = Screen.Send },
                 onDone = { pickedPurpose ->
+<<<<<<< HEAD
 <<<<<<< HEAD
                     chosenPurpose = pickedPurpose
 
@@ -166,16 +179,35 @@ fun OimSendApp(model: MainViewModel) {
                         )
                     }
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+                    chosenPurpose = pickedPurpose
+
+                    // 1) Write to local transaction history
+                    // TODO: change else to TranxHistory.init(ctx) for prod
+                    if (BuildConfig.DEBUG) runCatching { TranxHistory.initTest(ctx) }
+                    else runCatching { TranxHistory.initTest(ctx) }
+
+                    val tid = "DEMO_TX_${System.currentTimeMillis()}"
+                    val ts = Timestamp.now()
+                    val dir = FilterableDirection.OUTGOING
+
+                    TranxHistory.newTransaction(
+                        tid = tid,
+                        purp = pickedPurpose,
+                        amt = amount,
+                        dir = dir,
+                        tms = ts
+                    )
+>>>>>>> 321d128 (updated send to be more dynamic)
 
                     // 2) Kick off P2P push with the wallet backend
                     scope.launch {
-                        val amt = Amount.fromString(currencyCode, amount.toString())
                         model.peerManager.initiatePeerPushDebit(
-                            amount = amt,
-                            summary = pickedPurpose,
+                            amount = amount,
+                            summary = pickedPurpose.cmp,
                             expirationHours = 24L,
                         )
-                        // Wait for OutgoingResponse (handled above) to navigate to QR.
+                        // OutgoingResponse will trigger navigation to QR (handled above)
                     }
 =======
                     // 1) Write to your local history (kept as requested)
@@ -208,10 +240,19 @@ fun OimSendApp(model: MainViewModel) {
 
             Screen.Qr -> QrScreen(
                 talerUri = talerUri ?: "taler://invalid",
-                onBack = { screen = Screen.Send }
+                amount = amount,
+                purpose = chosenPurpose,
+                onBack = {
+                    // Reset state for next transaction
+                    amount = Amount.zero(amount.currency)
+                    chosenPurpose = null
+                    talerUri = null
+                    screen = Screen.Send
+                }
             )
         }
     }
+<<<<<<< HEAD
 }
 
 <<<<<<< HEAD
@@ -248,3 +289,6 @@ private fun mapPickedPurposeToTranxPurp(picked: String): TranxPurp? {
     return null
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 }
+=======
+}
+>>>>>>> 321d128 (updated send to be more dynamic)

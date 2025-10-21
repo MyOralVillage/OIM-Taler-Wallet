@@ -1,4 +1,4 @@
-/*
+package net.taler.wallet.oim.send.app/*
  * This file is part of GNU Taler
  * (C) 2025 Taler Systems S.A.
  *
@@ -14,6 +14,7 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
+<<<<<<< HEAD
 /*
  * GPLv3-or-later
  */
@@ -99,6 +100,76 @@ fun OimSendAppPreview() {
         }
     }
 }
+=======
+///*
+// * GPLv3-or-later
+// */
+//package net.taler.wallet.oim.send.app
+//
+//import androidx.compose.runtime.*
+//import androidx.compose.ui.tooling.preview.Preview
+//import net.taler.wallet.oim.send.screens.PurposeScreen
+//import net.taler.wallet.oim.send.screens.QrScreen
+//import net.taler.wallet.oim.send.screens.SendScreen
+//
+//// Use the same enum as the app for consistency
+//private enum class PreviewScreen { Send, Purpose, Qr }
+//
+///**
+// * Full-flow interactive preview:
+// * - Tap notes: they fly up and increment the counter
+// * - Tap Send (top-right) or "Choose purpose": go to Purpose
+// * - Tap a purpose: go to QR
+// * - Use the Preview panel ▶ button to enter Interactive mode
+// */
+//@Preview(
+//    name = "OIM Flow – Interactive (Landscape)",
+//    // Force a landscape canvas with no system bars/app bar
+//    device = "spec:width=960dp,height=480dp,orientation=landscape,dpi=440",
+//    showBackground = true,
+//    showSystemUi = false
+//)
+//@Composable
+//fun OimSendAppPreview() {
+//    // Optional: wrap in your app theme so typography/colors match SendScreenPreview
+//    OimTheme {
+//        var screen by remember { mutableStateOf(PreviewScreen.Send) }
+//        var amount by remember { mutableStateOf(0) }
+//        var chosenPurpose by remember { mutableStateOf<String?>(null) }
+//
+//        val currencyCode = "SLE"
+//        val currencyLabel = "Leones"
+//        val balance = 700
+//
+//        when (screen) {
+//            PreviewScreen.Send -> SendScreen(
+//                balance = balance,
+//                amount = amount,
+//                onAdd = { amount += it },
+//                onRemoveLast = { removed -> amount = (amount - removed).coerceAtLeast(0) },
+//                onChoosePurpose = { screen = PreviewScreen.Purpose },
+//                onSend = { screen = PreviewScreen.Purpose }
+//            )
+//            PreviewScreen.Purpose -> PurposeScreen(
+//                balance = balance,
+//                onBack = { screen = PreviewScreen.Send },
+//                onDone = { picked ->
+//                    chosenPurpose = picked
+//                    screen = PreviewScreen.Qr
+//                }
+//            )
+//            PreviewScreen.Qr -> QrScreen(
+//                talerUri = "taler://pay-push?amount=SLE:3&summary=Groceries",
+//                amountText = amount.toString(),
+//                currencyCode = currencyCode,
+//                displayLabel = currencyLabel,
+//                purpose = chosenPurpose.orEmpty(),
+//                onBack = { screen = PreviewScreen.Send }
+//            )
+//        }
+//    }
+//}
+>>>>>>> 321d128 (updated send to be more dynamic)
 
 
 /**

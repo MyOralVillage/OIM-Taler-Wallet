@@ -22,13 +22,14 @@ import androidx.compose.ui.res.imageResource
 import net.taler.database.data_models.*
 
 @Composable
-internal fun Amount.resourceMapper(): Set<ImageBitmap> {
-    val result = mutableSetOf<ImageBitmap>()
+internal fun Amount.resourceMapper(): List<ImageBitmap> {
+    val result = mutableListOf<ImageBitmap>()
 
     when (currency) {
         "CHF" -> {
             // Convert CHF to half-franc units
-            val totalHalfFrancs = value * 2 + fraction * 2
+            // fraction is in units of 1e-8, so we need to divide by FRACTIONAL_BASE
+            val totalHalfFrancs = value * 2 + (fraction * 2L / Amount.FRACTIONAL_BASE)
             result.addAll(mapToBills(totalHalfFrancs, CHF_BILLS))
         }
         "XOF" -> {
@@ -37,11 +38,13 @@ internal fun Amount.resourceMapper(): Set<ImageBitmap> {
             result.addAll(mapToBills(value, XOF_BILLS))
         }
         "EUR" -> {
-            val totalCents = value * 100 + fraction
+            // fraction is in units of 1e-8, convert to cents by dividing by 1e6
+            val totalCents = value * 100 + (fraction / 1_000_000)
             result.addAll(mapToBills(totalCents, EUR_BILLS_CENTS))
         }
         "SLE" -> {
-            val totalCents = value * 100 + fraction
+            // fraction is in units of 1e-8, convert to cents by dividing by 1e6
+            val totalCents = value * 100 + (fraction / 1_000_000)
             result.addAll(mapToBills(totalCents, SLE_BILLS_CENTS))
         }
         else -> throw IllegalArgumentException("Unsupported currency: $currency")
@@ -52,10 +55,9 @@ internal fun Amount.resourceMapper(): Set<ImageBitmap> {
 
 /** Map amount to bills/coins using provided denominations (descending order). */
 @Composable
-private fun mapToBills(amount: Long, bills: List<Pair<Int, Int>>): Set<ImageBitmap> {
-    val result = mutableSetOf<ImageBitmap>()
+private fun mapToBills(amount: Long, bills: List<Pair<Int, Int>>): List<ImageBitmap> {
+    val result = mutableListOf<ImageBitmap>()
     var remaining = amount
-
 
     for ((billValue, resId) in bills) {
         while (remaining >= billValue) {
@@ -88,7 +90,6 @@ val CHF_BILLS = listOf(
     2       to R.drawable.chf_one,              // 1 CHF coin
     1       to R.drawable.chf_zero_point_five   // 0.5 CHF coin
 )
-
 
 // === XOF denominations (integer values only) ===
 val XOF_BILLS = listOf(

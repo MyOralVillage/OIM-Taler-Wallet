@@ -50,6 +50,7 @@ internal class Buttons(val buttonName: String) {
             "tranx_hist"        -> ImageBitmap.imageResource(transaction_history)
             "deposit"           -> ImageBitmap.imageResource(deposit)
             "withdraw"          -> ImageBitmap.imageResource(withdrawal)
+            "filter"            -> ImageBitmap.imageResource(filter)
 
             else ->
                 throw IllegalArgumentException("Invalid button: " + buttonName)

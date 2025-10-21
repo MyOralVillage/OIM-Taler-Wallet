@@ -5,12 +5,14 @@ package net.taler.wallet.oim.send.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -18,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -25,6 +28,7 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -108,14 +112,24 @@ fun NotesStrip(
     onAddRequest: (value: Int, startCenterInRoot: Offset) -> Unit,
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
     onRemoveLast: (removed: Int) -> Unit
+=======
+import net.taler.database.data_models.Amount
+@Composable
+fun NotesStrip(
+    noteThumbWidth: Dp,
+    notes: List<Pair<ImageBitmap, Amount>>,
+    onAddRequest: (Amount, Offset) -> Unit,
+    onRemoveLast: (Amount) -> Unit
+>>>>>>> 321d128 (updated send to be more dynamic)
 ) {
     val scroll = rememberScrollState()
-    var lastAdded by remember { mutableStateOf(0) }
+    var lastAdded: Amount? by remember { mutableStateOf(null) }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(scroll)
+<<<<<<< HEAD
 <<<<<<< HEAD
             .clip(RoundedCornerShape(20.dp))
             .background(Color(0x55000000))
@@ -132,6 +146,16 @@ fun NotesStrip(
 =======
             .background(Color(0x55000000), RoundedCornerShape(20.dp))
             .padding(10.dp),
+=======
+            .background(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(Color(0xFF4444AA), Color(0xFFAA4488))
+                ),
+                shape = RoundedCornerShape(24.dp)
+            )
+            .border(3.dp, Color.White.copy(alpha = 0.7f), RoundedCornerShape(24.dp))
+            .padding(12.dp),
+>>>>>>> 321d128 (updated send to be more dynamic)
         verticalAlignment = Alignment.CenterVertically
     ) {
         notes.forEach { (bmp, value) ->
@@ -148,9 +172,12 @@ fun NotesStrip(
         }
 
         Button(
-            onClick = { if (lastAdded != 0) onRemoveLast(lastAdded) },
+            onClick = { lastAdded?.let { onRemoveLast(it) } },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDD3333)),
             modifier = Modifier.padding(start = 6.dp)
-        ) { Text("Undo") }
+        ) {
+            Text("Undo", color = Color.White)
+        }
     }
 }
 
@@ -171,10 +198,15 @@ private fun NoteThumb(
             .width(width)
             .height(width * 0.55f)
             .onGloballyPositioned { lc -> center = lc.boundsInRoot().center }
-            .clickable { onTapWithPos(center) },
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0x22FFFFFF))
+            .clickable { onTapWithPos(center) }
+            .border(
+                width = 4.dp,
+                color = Color(0xFF00D9FF),
+                shape = RoundedCornerShape(14.dp)
+            ),
+        shape = RoundedCornerShape(14.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0x55FFFFFF))
     ) {
         Image(
 <<<<<<< HEAD

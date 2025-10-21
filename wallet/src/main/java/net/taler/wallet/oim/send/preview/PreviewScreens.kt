@@ -18,6 +18,7 @@ package net.taler.wallet.oim.send.preview
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import net.taler.database.data_models.*
 import net.taler.wallet.oim.send.app.OimTheme
 import net.taler.wallet.oim.send.screens.PurposeScreen
 import net.taler.wallet.oim.send.screens.QrScreen
@@ -30,10 +31,8 @@ fun QrScreenPreview_WithSeparateFields() {
     OimTheme {
         QrScreen(
             talerUri = "taler://pay-push?amount=SLE:3&summary=Groceries",
-            amountText = "3",
-            currencyCode = "SLE",
-            displayLabel = "Leones",
-            purpose = "Groceries",
+            amount = Amount("XOF", 10000L, 0),
+            purpose = UTIL_WATR,
             onBack = {}
         )
     }
@@ -45,7 +44,7 @@ fun QrScreenPreview_WithSeparateFields() {
 fun PurposeScreenPreview() {
     OimTheme {
         PurposeScreen(
-            balance = 25,
+            balance = Amount("CHF", 100L, 53),
             onBack = {},
             onDone = {}
         )
@@ -58,8 +57,8 @@ fun PurposeScreenPreview() {
 fun SendScreenPreview() {
     OimTheme {
         SendScreen(
-            balance = 25,
-            amount = 3,
+            balance = Amount("EUR", 23L, 24),
+            amount = Amount("EUR", 10L, 32),
             onAdd = {},
             onRemoveLast = {},
             onChoosePurpose = {},

@@ -14,453 +14,510 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.wallet
+ package net.taler.wallet
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Toast
-import androidx.activity.compose.BackHandler
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.animation.core.Animatable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeFloatingActionButton
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.PlainTooltip
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.rememberTooltipState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.fragment.compose.AndroidFragment
-import androidx.fragment.compose.FragmentState
-import androidx.fragment.compose.rememberFragmentState
-import androidx.navigation.fragment.findNavController
-import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
-import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
-import net.taler.wallet.balances.BalanceState
-import net.taler.wallet.balances.BalancesComposable
-import net.taler.wallet.balances.ScopeInfo
-import net.taler.wallet.compose.DemandAttention
-import net.taler.wallet.compose.GridMenu
-import net.taler.wallet.compose.GridMenuItem
-import net.taler.wallet.compose.TalerSurface
-import net.taler.wallet.compose.collectAsStateLifecycleAware
-import net.taler.wallet.settings.SettingsFragment
-import net.taler.wallet.transactions.Transaction
-import net.taler.wallet.transactions.TransactionMajorState
-import net.taler.wallet.transactions.TransactionPayment
-import net.taler.wallet.transactions.TransactionState
-import net.taler.wallet.transactions.TransactionStateFilter.Nonfinal
-import kotlin.math.roundToInt
-
-class MainFragment: Fragment() {
-
-    enum class Tab { BALANCES, SETTINGS }
-
-    private val model: MainViewModel by activityViewModels()
-
-    @OptIn(ExperimentalMaterial3Api::class)
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View = ComposeView(requireContext()).apply {
-        setContent {
-            TalerSurface {
-                var tab by rememberSaveable { mutableStateOf(Tab.BALANCES) }
-                var showSheet by remember { mutableStateOf(false) }
-                val sheetState = rememberModalBottomSheetState()
-
-                val settingsFragmentState = rememberFragmentState()
-
-                val context = LocalContext.current
-                val online by model.networkManager.networkStatus.observeAsState(false)
-                val balanceState by model.balanceManager.state.observeAsState(BalanceState.None)
-                val selectedScope by model.transactionManager.selectedScope.collectAsStateLifecycleAware()
-                val txStateFilter by model.transactionManager.stateFilter.collectAsStateLifecycleAware()
-                val txResult by remember(selectedScope, txStateFilter) { model.transactionManager.transactionsFlow(selectedScope, stateFilter = txStateFilter) }.collectAsStateLifecycleAware()
-                val selectedSpec = remember(selectedScope) { selectedScope?.let { model.exchangeManager.getSpecForScopeInfo(it) } }
-                val actionButtonUsed by remember { model.settingsManager.getActionButtonUsed(context) }.collectAsStateLifecycleAware(true)
-
-                Scaffold(
-                    bottomBar = {
-                        NavigationBar {
-                            NavigationBarItem(
-                                icon = { Icon(Icons.Default.BarChart, contentDescription = null) },
-                                label = { Text(stringResource(R.string.balances_title)) },
-                                selected = tab == Tab.BALANCES,
-                                onClick = {
-                                    tab = Tab.BALANCES
-                                    if (selectedScope != null) {
-                                        model.transactionManager.selectScope(null)
-                                    }
-                                }
-                            )
-
-                            TalerActionButton(
-                                demandAttention = !actionButtonUsed,
-                                onShowSheet = {
-                                    showSheet = true
-                                    model.settingsManager.saveActionButtonUsed(context)
-                                },
-                                onScanQr = {
-                                    onScanQr()
-                                    model.settingsManager.saveActionButtonUsed(context)
-                                },
-                            )
-
-                            NavigationBarItem(
-                                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                                label = { Text(stringResource(R.string.menu_settings)) },
-                                selected = tab == Tab.SETTINGS,
-                                onClick = { tab = Tab.SETTINGS },
-                            )
-                        }
-                    },
-                    contentWindowInsets = WindowInsets.systemBars.only(
-                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
-                    )
-                ) { innerPadding ->
-                    LaunchedEffect(Unit) {
-                        if (selectedScope == null) {
-                            model.transactionManager.selectScope(
-                                model.settingsManager.getSelectedScope(context).first()
-                            )
-                        }
-                    }
-
-                    LaunchedEffect(tab, selectedScope) {
-                        setTitle(tab, selectedScope)
-                    }
-
-                    BackHandler(selectedScope != null) {
-                        model.transactionManager.selectScope(null)
-                    }
-
-                    when (tab) {
-                        Tab.BALANCES -> BalancesComposable(
-                            innerPadding = innerPadding,
-                            state = balanceState,
-                            txResult = txResult,
-                            txStateFilter = txStateFilter,
-                            selectedScope = selectedScope,
-                            selectedCurrencySpec = selectedSpec,
-                            onGetDemoMoneyClicked = {
-                                model.withdrawManager.withdrawTestBalance()
-                                Snackbar.make(requireView(), getString(R.string.settings_test_withdrawal), LENGTH_LONG).show()
+ import android.os.Bundle
+ import android.content.Intent
+ import androidx.core.os.bundleOf
+ import android.view.LayoutInflater
+ import android.view.View
+ import android.view.ViewGroup
+ import android.widget.Toast
+ import androidx.activity.compose.BackHandler
+ import androidx.appcompat.app.AppCompatActivity
+ import androidx.compose.animation.core.Animatable
+ import androidx.compose.foundation.gestures.Orientation
+ import androidx.compose.foundation.gestures.draggable
+ import androidx.compose.foundation.gestures.rememberDraggableState
+ import androidx.compose.foundation.layout.PaddingValues
+ import androidx.compose.foundation.layout.WindowInsets
+ import androidx.compose.foundation.layout.WindowInsetsSides
+ import androidx.compose.foundation.layout.asPaddingValues
+ import androidx.compose.foundation.layout.offset
+ import androidx.compose.foundation.layout.only
+ import androidx.compose.foundation.layout.padding
+ import androidx.compose.foundation.layout.requiredSize
+ import androidx.compose.foundation.layout.size
+ import androidx.compose.foundation.layout.systemBars
+ import androidx.compose.foundation.shape.CircleShape
+ import androidx.compose.material.icons.Icons
+ import androidx.compose.material.icons.filled.BarChart
+ import androidx.compose.material.icons.filled.Settings
+ import androidx.compose.material3.ExperimentalMaterial3Api
+ import androidx.compose.material3.Icon
+ import androidx.compose.material3.LargeFloatingActionButton
+ import androidx.compose.material3.ModalBottomSheet
+ import androidx.compose.material3.NavigationBar
+ import androidx.compose.material3.NavigationBarItem
+ import androidx.compose.material3.PlainTooltip
+ import androidx.compose.material3.Scaffold
+ import androidx.compose.material3.SheetState
+ import androidx.compose.material3.Text
+ import androidx.compose.material3.TooltipBox
+ import androidx.compose.material3.TooltipDefaults
+ import androidx.compose.material3.rememberModalBottomSheetState
+ import androidx.compose.material3.rememberTooltipState
+ import androidx.compose.runtime.Composable
+ import androidx.compose.runtime.LaunchedEffect
+ import androidx.compose.runtime.getValue
+ import androidx.compose.runtime.livedata.observeAsState
+ import androidx.compose.runtime.mutableStateOf
+ import androidx.compose.runtime.remember
+ import androidx.compose.runtime.saveable.rememberSaveable
+ import androidx.compose.runtime.setValue
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.platform.ComposeView
+ import androidx.compose.ui.platform.LocalContext
+ import androidx.compose.ui.res.painterResource
+ import androidx.compose.ui.res.stringResource
+ import androidx.compose.ui.unit.IntOffset
+ import androidx.compose.ui.unit.dp
+ import androidx.fragment.app.Fragment
+ import androidx.fragment.app.activityViewModels
+ import androidx.fragment.compose.AndroidFragment
+ import androidx.fragment.compose.FragmentState
+ import androidx.fragment.compose.rememberFragmentState
+ import androidx.navigation.fragment.findNavController
+ import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
+ import com.google.android.material.snackbar.Snackbar
+ import kotlinx.coroutines.flow.first
+ import kotlinx.coroutines.runBlocking
+ import net.taler.wallet.balances.BalanceState
+ import net.taler.wallet.balances.BalancesComposable
+ import net.taler.wallet.balances.ScopeInfo
+ import net.taler.wallet.compose.DemandAttention
+ import net.taler.wallet.compose.GridMenu
+ import net.taler.wallet.compose.GridMenuItem
+ import net.taler.wallet.compose.TalerSurface
+ import net.taler.wallet.compose.collectAsStateLifecycleAware
+ import net.taler.wallet.settings.SettingsFragment
+ import net.taler.wallet.transactions.Transaction
+ import net.taler.wallet.transactions.TransactionMajorState
+ import net.taler.wallet.transactions.TransactionPayment
+ import net.taler.wallet.transactions.TransactionState
+ import net.taler.wallet.transactions.TransactionStateFilter.Nonfinal
+ import kotlin.math.roundToInt
+ 
+ class MainFragment: Fragment() {
+ 
+     enum class Tab { BALANCES, SETTINGS }
+    private enum class OimScreen { HOME, CHEST, HISTORY, SEND }
+ 
+     private val model: MainViewModel by activityViewModels()
+ 
+     @OptIn(ExperimentalMaterial3Api::class)
+     override fun onCreateView(
+         inflater: LayoutInflater,
+         container: ViewGroup?,
+         savedInstanceState: Bundle?
+     ): View {
+         val composeView = ComposeView(requireContext())
+         composeView.setContent {
+             TalerSurface {
+                 var tab by rememberSaveable { mutableStateOf(Tab.BALANCES) }
+                 var oimScreen by rememberSaveable { mutableStateOf<OimScreen?>(null) }
+                 var showSheet by remember { mutableStateOf(false) }
+                 val sheetState = rememberModalBottomSheetState()
+ 
+                 val settingsFragmentState = rememberFragmentState()
+ 
+                 val context = LocalContext.current
+                 val online by model.networkManager.networkStatus.observeAsState(false)
+                 val balanceState by model.balanceManager.state.observeAsState(BalanceState.None)
+                 val selectedScope by model.transactionManager.selectedScope.collectAsStateLifecycleAware()
+                 val txStateFilter by model.transactionManager.stateFilter.collectAsStateLifecycleAware()
+                 val txResult by remember(selectedScope, txStateFilter) {
+                     model.transactionManager.transactionsFlow(selectedScope, stateFilter = txStateFilter)
+                 }.collectAsStateLifecycleAware()
+                 val selectedSpec = remember(selectedScope) { selectedScope?.let { model.exchangeManager.getSpecForScopeInfo(it) } }
+                 val actionButtonUsed by model.settingsManager.getActionButtonUsed(context).collectAsStateLifecycleAware(initial = true)
+                 if (oimScreen != null) {
+                     val activity = (requireActivity() as AppCompatActivity)
+                     LaunchedEffect(Unit) { activity.supportActionBar?.hide() }
+                     BackHandler(true) {
+                         oimScreen = null
+                         activity.supportActionBar?.show()
+                     }
+ 
+                    when (oimScreen) {
+                        OimScreen.HOME -> net.taler.wallet.oim.receivemoney.OIMHomeScreen(
+                            model = model,
+                            onNavigateToChest = { oimScreen = OimScreen.CHEST },
+                            onBackToTaler = {
+                                oimScreen = null
+                                activity.supportActionBar?.show()
                             },
-                            onBalanceClicked = {
-                                model.showTransactions(it.scopeInfo)
-                            },
-                            onPendingClicked = {
-                                model.showTransactions(it.scopeInfo, Nonfinal)
-                            },
-                            onTransactionClicked = { tx ->
-                                onTransactionClicked(tx)
-                            },
-                            onTransactionsDelete = { txIds ->
-                                model.transactionManager.deleteTransactions(txIds) { error ->
-                                    Toast.makeText(context, error.userFacingMsg, Toast.LENGTH_LONG).show()
-                                }
-                            },
-                            onShowBalancesClicked = {
-                                if (model.transactionManager.selectedScope.value != null) {
-                                    model.transactionManager.selectScope(null)
-                                }
+                            onReviewTos = { exchangeBaseUrl ->
+                                val bundle = bundleOf("exchangeBaseUrl" to exchangeBaseUrl)
+                                findNavController().navigate(R.id.action_global_reviewExchangeTos, bundle)
                             },
                         )
-                        Tab.SETTINGS -> SettingsView(
-                            innerPadding = innerPadding,
-                            settingsFragmentState = settingsFragmentState,
+                        OimScreen.CHEST -> net.taler.wallet.oim.receivemoney.OIMChestScreen(
+                            model = model,
+                            onBackClick = { oimScreen = OimScreen.HOME },
+                            onSendClick = {
+                                // Stay inside current Fragment to share MainViewModel
+                                oimScreen = OimScreen.SEND
+                            },
+                            onRequestClick = { },
+                            onTransactionHistoryClick = { oimScreen = OimScreen.HISTORY },
+                            onWithdrawTestKudosClick = { model.withdrawManager.withdrawTestBalance() },
                         )
+                        OimScreen.SEND -> {
+                            // Back from Send returns to OIM chest
+                            BackHandler(true) { oimScreen = OimScreen.CHEST }
+                            net.taler.wallet.oim.send.app.OimSendApp(model = model)
+                        }
+                        OimScreen.HISTORY -> {
+                            // Handle back from OIM history: return to OIM chest instead of closing overlay
+                            BackHandler(true) { oimScreen = OimScreen.CHEST }
+                            net.taler.wallet.oim.history.components.TransactionsListView()
+                        }
+                        null -> { }
                     }
-                }
-
-                val disableActions = remember(balanceState, online) {
-                    !online || (balanceState as? BalanceState.Success)?.balances?.isEmpty() ?: true
-                }
-
-                TalerActionsModal(
-                    showSheet = showSheet,
-                    sheetState = sheetState,
-                    onDismiss = { showSheet = false },
-                    disableActions = disableActions,
-                    onSend = this@MainFragment::onSend,
-                    onReceive = this@MainFragment::onReceive,
-                    onScanQr = this@MainFragment::onScanQr,
-                    onDeposit = this@MainFragment::onDeposit,
-                    onWithdraw = this@MainFragment::onWithdraw,
-                    onEnterUri = this@MainFragment::onEnterUri,
-                )
-            }
-        }
-    }
-
-    private fun onTransactionClicked(tx: Transaction) {
-        val showTxDetails = {
-            if (tx.detailPageNav != 0) {
-                model.transactionManager.selectTransaction(tx)
-                findNavController().navigate(tx.detailPageNav)
-            }
-        }
-
-        when (tx.txState) {
-            // unfinished transactions (dialog)
-            TransactionState(TransactionMajorState.Dialog) -> when (tx) {
-                is TransactionPayment -> {
-                    model.paymentManager.preparePay(tx.transactionId) {
-                        findNavController().navigate(R.id.action_global_promptPayment)
-                    }
-                }
-
-                else -> showTxDetails()
-            }
-
-            else -> showTxDetails()
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        model.balanceManager.loadBalances()
-        model.balanceManager.state.observe(viewLifecycleOwner) { res ->
-            if (res is BalanceState.Success) {
-                if (res.balances.size == 1) {
-                    // pre-select on startup if it's the only one
-                    model.transactionManager.selectScope(res.balances.first().scopeInfo)
-                }
-            }
-        }
-    }
-
-    private fun setTitle(tab: Tab, scope: ScopeInfo?) {
-        (requireActivity() as AppCompatActivity).apply {
-            supportActionBar?.title = when (tab) {
-                Tab.BALANCES -> if (scope != null) {
-                    getString(R.string.transactions_title)
-                } else {
-                    getString(R.string.balances_title)
-                }
-
-                Tab.SETTINGS -> getString(R.string.menu_settings)
-            }
-        }
-    }
-
-    private fun onSend() {
-        findNavController().navigate(R.id.nav_peer_push)
-    }
-
-    private fun onReceive() {
-        findNavController().navigate(R.id.nav_peer_pull)
-    }
-
-    private fun onDeposit() {
-        findNavController().navigate(R.id.nav_deposit)
-    }
-
-    private fun onWithdraw() {
-        model.withdrawManager.resetWithdrawal()
-        findNavController().navigate(R.id.promptWithdraw)
-    }
-
-    private fun onScanQr() {
-        model.scanCode()
-    }
-
-    private fun onEnterUri() {
-        findNavController().navigate(R.id.nav_uri_input)
-    }
-}
-
-@Composable
-fun SettingsView(
-    innerPadding: PaddingValues,
-    settingsFragmentState: FragmentState,
-) {
-    AndroidFragment(
-        SettingsFragment::class.java,
-        modifier = Modifier.padding(innerPadding),
-        fragmentState = settingsFragmentState,
-    )
-}
-
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-private fun TalerActionButton(
-    demandAttention: Boolean,
-    onShowSheet: () -> Unit,
-    onScanQr: () -> Unit,
-) {
-    val tooltipState = rememberTooltipState()
-    TooltipBox(
-        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-        tooltip = { PlainTooltip { Text(stringResource(R.string.actions)) } },
-        state = tooltipState,
-    ) {
-        val offsetY = remember { Animatable(0f) }
-        var cancelled by remember { mutableStateOf(false) }
-
-        DemandAttention(demandAttention = demandAttention) {
-            LargeFloatingActionButton(
-                modifier = Modifier
-                    .requiredSize(86.dp)
-                    .padding(8.dp)
-                    .offset { IntOffset(0, offsetY.value.roundToInt() / 6) }
-                    .draggable(
-                        orientation = Orientation.Vertical,
-                        state = rememberDraggableState { delta ->
-                            runBlocking { offsetY.snapTo(offsetY.value + delta) }
-                            if (delta > 0) {
-                                cancelled = true
-                            }
-                        },
-                        onDragStopped = {
-                            offsetY.animateTo(0.0f)
-                            if (!cancelled) {
-                                onScanQr()
-                            }
-                            cancelled = false
-                        },
-                    ),
-                shape = CircleShape,
-                onClick = { onShowSheet() },
-            ) {
-                if (offsetY.value == 0.0f) {
-                    Icon(
-                        painterResource(R.drawable.ic_actions),
-                        modifier = Modifier.size(38.dp),
-                        contentDescription = stringResource(R.string.actions),
-                    )
-                } else {
-                    Icon(
-                        painterResource(R.drawable.ic_scan_qr),
-                        contentDescription = stringResource(R.string.actions),
-                    )
-                }
-            }
-        }
-    }
-
-    LaunchedEffect(demandAttention) {
-        if (demandAttention) {
-            tooltipState.show()
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TalerActionsModal(
-    showSheet: Boolean,
-    sheetState: SheetState,
-    disableActions: Boolean,
-    onDismiss: () -> Unit,
-    onSend: () -> Unit,
-    onReceive: () -> Unit,
-    onScanQr: () -> Unit,
-    onDeposit: () -> Unit,
-    onWithdraw: () -> Unit,
-    onEnterUri: () -> Unit,
-) {
-    if (showSheet) {
-        ModalBottomSheet(
-            onDismissRequest = onDismiss,
-            sheetState = sheetState,
-        ) {
-            GridMenu(
-                contentPadding = PaddingValues(
-                    start = 8.dp,
-                    end = 8.dp,
-                    bottom = 16.dp + WindowInsets
-                        .systemBars
-                        .asPaddingValues()
-                        .calculateBottomPadding(),
-                ),
-            ) {
-                GridMenuItem(
-                    icon = R.drawable.ic_link,
-                    title = R.string.enter_uri_label,
-                    onClick = { onEnterUri(); onDismiss() },
-                )
-
-                GridMenuItem(
-                    icon = R.drawable.transaction_deposit,
-                    title = R.string.send_deposit_button_label,
-                    onClick = { onDeposit(); onDismiss() },
-                    enabled = !disableActions
-                )
-
-                GridMenuItem(
-                    icon = R.drawable.ic_scan_qr,
-                    title = R.string.button_scan_qr_code_label,
-                    onClick = { onScanQr(); onDismiss() },
-                )
-
-                GridMenuItem(
-                    icon = R.drawable.transaction_p2p_incoming,
-                    title = R.string.transactions_receive_funds,
-                    onClick = { onReceive(); onDismiss() },
-                    enabled = !disableActions,
-                )
-
-                GridMenuItem(
-                    icon = R.drawable.transaction_withdrawal,
-                    title = R.string.withdraw_button_label,
-                    onClick = { onWithdraw(); onDismiss() },
-                    enabled = !disableActions,
-                )
-
-                GridMenuItem(
-                    icon = R.drawable.transaction_p2p_outgoing,
-                    title = R.string.transactions_send_funds,
-                    onClick = { onSend(); onDismiss() },
-                    enabled = !disableActions,
-                )
-            }
-        }
-    }
-}
+                 } else {
+                     Scaffold(
+                         bottomBar = {
+                             NavigationBar {
+                                 NavigationBarItem(
+                                     icon = { Icon(Icons.Default.BarChart, contentDescription = null) },
+                                     label = { Text(stringResource(R.string.balances_title)) },
+                                     selected = tab == Tab.BALANCES,
+                                     onClick = {
+                                         tab = Tab.BALANCES
+                                         if (selectedScope != null) {
+                                             model.transactionManager.selectScope(null)
+                                         }
+                                     }
+                                 )
+ 
+                                 TalerActionButton(
+                                     demandAttention = !actionButtonUsed,
+                                     onShowSheet = {
+                                         showSheet = true
+                                         model.settingsManager.saveActionButtonUsed(context)
+                                     },
+                                     onScanQr = {
+                                         this@MainFragment.onScanQr()
+                                         model.settingsManager.saveActionButtonUsed(context)
+                                     },
+                                 )
+ 
+                                 NavigationBarItem(
+                                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                                     label = { Text(stringResource(R.string.menu_settings)) },
+                                     selected = tab == Tab.SETTINGS,
+                                     onClick = { tab = Tab.SETTINGS },
+                                 )
+                             }
+                         },
+                         contentWindowInsets = WindowInsets.systemBars.only(
+                             WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+                         )
+                     ) { innerPadding ->
+                         LaunchedEffect(Unit) {
+                             if (selectedScope == null) {
+                                 model.transactionManager.selectScope(
+                                     model.settingsManager.getSelectedScope(context).first()
+                                 )
+                             }
+                         }
+ 
+                         LaunchedEffect(tab, selectedScope) {
+                             this@MainFragment.setTitle(tab, selectedScope)
+                         }
+ 
+                         BackHandler(selectedScope != null) {
+                             model.transactionManager.selectScope(null)
+                         }
+ 
+                         when (tab) {
+                             Tab.BALANCES -> BalancesComposable(
+                                 innerPadding = innerPadding,
+                                 state = balanceState,
+                                 txResult = txResult,
+                                 txStateFilter = txStateFilter,
+                                 selectedScope = selectedScope,
+                                 selectedCurrencySpec = selectedSpec,
+                                 onGetDemoMoneyClicked = {
+                                     model.withdrawManager.withdrawTestBalance()
+                                     Snackbar.make(requireView(), getString(R.string.settings_test_withdrawal), LENGTH_LONG).show()
+                                 },
+                                 onBalanceClicked = {
+                                     model.showTransactions(it.scopeInfo)
+                                 },
+                                 onPendingClicked = {
+                                     model.showTransactions(it.scopeInfo, Nonfinal)
+                                 },
+                                 onTransactionClicked = { tx ->
+                                     this@MainFragment.onTransactionClicked(tx)
+                                 },
+                                 onTransactionsDelete = { txIds ->
+                                     model.transactionManager.deleteTransactions(txIds) { error ->
+                                         Toast.makeText(context, error.userFacingMsg, Toast.LENGTH_LONG).show()
+                                     }
+                                 },
+                                 onShowBalancesClicked = {
+                                     if (model.transactionManager.selectedScope.value != null) {
+                                         model.transactionManager.selectScope(null)
+                                     }
+                                 },
+                                 onSwitchOim = { oimScreen = OimScreen.HOME },
+                             )
+                             Tab.SETTINGS -> SettingsView(
+                                 innerPadding = innerPadding,
+                                 settingsFragmentState = settingsFragmentState,
+                             )
+                         }
+                     }
+                 }
+ 
+                 if (oimScreen == null) {
+                     val disableActions = remember(balanceState, online) {
+                         !online || (balanceState as? BalanceState.Success)?.balances?.isEmpty() ?: true
+                     }
+ 
+                     TalerActionsModal(
+                         showSheet = showSheet,
+                         sheetState = sheetState,
+                         onDismiss = { showSheet = false },
+                         disableActions = disableActions,
+                         onSend = this@MainFragment::onSend,
+                         onReceive = this@MainFragment::onReceive,
+                         onScanQr = this@MainFragment::onScanQr,
+                         onDeposit = this@MainFragment::onDeposit,
+                         onWithdraw = this@MainFragment::onWithdraw,
+                         onEnterUri = this@MainFragment::onEnterUri,
+                     )
+                 }
+             }
+         }
+         return composeView
+     }
+ 
+     private fun onTransactionClicked(tx: Transaction) {
+         val showTxDetails = {
+             if (tx.detailPageNav != 0) {
+                 model.transactionManager.selectTransaction(tx)
+                 findNavController().navigate(tx.detailPageNav)
+             }
+         }
+ 
+         when (tx.txState) {
+             // unfinished transactions (dialog)
+             TransactionState(TransactionMajorState.Dialog) -> when (tx) {
+                 is TransactionPayment -> {
+                     model.paymentManager.preparePay(tx.transactionId) {
+                         findNavController().navigate(R.id.action_global_promptPayment)
+                     }
+                 }
+ 
+                 else -> showTxDetails()
+             }
+ 
+             else -> showTxDetails()
+         }
+     }
+ 
+     override fun onStart() {
+         super.onStart()
+         model.balanceManager.loadBalances()
+         model.balanceManager.state.observe(viewLifecycleOwner) { res ->
+             if (res is BalanceState.Success) {
+                 if (res.balances.size == 1) {
+                     // pre-select on startup if it's the only one
+                     model.transactionManager.selectScope(res.balances.first().scopeInfo)
+                 }
+             }
+         }
+     }
+ 
+     private fun setTitle(tab: Tab, scope: ScopeInfo?) {
+         (requireActivity() as AppCompatActivity).apply {
+             supportActionBar?.title = when (tab) {
+                 Tab.BALANCES -> if (scope != null) {
+                     getString(R.string.transactions_title)
+                 } else {
+                     getString(R.string.balances_title)
+                 }
+ 
+                 Tab.SETTINGS -> getString(R.string.menu_settings)
+             }
+         }
+     }
+ 
+     private fun onSend() {
+         findNavController().navigate(R.id.nav_peer_push)
+     }
+ 
+     private fun onReceive() {
+         findNavController().navigate(R.id.nav_peer_pull)
+     }
+ 
+     private fun onDeposit() {
+         findNavController().navigate(R.id.nav_deposit)
+     }
+ 
+     private fun onWithdraw() {
+         model.withdrawManager.resetWithdrawal()
+         findNavController().navigate(R.id.promptWithdraw)
+     }
+ 
+     private fun onScanQr() {
+         model.scanCode()
+     }
+ 
+     private fun onEnterUri() {
+         findNavController().navigate(R.id.nav_uri_input)
+     }
+ }
+ 
+ @Composable
+ fun SettingsView(
+     innerPadding: PaddingValues,
+     settingsFragmentState: FragmentState,
+ ) {
+     AndroidFragment(
+         SettingsFragment::class.java,
+         modifier = Modifier.padding(innerPadding),
+         fragmentState = settingsFragmentState,
+     )
+ }
+ 
+ @Composable
+ @OptIn(ExperimentalMaterial3Api::class)
+ private fun TalerActionButton(
+     demandAttention: Boolean,
+     onShowSheet: () -> Unit,
+     onScanQr: () -> Unit,
+ ) {
+     val tooltipState = rememberTooltipState()
+     TooltipBox(
+         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+         tooltip = { PlainTooltip { Text(stringResource(R.string.actions)) } },
+         state = tooltipState,
+     ) {
+         val offsetY = remember { Animatable(0f) }
+         var cancelled by remember { mutableStateOf(false) }
+ 
+         DemandAttention(demandAttention = demandAttention) {
+             LargeFloatingActionButton(
+                 modifier = Modifier
+                     .requiredSize(86.dp)
+                     .padding(8.dp)
+                     .offset { IntOffset(0, offsetY.value.roundToInt() / 6) }
+                     .draggable(
+                         orientation = Orientation.Vertical,
+                         state = rememberDraggableState { delta ->
+                             runBlocking { offsetY.snapTo(offsetY.value + delta) }
+                             if (delta > 0) {
+                                 cancelled = true
+                             }
+                         },
+                         onDragStopped = {
+                             offsetY.animateTo(0.0f)
+                             if (!cancelled) {
+                                 onScanQr()
+                             }
+                             cancelled = false
+                         },
+                     ),
+                 shape = CircleShape,
+                 onClick = { onShowSheet() },
+             ) {
+                 if (offsetY.value == 0.0f) {
+                     Icon(
+                         painterResource(R.drawable.ic_actions),
+                         modifier = Modifier.size(38.dp),
+                         contentDescription = stringResource(R.string.actions),
+                     )
+                 } else {
+                     Icon(
+                         painterResource(R.drawable.ic_scan_qr),
+                         contentDescription = stringResource(R.string.actions),
+                     )
+                 }
+             }
+         }
+     }
+ 
+     LaunchedEffect(demandAttention) {
+         if (demandAttention) {
+             tooltipState.show()
+         }
+     }
+ }
+ 
+ @OptIn(ExperimentalMaterial3Api::class)
+ @Composable
+ fun TalerActionsModal(
+     showSheet: Boolean,
+     sheetState: SheetState,
+     disableActions: Boolean,
+     onDismiss: () -> Unit,
+     onSend: () -> Unit,
+     onReceive: () -> Unit,
+     onScanQr: () -> Unit,
+     onDeposit: () -> Unit,
+     onWithdraw: () -> Unit,
+     onEnterUri: () -> Unit,
+ ) {
+     if (showSheet) {
+         ModalBottomSheet(
+             onDismissRequest = onDismiss,
+             sheetState = sheetState,
+         ) {
+             GridMenu(
+                 contentPadding = PaddingValues(
+                     start = 8.dp,
+                     end = 8.dp,
+                     bottom = 16.dp + WindowInsets
+                         .systemBars
+                         .asPaddingValues()
+                         .calculateBottomPadding(),
+                 ),
+             ) {
+                 GridMenuItem(
+                     icon = R.drawable.ic_link,
+                     title = R.string.enter_uri_label,
+                     onClick = { onEnterUri(); onDismiss() },
+                 )
+ 
+                 GridMenuItem(
+                     icon = R.drawable.transaction_deposit,
+                     title = R.string.send_deposit_button_label,
+                     onClick = { onDeposit(); onDismiss() },
+                     enabled = !disableActions
+                 )
+ 
+                 GridMenuItem(
+                     icon = R.drawable.ic_scan_qr,
+                     title = R.string.button_scan_qr_code_label,
+                     onClick = { onScanQr(); onDismiss() },
+                 )
+ 
+                 GridMenuItem(
+                     icon = R.drawable.transaction_p2p_incoming,
+                     title = R.string.transactions_receive_funds,
+                     onClick = { onReceive(); onDismiss() },
+                     enabled = !disableActions,
+                 )
+ 
+                 GridMenuItem(
+                     icon = R.drawable.transaction_withdrawal,
+                     title = R.string.withdraw_button_label,
+                     onClick = { onWithdraw(); onDismiss() },
+                     enabled = !disableActions,
+                 )
+ 
+                 GridMenuItem(
+                     icon = R.drawable.transaction_p2p_outgoing,
+                     title = R.string.transactions_send_funds,
+                     onClick = { onSend(); onDismiss() },
+                     enabled = !disableActions,
+                 )
+             }
+         }
+     }
+ }
+ 

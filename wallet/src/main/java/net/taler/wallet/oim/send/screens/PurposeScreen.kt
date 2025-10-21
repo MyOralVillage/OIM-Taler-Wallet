@@ -25,21 +25,33 @@
  */
 package net.taler.wallet.oim.send.screens
 
+/*
+ * GPLv3-or-later
+ */
+/*
+ * GPLv3-or-later
+ */
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+<<<<<<< HEAD
 <<<<<<< HEAD
 import net.taler.wallet.oim.send.components.*
 <<<<<<< HEAD
@@ -133,21 +145,76 @@ import net.taler.wallet.oim.send.components.*
 =======
 
 =======
+=======
+import androidx.compose.ui.unit.sp
+>>>>>>> 321d128 (updated send to be more dynamic)
 import net.taler.database.data_models.*
+import net.taler.wallet.oim.res_mapping_extensions.Tables
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 import net.taler.wallet.oim.send.components.OimTopBarCentered
-import net.taler.wallet.oim.send.components.PurposeTile
 import net.taler.wallet.oim.send.components.WoodTableBackground
 
+<<<<<<< HEAD
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 @OptIn(ExperimentalLayoutApi::class)
+=======
+/**
+ * Individual purpose card displaying a bitmap image.
+ */
+@Composable
+internal fun PurposeCard(
+    tranxPurp: TranxPurp,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colour = Color(tranxPurp.colourInt())
+    Card(
+        modifier = modifier
+            .aspectRatio(0.6f)
+            .clickable(onClick = onClick)
+            .border(
+                width = if (isSelected) 4.dp else 0.dp,
+                color = if (isSelected) colour else Color.Transparent,
+                shape = RoundedCornerShape(12.dp)
+            ),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) colour.copy(alpha = 0.25f)
+            else MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(6.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                bitmap = tranxPurp.resourceMapper(),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit
+            )
+        }
+    }
+}
+
+/**
+ * Purpose selection screen with grid layout.
+ * Only one can be selected at a time.
+ */
+>>>>>>> 321d128 (updated send to be more dynamic)
 @Composable
 fun PurposeScreen(
-    balance: Int,
+    balance: Amount,
     onBack: () -> Unit,
-    onDone: (String) -> Unit
+    onDone: (TranxPurp) -> Unit,
+    columns: Int = 4
 ) {
     Box(Modifier.fillMaxSize()) {
+<<<<<<< HEAD
 <<<<<<< HEAD
         Image(
             painter = assetPainterOrPreview(WOOD_TABLE, PreviewAssets.id(WOOD_TABLE)),
@@ -158,30 +225,34 @@ fun PurposeScreen(
 =======
         WoodTableBackground(Modifier.fillMaxSize(), light = false)
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+//        WoodTableBackground(Modifier.fillMaxSize(), light = false)
+>>>>>>> e34a007 (Added purpose filters and direction filters to the same screen (non responsive just for POC))
 
-        IconButton(
-            onClick = onBack,
-            modifier = Modifier
-                .padding(8.dp)
-                .size(40.dp)
-                .align(Alignment.TopStart)
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                tint = androidx.compose.ui.graphics.Color.White
-            )
-        }
+//        IconButton(
+//            onClick = onBack,
+//            modifier = Modifier
+//                .padding(8.dp)
+//                .size(40.dp)
+//                .align(Alignment.TopStart)
+//        ) {
+//            Icon(
+//                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+//                contentDescription = "Back",
+//                tint = Color.White
+//            )
+//        }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp)
         ) {
-            OimTopBarCentered(balance = balance, onSendClick = { })
+//            OimTopBarCentered(balance = balance, onSendClick = { })
 
             Spacer(Modifier.height(8.dp))
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
             val allPurposes = remember {
@@ -196,12 +267,30 @@ fun PurposeScreen(
 
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
             FlowRow(
+=======
+            val sortedPurposes = remember {
+                tranxPurpLookup.values
+                    .groupBy { it.tranxGroup }
+                    .toSortedMap()
+                    .flatMap { (_, purposes) ->
+                        purposes.sortedBy { it.cmp }
+                    }
+            }
+
+            // Track which purpose is currently selected
+            var selectedPurp by remember { mutableStateOf<TranxPurp?>(null) }
+
+            // Scrollable grid that always fits the screen
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(columns),
+>>>>>>> 321d128 (updated send to be more dynamic)
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+<<<<<<< HEAD
 <<<<<<< HEAD
                 PurposeIcons.forEach { (path, label) ->
                     PurposeTile(
@@ -218,23 +307,20 @@ fun PurposeScreen(
                             .width(140.dp)
                             .height(140.dp),
                         onPick = { onDone(label) }
+=======
+                items(sortedPurposes) { tranxPurp ->
+                    PurposeCard(
+                        tranxPurp = tranxPurp,
+                        isSelected = (tranxPurp == selectedPurp),
+                        onClick = {
+                            selectedPurp = tranxPurp
+                            onDone(tranxPurp)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+>>>>>>> 321d128 (updated send to be more dynamic)
                     )
                 }
             }
-
-            var custom by remember { mutableStateOf(TextFieldValue()) }
-            OutlinedTextField(
-                value = custom,
-                onValueChange = { custom = it },
-                label = { Text("Custom purpose") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(10.dp))
-            Button(
-                onClick = { onDone(custom.text.ifBlank { "Payment" }) },
-                modifier = Modifier.align(Alignment.End)
-            ) { Text("Continue") }
 
             Spacer(Modifier.height(8.dp))
         }
@@ -244,6 +330,7 @@ fun PurposeScreen(
 >>>>>>> 5c7011a (fixed preview animations)
 =======
 
+<<<<<<< HEAD
 private fun purpUiLabel(p: TranxPurp): String = when (p) {
     EDUC_CLTH -> "School Uniforms"
     EDUC_SCHL -> "School"
@@ -265,3 +352,16 @@ private fun purpUiLabel(p: TranxPurp): String = when (p) {
     UTIL_WATR -> "Water"
 }
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+@Preview(name = "Purpose Screen", showBackground = true, widthDp = 1280, heightDp = 800)
+@Composable
+private fun PurposeScreenPreview() {
+    MaterialTheme {
+        PurposeScreen(
+            balance = Amount.fromString("SLE", "25"),
+            onBack = {},
+            onDone = {}
+        )
+    }
+}
+>>>>>>> 321d128 (updated send to be more dynamic)

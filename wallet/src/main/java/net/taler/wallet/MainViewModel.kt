@@ -56,6 +56,7 @@ import net.taler.wallet.transactions.TransactionManager
 import net.taler.wallet.transactions.TransactionStateFilter
 import net.taler.wallet.withdraw.WithdrawManager
 import androidx.core.net.toUri
+import com.google.zxing.client.android.BuildConfig
 
 const val TAG = "taler-wallet"
 const val OBSERVABILITY_LIMIT = 100
@@ -86,7 +87,7 @@ class MainViewModel(
     app: Application,
 ) : AndroidViewModel(app), VersionReceiver, NotificationReceiver {
 
-    private val mDevMode = MutableLiveData(BuildConfig.DEBUG)
+    private val mDevMode = MutableLiveData<Boolean>(BuildConfig.DEBUG)
     val devMode: LiveData<Boolean> = mDevMode
 
     val showProgressBar = MutableLiveData<Boolean>()

@@ -40,7 +40,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.taler.database.data_models.Amount
 import net.taler.wallet.oim.res_mapping_extensions.Buttons
+import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -106,7 +108,7 @@ fun OimTopBarCentered(
 =======
 @Composable
 fun OimTopBarCentered(
-    balance: Int,
+    balance: Amount,
     onSendClick: () -> Unit
 ) {
     val sendBitmap = Buttons("send").resourceMapper()
@@ -118,7 +120,7 @@ fun OimTopBarCentered(
             .fillMaxWidth()
             .padding(top = 8.dp)
     ) {
-        // Top-right SEND
+        // Top-right SEND button
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -157,15 +159,19 @@ fun OimTopBarCentered(
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "$balance Leones",
+                text = "${balance.amountStr} ${balance.spec?.name ?: balance.currency}",
                 color = Color.White,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.SemiBold
             )
         }
     }
+<<<<<<< HEAD
 }
 <<<<<<< HEAD
 >>>>>>> 5c7011a (fixed preview animations)
 =======
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+}
+>>>>>>> 321d128 (updated send to be more dynamic)

@@ -4,8 +4,6 @@
 package net.taler.wallet.oim.send.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,11 +11,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+<<<<<<< HEAD
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.tooling.preview.Preview
 import net.taler.wallet.oim.send.components.*
@@ -28,15 +29,24 @@ import net.taler.common.R
 <<<<<<< HEAD
 // TODO refactor to use res_mapping_extensions
 =======
+=======
+import net.taler.database.data_models.*
+import net.taler.wallet.oim.res_mapping_extensions.*
+import net.taler.wallet.oim.send.components.OimTopBarCentered
+import net.taler.wallet.oim.send.components.WoodTableBackground
+import net.taler.common.R.drawable.*
+import net.taler.wallet.oim.send.components.NoteFlyer
+import net.taler.wallet.oim.send.components.NotesStrip
+>>>>>>> 321d128 (updated send to be more dynamic)
 /**
  * Main send screen (drawable-backed UI using res_mapping_extensions).
  */
 @Composable
 fun SendScreen(
-    balance: Int,
-    amount: Int,
-    onAdd: (Int) -> Unit,
-    onRemoveLast: (Int) -> Unit,
+    balance: Amount,
+    amount: Amount,
+    onAdd: (Amount) -> Unit,
+    onRemoveLast: (Amount) -> Unit,
     onChoosePurpose: () -> Unit,
     onSend: () -> Unit
 ) {
@@ -46,7 +56,7 @@ fun SendScreen(
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 
         // Animated note state
-        data class Pending(val value: Int, val bmp: ImageBitmap, val start: Offset)
+        data class Pending(val value: Amount, val bmp: ImageBitmap, val start: Offset)
         var pending by remember { mutableStateOf<Pending?>(null) }
         val density = LocalDensity.current
 
@@ -237,13 +247,13 @@ fun SendScreen(
             ) {
                 Column {
                     Text(
-                        text = amount.toString(),
+                        text = amount.amountStr,
                         color = Color.White,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 84.sp
                     )
                     Text(
-                        text = "Leones",
+                        text = amount.spec?.name ?: amount.currency,
                         color = Color.White,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 32.sp
@@ -259,17 +269,29 @@ fun SendScreen(
                     ExtendedFloatingActionButton(
                         onClick = onSend,
 <<<<<<< HEAD
+<<<<<<< HEAD
                         icon = { androidx.compose.material3.Icon(Icons.Filled.Send, null) },
 =======
                         icon = { Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null) },
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
                         text = { Text("Send") },
+=======
+                        icon = {
+                            Icon(
+                                painter = BitmapPainter(Buttons("send").resourceMapper()),
+                                contentDescription = null,
+                                tint = Color.Unspecified
+                            )
+                        },
+                        text = { Text("") },
+>>>>>>> 321d128 (updated send to be more dynamic)
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = Color.Black
                     )
                 }
             }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
             NotesStrip(
                 noteThumbWidth = 120.dp,
@@ -284,19 +306,71 @@ fun SendScreen(
                     .map { (cents, resId) ->
                         ImageBitmap.imageResource(resId) to (cents / 100)
                     }
+=======
+>>>>>>> 321d128 (updated send to be more dynamic)
 
-            // Fallback bitmap computed in composable scope (not inside lambda)
-            val fallbackBmp = ImageBitmap.imageResource(R.drawable.sle_one)
+            // Build note thumbnails dynamically based on currency
+            // ImageBitmap.imageResource is @Composable, so we can't use remember
+            val thumbNotes: List<Pair<ImageBitmap, Amount>> =
+                when (amount.currency) {
+                    "SLE" -> SLE_BILLS_CENTS
+                        .filter { it.first >= 100 } // >= 1 SLE
+                        .take(7)
+                        .map { (cents, resId) ->
+                            val billAmount = Amount.fromString(amount.currency, (cents / 100.0).toString())
+                            ImageBitmap.imageResource(resId) to billAmount
+                        }
+                    "EUR" -> EUR_BILLS_CENTS
+                        .filter { it.first >= 100 } // >= 1 EUR
+                        .take(7)
+                        .map { (cents, resId) ->
+                            val billAmount = Amount.fromString(amount.currency, (cents / 100.0).toString())
+                            ImageBitmap.imageResource(resId) to billAmount
+                        }
+                    "CHF" -> CHF_BILLS
+                        .filter { it.first >= 200 } // >= 1 CHF
+                        .take(7)
+                        .map { (halfFrancs, resId) ->
+                            val billAmount = Amount.fromString(amount.currency, (halfFrancs / 2.0).toString())
+                            ImageBitmap.imageResource(resId) to billAmount
+                        }
+                    "XOF" -> XOF_BILLS
+                        .take(7)
+                        .map { (value, resId) ->
+                            val billAmount = Amount.fromString(amount.currency, value.toString())
+                            ImageBitmap.imageResource(resId) to billAmount
+                        }
+                    else -> emptyList()
+                }
+
+            // Fallback bitmap for the currency
+            val fallbackBmp: ImageBitmap? =
+                when (amount.currency) {
+                    "SLE" -> ImageBitmap.imageResource(sle_one)
+                    "EUR" -> ImageBitmap.imageResource(eur_one)
+                    "CHF" -> ImageBitmap.imageResource(chf_one_hundred)
+                    "XOF" -> ImageBitmap.imageResource(xof_one)
+                    else -> null
+                }
+
 
             NotesStrip(
                 noteThumbWidth = 120.dp,
                 notes = thumbNotes,
+<<<<<<< HEAD
                 onAddRequest = { value, startCenter ->
                     val bmp = thumbNotes.firstOrNull { it.second == value }?.first ?: fallbackBmp
                     pending = Pending(value, bmp, startCenter)
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+                onAddRequest = { billAmount, startCenter ->
+                    val bmp = thumbNotes.firstOrNull { it.second == billAmount }?.first
+                        ?: fallbackBmp
+                        ?: return@NotesStrip
+                    pending = Pending(billAmount, bmp, startCenter)
+>>>>>>> 321d128 (updated send to be more dynamic)
                 },
-                onRemoveLast = onRemoveLast
+                onRemoveLast = onRemoveLast,
             )
             Spacer(Modifier.height(8.dp))
         }
@@ -333,8 +407,8 @@ fun SendScreen(
 private fun SendScreenPreview() {
     MaterialTheme {
         SendScreen(
-            balance = 25,
-            amount = 7,
+            balance = Amount.fromString("SLE", "25"),
+            amount = Amount.fromString("SLE", "7"),
             onAdd = {},
             onRemoveLast = {},
             onChoosePurpose = {},

@@ -32,12 +32,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+
 @Composable
 fun TransactionCard(
     type: String,
     amount: String,
     currency: String,
     date: String,
+    purpose: String,
     modifier: Modifier = Modifier
 ) {
     Card(
