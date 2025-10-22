@@ -58,6 +58,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import net.taler.wallet.oim.send.app.OimSendActivity
 import net.taler.wallet.compose.collectAsStateLifecycleAware
+import net.taler.wallet.BuildConfig
 
 private const val TAG = "OIMCompose"
 
@@ -114,8 +115,11 @@ fun OIMHomeScreen(
                 // Ensure local DB is initialized, then log like normal
                 lastTerms?.let { terms ->
                     val appCtx = context.applicationContext
-                    // init() is safe to call multiple times; it no-ops when already initialized
-                    kotlin.runCatching { TranxHistory.init(appCtx) }
+                    // For now, initialize test DB in both debug and release (provider's guidance)
+                    // TODO: switch release branch to TranxHistory.init(appCtx) for production
+                    kotlin.runCatching {
+                        if (BuildConfig.DEBUG) TranxHistory.initTest(appCtx) else TranxHistory.initTest(appCtx)
+                    }
 
                     kotlin.runCatching {
                         TranxHistory.newTransaction(
@@ -129,7 +133,7 @@ fun OIMHomeScreen(
                         // If logging failed due to init race, try once more after forcing init
                         Log.e(TAG, "Local DB log failed (will retry after init): ${e.message}")
                         kotlin.runCatching {
-                            TranxHistory.init(appCtx)
+                            if (BuildConfig.DEBUG) TranxHistory.initTest(appCtx) else TranxHistory.initTest(appCtx)
                             TranxHistory.newTransaction(
                                 tid = "RECEIVED_${System.currentTimeMillis()}",
                                 purp = null,

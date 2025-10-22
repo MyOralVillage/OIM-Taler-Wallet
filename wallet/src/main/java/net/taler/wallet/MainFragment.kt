@@ -23,13 +23,17 @@
  import android.view.View
  import android.view.ViewGroup
  import android.widget.Toast
- import androidx.activity.compose.BackHandler
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
  import androidx.appcompat.app.AppCompatActivity
- import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Animatable
+import androidx.compose.foundation.background
  import androidx.compose.foundation.gestures.Orientation
  import androidx.compose.foundation.gestures.draggable
  import androidx.compose.foundation.gestures.rememberDraggableState
- import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
  import androidx.compose.foundation.layout.WindowInsets
  import androidx.compose.foundation.layout.WindowInsetsSides
  import androidx.compose.foundation.layout.asPaddingValues
@@ -57,17 +61,19 @@
  import androidx.compose.material3.TooltipDefaults
  import androidx.compose.material3.rememberModalBottomSheetState
  import androidx.compose.material3.rememberTooltipState
- import androidx.compose.runtime.Composable
- import androidx.compose.runtime.LaunchedEffect
- import androidx.compose.runtime.getValue
- import androidx.compose.runtime.livedata.observeAsState
- import androidx.compose.runtime.mutableStateOf
- import androidx.compose.runtime.remember
- import androidx.compose.runtime.saveable.rememberSaveable
- import androidx.compose.runtime.setValue
- import androidx.compose.ui.Modifier
- import androidx.compose.ui.platform.ComposeView
- import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
  import androidx.compose.ui.res.painterResource
  import androidx.compose.ui.res.stringResource
  import androidx.compose.ui.unit.IntOffset
@@ -77,7 +83,12 @@
  import androidx.fragment.compose.AndroidFragment
  import androidx.fragment.compose.FragmentState
  import androidx.fragment.compose.rememberFragmentState
- import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.findNavController
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
+import com.journeyapps.barcodescanner.ScanOptions.QR_CODE
+import com.google.zxing.client.android.Intents.Scan.MIXED_SCAN
+import com.google.zxing.client.android.Intents.Scan.SCAN_TYPE
  import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
  import com.google.android.material.snackbar.Snackbar
  import kotlinx.coroutines.flow.first
@@ -86,10 +97,11 @@
  import net.taler.wallet.balances.BalancesComposable
  import net.taler.wallet.balances.ScopeInfo
  import net.taler.wallet.compose.DemandAttention
- import net.taler.wallet.compose.GridMenu
- import net.taler.wallet.compose.GridMenuItem
- import net.taler.wallet.compose.TalerSurface
- import net.taler.wallet.compose.collectAsStateLifecycleAware
+import net.taler.wallet.compose.GridMenu
+import net.taler.wallet.compose.GridMenuItem
+import net.taler.wallet.compose.TalerSurface
+import net.taler.wallet.compose.collectAsStateLifecycleAware
+import net.taler.wallet.oim.receivemoney.uicompose.OIMPaymentDialog
  import net.taler.wallet.settings.SettingsFragment
  import net.taler.wallet.transactions.Transaction
  import net.taler.wallet.transactions.TransactionMajorState
@@ -106,14 +118,14 @@
      private val model: MainViewModel by activityViewModels()
  
      @OptIn(ExperimentalMaterial3Api::class)
-     override fun onCreateView(
-         inflater: LayoutInflater,
-         container: ViewGroup?,
-         savedInstanceState: Bundle?
-     ): View {
-         val composeView = ComposeView(requireContext())
-         composeView.setContent {
-             TalerSurface {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val composeView = ComposeView(requireContext()).apply { id = R.id.main_compose_view }
+        composeView.setContent {
+            TalerSurface {
                  var tab by rememberSaveable { mutableStateOf(Tab.BALANCES) }
                  var oimScreen by rememberSaveable { mutableStateOf<OimScreen?>(null) }
                  var showSheet by remember { mutableStateOf(false) }
@@ -152,17 +164,72 @@
                                 findNavController().navigate(R.id.action_global_reviewExchangeTos, bundle)
                             },
                         )
-                        OimScreen.CHEST -> net.taler.wallet.oim.receivemoney.OIMChestScreen(
-                            model = model,
-                            onBackClick = { oimScreen = OimScreen.HOME },
-                            onSendClick = {
-                                // Stay inside current Fragment to share MainViewModel
-                                oimScreen = OimScreen.SEND
-                            },
-                            onRequestClick = { },
-                            onTransactionHistoryClick = { oimScreen = OimScreen.HISTORY },
-                            onWithdrawTestKudosClick = { model.withdrawManager.withdrawTestBalance() },
-                        )
+                        OimScreen.CHEST -> run {
+                            val context = LocalContext.current
+                            val peerManager = model.peerManager
+
+                            val barcodeLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
+                                if (result != null && result.contents != null) {
+                                    peerManager.preparePeerPushCredit(result.contents)
+                                }
+                            }
+
+                            val paymentState by peerManager.incomingPushState.collectAsStateLifecycleAware()
+                            var termsToShow by remember { mutableStateOf<net.taler.wallet.peer.IncomingTerms?>(null) }
+
+                            LaunchedEffect(paymentState) {
+                                when (val s = paymentState) {
+                                    is net.taler.wallet.peer.IncomingTerms -> {
+                                        if (s !is net.taler.wallet.peer.IncomingAccepting) termsToShow = s
+                                    }
+                                    else -> termsToShow = null
+                                }
+                            }
+
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                net.taler.wallet.oim.receivemoney.OIMChestScreen(
+                                    model = model,
+                                    onBackClick = { oimScreen = OimScreen.HOME },
+                                    onSendClick = { oimScreen = OimScreen.SEND },
+                                    onRequestClick = {
+                                        val scanOptions = ScanOptions().apply {
+                                            setPrompt("")
+                                            setBeepEnabled(true)
+                                            setOrientationLocked(false)
+                                            setDesiredBarcodeFormats(QR_CODE)
+                                            addExtra(SCAN_TYPE, MIXED_SCAN)
+                                        }
+                                        barcodeLauncher.launch(scanOptions)
+                                    },
+                                    onTransactionHistoryClick = { oimScreen = OimScreen.HISTORY },
+                                    onWithdrawTestKudosClick = { model.withdrawManager.withdrawTestBalance() },
+                                )
+
+                                val state = termsToShow
+                                if (state != null) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(Color.Black.copy(alpha = 0.5f)),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        OIMPaymentDialog(
+                                            terms = state,
+                                            onAccept = {
+                                                if (state is net.taler.wallet.peer.IncomingTosReview) {
+                                                    val bundle = bundleOf("exchangeBaseUrl" to state.exchangeBaseUrl)
+                                                    findNavController().navigate(R.id.action_global_reviewExchangeTos, bundle)
+                                                } else {
+                                                    peerManager.confirmPeerPushCredit(state)
+                                                }
+                                                // stay on chest; overlay will close on state change
+                                            },
+                                            onReject = { termsToShow = null },
+                                        )
+                                    }
+                                }
+                            }
+                        }
                         OimScreen.SEND -> {
                             // Back from Send returns to OIM chest
                             BackHandler(true) { oimScreen = OimScreen.CHEST }
