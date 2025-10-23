@@ -35,11 +35,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.taler.database.data_models.Amount
@@ -50,6 +56,10 @@ import net.taler.wallet.oim.send.screens.PurposeScreen
 import net.taler.database.filter.*                   // TranxFilter, toSQL()
 import net.taler.database.data_models.*              // Amount, Tranx, TranxPurp
 import net.taler.database.data_access.*              // TransactionDatabase, addTranx, queryTranx
+import net.taler.database.TranxHistory
+import net.taler.database.TranxHistory.getHistory
+import net.taler.wallet.BuildConfig
+import java.time.format.DateTimeFormatter
 
 // Constants
 private const val SIDEBAR_LEFT_WEIGHT = 0.1f
@@ -62,23 +72,23 @@ data class Transaction(
     val amount: String,
     val currency: String,
     val date: String,
-    val purpose: String
+    val purpose: TranxPurp?
 )
 
 // Sample Data
-private val sampleTransactions = listOf(
-    Transaction(type = "S", amount = "25", currency = "Leones", date = "25 Sept 2025", purpose = ""),
-    Transaction(type = "R", amount = "20", currency = "Leones", date = "25 Sept 2025", purpose = ""),
-    Transaction(type = "S", amount = "5", currency = "Leones", date = "25 Sept 2025", purpose = ""),
-)
+//private val sampleTransactions = listOf(
+//    Transaction(type = "S", amount = "25", currency = "Leones", date = "25 Sept 2025", purpose = ""),
+//    Transaction(type = "R", amount = "20", currency = "Leones", date = "25 Sept 2025", purpose = ""),
+//    Transaction(type = "S", amount = "5", currency = "Leones", date = "25 Sept 2025", purpose = ""),
+//)
 
 @Composable
 fun TransactionsListView(
-    transactions: List<Transaction> = sampleTransactions
+//    transactions: List<Transaction> = sampleTransactions
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         BackgroundImage()
-        MainLayout(transactions = transactions)
+        MainLayout()
     }
 }
 
@@ -93,22 +103,43 @@ private fun BackgroundImage() {
 }
 
 @Composable
-private fun MainLayout(transactions: List<Transaction>) {
+private fun MainLayout() {
     Row(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
-        MainContent(transactions = transactions)
+        MainContent()
         RightSidebar()
     }
 }
 
 @Composable
-private fun RowScope.MainContent(transactions: List<Transaction>) {
+@OptIn(kotlinx.serialization.InternalSerializationApi::class)
+private fun RowScope.MainContent() {
+    val context = LocalContext.current
+    var dbTransactions by remember { mutableStateOf<List<Transaction>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        // Initialize database
+        if (BuildConfig.DEBUG) TranxHistory.initTest(context)
+        else TranxHistory.initTest(context)
+
+        // Map Tranx objects to Transaction objects
+        dbTransactions = getHistory().map { tranx ->
+            Transaction(
+                type = if (tranx.direction.getValue()) "R" else "S",
+                amount = tranx.amount.value.toString() + "." + tranx.amount.fraction.toString(),
+                currency = tranx.amount.currency,
+                date = tranx.datetime.fmtString(DateTimeFormatter.ofPattern("MMMM dd, yyyy")),
+                purpose = tranx.purpose
+            )
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxHeight()
             .weight(0.6f)
             .verticalScroll(rememberScrollState())
     ) {
-        transactions.forEach { transaction ->
+        dbTransactions.forEach { transaction: Transaction ->
             TransactionCard(
                 type = transaction.type,
                 amount = transaction.amount,

@@ -28,10 +28,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import net.taler.common.R.drawable.incoming_transaction
+import net.taler.common.R.drawable.outgoing_transaction
+import net.taler.database.data_models.FilterableDirection
+import net.taler.database.data_models.TranxPurp
+import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 
 @Composable
 fun TransactionCard(
@@ -39,9 +46,14 @@ fun TransactionCard(
     amount: String,
     currency: String,
     date: String,
-    purpose: String,
+    purpose: TranxPurp?,
     modifier: Modifier = Modifier
 ) {
+    // Define variables that differ based on type
+    val directionIcon = if (type == "R") incoming_transaction else outgoing_transaction
+    val badgeColor = if (type == "R") Color(0xFFE8F5E9) else Color(0xFFFFB3B3)
+    val textColor = if (type == "R") Color(0xFF4CAF50) else Color(0xFFC32909)
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -59,144 +71,61 @@ fun TransactionCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // First Row - Title and Date
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if(type=="S"){
-                    Text(
-                        text = "Sent $amount $currency",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.Black
-                    )
-                }
-
-                else{
-                    Text(
-                        text = "Received $amount $currency",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.Black
-                    )
-                }
-
-                Text(
-                    text = date,
-                    fontSize = 14.sp,
-                    color = Color.Gray
-                )
-            }
+            // Date
+            Text(
+                text = date,
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Second Row - Icons and Amount
+            // Icons and Amount
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if(type == "R"){
-                    Image(
-                        painter = assetPainterOrPreview(SLE_BACKUP),
-                        contentDescription = "Currency",
-                        modifier = Modifier.size(80.dp)
-                    )
+                Image(
+                    painter = BitmapPainter(ImageBitmap.imageResource(directionIcon)),
+                    contentDescription = "Transaction direction",
+                    modifier = Modifier.size(70.dp)
+                )
 
-                    // Amount Badge
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                color = Color(0xFFE8F5E9),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = amount,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF4CAF50)
-                            )
-                            Text(
-                                text = currency,
-                                fontSize = 14.sp,
-                                color = Color(0xFF4CAF50)
-                            )
-                        }
-                    }
-
-                    // Hand Icon
+                if (purpose != null) {
                     Image(
-                        painter = assetPainterOrPreview(ICON_RECEIVE),
-                        contentDescription = "Hand",
+                        painter = BitmapPainter(purpose.resourceMapper()),
+                        contentDescription = "Transaction purpose",
                         modifier = Modifier.size(70.dp)
                     )
-
-                    // Stack Icon
-                    Image(
-                        painter = assetPainterOrPreview(ICON_CHEST),
-                        contentDescription = "Stack",
-                        modifier = Modifier.size(80.dp)
-                    )
                 }
-                else{
-                    Image(
-                        painter = assetPainterOrPreview(ICON_CHEST),
-                        contentDescription = "Stack",
-                        modifier = Modifier.size(80.dp)
-                    )
 
-                    // Hand Icon
-                    Image(
-                        painter = assetPainterOrPreview(ICON_SEND),
-                        contentDescription = "Hand",
-                        modifier = Modifier.size(70.dp)
-                    )
-
-                    // Amount Badge
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                color = Color(0xFFFFB3B3),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                // Amount Badge
+                Box(
+                    modifier = Modifier
+                        .background(
+                            color = badgeColor,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = amount,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFC32909)
-                            )
-                            Text(
-                                text = currency,
-                                fontSize = 14.sp,
-                                color = Color(0xFFC32909)
-                            )
-                        }
+                        Text(
+                            text = amount,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = textColor
+                        )
+                        Text(
+                            text = currency,
+                            fontSize = 14.sp,
+                            color = textColor
+                        )
                     }
-
-                    Image(
-                        painter = assetPainterOrPreview(SLE_BACKUP),
-                        contentDescription = "Currency",
-                        modifier = Modifier.size(80.dp)
-                    )
-
-                    // Stack Icon
                 }
-                // Currency Image
-
             }
         }
     }
