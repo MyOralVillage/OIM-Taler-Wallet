@@ -23,7 +23,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import net.taler.wallet.oim.res_mapping_extensions.Tables
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import net.taler.wallet.oim.res_mapping_extensions.Background
 
 /**
  * Drawable-backed wooden table background.
@@ -34,9 +36,8 @@ fun OimWoodBackground(
     modifier: Modifier = Modifier,
     light: Boolean = false
 ) {
-    val bmp = Tables(light).resourceMapper()
     Image(
-        bitmap = bmp,
+        painter = painterResource(Background(LocalContext.current).resourceMapper()),
         contentDescription = null,
         modifier = modifier,
         contentScale = ContentScale.Crop

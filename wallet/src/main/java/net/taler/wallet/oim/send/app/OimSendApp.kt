@@ -1,17 +1,17 @@
-/*
- * GPLv3-or-later
- */
 package net.taler.wallet.oim.send.app
+
+import android.widget.Toast
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.LocalContext
-import com.google.zxing.client.android.BuildConfig
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
-import net.taler.database.data_models.*
 import net.taler.wallet.MainViewModel
-import net.taler.database.TranxHistory
+import net.taler.wallet.balances.BalanceState
 import net.taler.wallet.oim.send.screens.PurposeScreen
 import net.taler.wallet.oim.send.screens.QrScreen
 import net.taler.wallet.oim.send.screens.SendScreen
+<<<<<<< HEAD
 <<<<<<< HEAD
 import net.taler.wallet.peer.OutgoingIntro
 import net.taler.wallet.peer.OutgoingState
@@ -26,15 +26,26 @@ import net.taler.wallet.peer.OutgoingResponse
 =======
 import net.taler.wallet.peer.*
 >>>>>>> 321d128 (updated send to be more dynamic)
+=======
+import net.taler.wallet.peer.CheckFeeResult
+import net.taler.wallet.peer.OutgoingError
+import net.taler.wallet.peer.OutgoingIntro
+import net.taler.wallet.peer.OutgoingResponse
+import net.taler.wallet.peer.OutgoingState
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.TranxPurp
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+>>>>>>> 9068d57 (got rid of bugs in send apk)
 
 private enum class Screen { Send, Purpose, Qr }
 
 @Composable
 fun OimSendApp(model: MainViewModel) {
-    OimTheme {
-        val ctx = LocalContext.current.applicationContext
-        val scope = rememberCoroutineScope()
+    val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -292,3 +303,156 @@ private fun mapPickedPurposeToTranxPurp(picked: String): TranxPurp? {
 =======
 }
 >>>>>>> 321d128 (updated send to be more dynamic)
+=======
+    val balanceState by model.balanceManager.state.observeAsState(BalanceState.None)
+    val selectedScope by model.transactionManager.selectedScope.collectAsStateWithLifecycle(initialValue = null)
+
+    // Prefer KUDOS/TESTKUDOS when nothing is selected
+    val activeScope = remember(balanceState, selectedScope) {
+        selectedScope ?: (balanceState as? BalanceState.Success)?.let { bs ->
+            bs.balances.firstOrNull { it.currency.equals("KUDOS", true) }?.scopeInfo
+                ?: bs.balances.firstOrNull { it.currency.equals("TESTKUDOS", true) }?.scopeInfo
+        }
+    }
+
+    // Amount in active scope currency
+    var amount by remember(activeScope) {
+        mutableStateOf(Amount.fromString(activeScope?.currency ?: "KUDOS", "0"))
+    }
+
+    // Balance label for top bar
+    val balanceLabel: Amount = remember(balanceState, activeScope) {
+        val success = balanceState as? BalanceState.Success
+        val entry = success?.balances?.firstOrNull { it.scopeInfo == activeScope }
+        Amount.fromString(
+            activeScope?.currency ?: "KUDOS",
+            entry?.available?.toString(showSymbol = false) ?: "0"
+        )
+    }
+
+    var screen by remember { mutableStateOf(Screen.Send) }
+    var chosenPurpose by remember { mutableStateOf<TranxPurp?>(null) }
+    var talerUri by remember { mutableStateOf<String?>(null) }
+
+    // Keep the exchange URL returned by the fee check
+    var lastExchangeBaseUrl by remember { mutableStateOf<String?>(null) }
+
+    // Observe backend progress
+    val pushState: OutgoingState by model.peerManager.pushState.collectAsStateWithLifecycle(OutgoingIntro)
+
+    LaunchedEffect(pushState) {
+        when (val s = pushState) {
+            is OutgoingResponse -> {
+                // txId = "txn:peer-push-debit:<PURSE_ID>"
+                val purseId = s.transactionId.substringAfterLast(':')
+                val ex = lastExchangeBaseUrl
+                talerUri = if (ex != null) {
+                    // IMPORTANT: percent-encode the *full* exchange URL (scheme + host + optional slash)
+                    val encoded = URLEncoder.encode(ex, StandardCharsets.UTF_8.toString())
+                    // Receiver-friendly URI understood by HandleUriFragment → preparePeerPushCredit
+                    "ext+taler://pay-push/$encoded/$purseId"
+                } else {
+                    // Fallback (not ideal, but shows something)
+                    "ext+taler://pay-push/$purseId"
+                }
+                screen = Screen.Qr
+            }
+            is OutgoingError -> {
+                Toast.makeText(ctx, s.info.userFacingMsg ?: "Send failed", Toast.LENGTH_LONG).show()
+            }
+            else -> Unit
+        }
+    }
+
+    when (screen) {
+        Screen.Send -> SendScreen(
+            balance = balanceLabel,
+            amount = amount,
+            onAdd = { add ->
+                if (add.currency == amount.currency) {
+                    amount = runCatching { amount + add }.getOrElse { amount }
+                } else {
+                    Toast.makeText(ctx, "Wrong currency for this account", Toast.LENGTH_SHORT).show()
+                }
+            },
+            onRemoveLast = { last ->
+                if (last.currency == amount.currency) {
+                    amount = runCatching {
+                        val r = amount - last
+                        if (r.isZero()) Amount.zero(amount.currency) else r
+                    }.getOrElse { amount }
+                }
+            },
+            onChoosePurpose = { screen = Screen.Purpose },
+            onSend = { screen = Screen.Purpose }
+        )
+
+        Screen.Purpose -> PurposeScreen(
+            balance = balanceLabel,
+            onBack = { screen = Screen.Send },
+            onDone = { picked ->
+                chosenPurpose = picked
+                val scopeInfo = activeScope
+                when {
+                    scopeInfo == null ->
+                        Toast.makeText(ctx, "No KUDOS account selected", Toast.LENGTH_SHORT).show()
+                    amount.isZero() ->
+                        Toast.makeText(ctx, "Choose an amount first", Toast.LENGTH_SHORT).show()
+                    amount.currency != scopeInfo.currency ->
+                        Toast.makeText(ctx, "Currency mismatch with account", Toast.LENGTH_SHORT).show()
+                    else -> {
+                        // 1) Check fees/balance constrained to this scope (gets us the exchange URL)
+                        scope.launch {
+                            when (val check = model.peerManager.checkPeerPushFees(
+                                amount = amount.toCommonAmount(),
+                                exchangeBaseUrl = null,
+                                restrictScope = scopeInfo
+                            )) {
+                                is CheckFeeResult.Success -> {
+                                    lastExchangeBaseUrl = check.exchangeBaseUrl // <-- save for URI
+                                    // 2) Initiate
+                                    model.peerManager.initiatePeerPushDebit(
+                                        amount = amount.toCommonAmount(),
+                                        summary = picked.cmp,
+                                        expirationHours = 24L,
+                                        restrictScope = scopeInfo
+                                    )
+                                }
+                                is CheckFeeResult.InsufficientBalance -> {
+                                    val max = check.maxAmountEffective
+                                    val msg = if (max != null && !max.isZero())
+                                        "Insufficient balance. Max now: ${max.amountStr} ${max.currency}"
+                                    else
+                                        "Insufficient balance. Get Test KUDOS or switch account."
+                                    Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
+                                }
+                                is CheckFeeResult.None -> {
+                                    Toast.makeText(ctx, "Could not check balance/fees", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        )
+
+        Screen.Qr -> QrScreen(
+            talerUri = talerUri ?: "taler://invalid",
+            amount = amount,
+            purpose = chosenPurpose,
+            onBack = {
+                amount = Amount.zero(amount.currency)
+                chosenPurpose = null
+                talerUri = null
+                lastExchangeBaseUrl = null
+                model.peerManager.resetPushPayment()
+                screen = Screen.Send
+            }
+        )
+    }
+}
+
+/* helpers */
+private fun Amount.toCommonAmount(): net.taler.common.Amount =
+    net.taler.common.Amount.fromString(this.currency, this.amountStr)
+>>>>>>> 9068d57 (got rid of bugs in send apk)

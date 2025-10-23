@@ -16,38 +16,38 @@
 
 package net.taler.wallet.oim.res_mapping_extensions
 
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.res.imageResource
 import net.taler.common.R.drawable.*
 import net.taler.database.data_models.*
 
 /**
- * Returns an [ImageBitmap] for this [TranxPurp].
+ * Returns the [DrawableRes] for this [TranxPurp].
  *
  * @receiver The [TranxPurp] to get a preview image for.
- * @return The [ImageBitmap] representing this purpose.
+ * @return The [DrawableRes] representing this purpose.
  */
 @Composable
-fun TranxPurp.resourceMapper() : ImageBitmap =
+@DrawableRes
+internal fun TranxPurp.resourceMapper() : Int =
     when (this) {
-        EDUC_CLTH -> ImageBitmap.imageResource(school_uniforms)
-        EDUC_SCHL -> ImageBitmap.imageResource(schooling)
-        EDUC_SUPL -> ImageBitmap.imageResource(school_supplies)
-        EXPN_CELL -> ImageBitmap.imageResource(phone)
-        EXPN_DEBT -> ImageBitmap.imageResource(loan)
-        EXPN_FARM -> ImageBitmap.imageResource(farming)
-        EXPN_GRCR -> ImageBitmap.imageResource(groceries)
-        EXP_MRKT -> ImageBitmap.imageResource(market_stall)
-        EXPN_PTRL -> ImageBitmap.imageResource(gas)
-        EXPN_RENT -> ImageBitmap.imageResource(housing)
-        EXPN_TOOL -> ImageBitmap.imageResource(tools)
-        EXPN_TRPT -> ImageBitmap.imageResource(transportation)
-        HLTH_DOCT -> ImageBitmap.imageResource(doctor_appointment)
-        HLTH_MEDS -> ImageBitmap.imageResource(medicine)
-        TRNS_RECV -> ImageBitmap.imageResource(receive)
-        TRNS_SEND -> ImageBitmap.imageResource(send)
-        UTIL_ELEC -> ImageBitmap.imageResource(electricity)
-        UTIL_WATR -> ImageBitmap.imageResource(water)
+        EDUC_CLTH -> school_uniforms
+        EDUC_SCHL -> schooling
+        EDUC_SUPL -> school_supplies
+        EXPN_CELL -> phone
+        EXPN_DEBT -> loan
+        EXPN_FARM -> farming
+        EXPN_GRCR -> groceries
+        EXP_MRKT -> market_stall
+        EXPN_PTRL -> gas
+        EXPN_RENT -> housing
+        EXPN_TOOL -> tools
+        EXPN_TRPT -> transportation
+        HLTH_DOCT -> doctor_appointment
+        HLTH_MEDS -> medicine
+        TRNS_RECV -> receive
+        TRNS_SEND -> send
+        UTIL_ELEC -> electricity
+        UTIL_WATR -> water
     }
 

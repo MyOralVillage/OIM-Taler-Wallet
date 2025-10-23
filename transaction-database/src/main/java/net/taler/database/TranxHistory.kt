@@ -52,11 +52,6 @@ object TranxHistory {
     /** Maximum amount of transactions in the cache or filter. */
     val maxiAmt: Amount? get() = _maxiAmt
 
-    /** Path to the test database. */
-    const val TRXN_HIST_TEST_DB_PATH =
-        "transaction-history-test/1/transaction_history.db"
-
-
     // ---- API ----------------------------------------------------------------
 
     /**
@@ -97,37 +92,46 @@ object TranxHistory {
      * @param version Optional database version; defaults to [Schema.VERSION].
      */
     fun initTest(context: Context, version: Int? = null) = synchronized(this) {
+        if (_isIniti) {
+            return  // Already initialized
+        }
 
-//        // for use ONLY when this is properly tested!
-//        if (!BuildConfig.DEBUG) {
-//            throw UnsupportedOperationException("initTest() is only available in debug builds.")
-//        }
-        if (!_isIniti) {
-            val dbFile = context.getDatabasePath("transaction_history.db")
-            dbFile.parentFile?.mkdirs()
+        val dbFile = context.getDatabasePath("transaction_history.db")
+        dbFile.parentFile?.mkdirs()
 
-            val versionStr = (version ?: Schema.VERSION).toString()
-            val assetPath = "transaction-history-test/v$versionStr/transaction_history.db"
+        val versionStr = (version ?: Schema.VERSION).toString()
+        val assetPath = "transaction-history-test/v$versionStr/transaction_history.db"
 
-            try {
-                // Always overwrite for predictable test behavior
-                context.assets.open(assetPath).use { input ->
-                    dbFile.outputStream().use { output ->
-                        input.copyTo(output)
-                    }
+        try {
+            // Delete existing database files completely
+            context.deleteDatabase("transaction_history.db")
+
+            // Copy from assets
+            context.assets.open(assetPath).use { input ->
+                dbFile.outputStream().use { output ->
+                    input.copyTo(output)
                 }
-
-                // Initialize TranxHistory with the new database
-                init(context)
-
-            } catch (e: Exception) {
-                throw IllegalStateException(
-                    "Failed to initialize test database from assets: $assetPath", e
-                )
             }
+
+            // DON'T call init() - just open the database directly
+            _db = TransactionDatabase(context).readableDatabase
+
+            // Load extrema
+            val extrema: Pair<Pair<FDtm, FDtm>, Pair<Amount, Amount>>? = getExtrema(_db)
+            when (extrema) {
+                null -> { _miniDtm = null; _maxiDtm = null; _miniAmt = null; _maxiAmt = null }
+                else -> { _miniDtm = extrema.first.first;  _maxiDtm = extrema.first.second
+                    _miniAmt = extrema.second.first; _maxiAmt = extrema.second.second }
+            }
+
+            _isIniti = true
+
+        } catch (e: Exception) {
+            throw IllegalStateException(
+                "Failed to initialize test database from assets: $assetPath", e
+            )
         }
     }
-
     /**
      * Updates the internal filter and marks cached history as stale if the filter changes.
      *

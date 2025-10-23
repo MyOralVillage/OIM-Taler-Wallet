@@ -56,7 +56,7 @@ import net.taler.wallet.transactions.TransactionManager
 import net.taler.wallet.transactions.TransactionStateFilter
 import net.taler.wallet.withdraw.WithdrawManager
 import androidx.core.net.toUri
-import com.google.zxing.client.android.BuildConfig
+import net.taler.database.TranxHistory
 
 const val TAG = "taler-wallet"
 const val OBSERVABILITY_LIMIT = 100

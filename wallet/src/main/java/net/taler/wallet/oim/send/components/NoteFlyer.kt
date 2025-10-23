@@ -25,6 +25,7 @@
  */
 package net.taler.wallet.oim.send.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -40,6 +41,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
@@ -49,7 +51,7 @@ import kotlin.math.roundToInt
  */
 @Composable
 fun NoteFlyer(
-    noteBitmap: ImageBitmap,
+    @DrawableRes noteRes: Int,
     startInRoot: Offset,
     endInRoot: Offset,
     widthPx: Float,
@@ -60,7 +62,7 @@ fun NoteFlyer(
     val scale = remember { Animatable(0.7f) }
     val alpha = remember { Animatable(0f) }
 
-    LaunchedEffect(noteBitmap, startInRoot, endInRoot) {
+    LaunchedEffect(noteRes, startInRoot, endInRoot) {
         x.snapTo(startInRoot.x)
         y.snapTo(startInRoot.y)
         alpha.animateTo(1f, tween(120))
@@ -79,6 +81,7 @@ fun NoteFlyer(
     Image(
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         painter = assetPainterOrPreview(path),
 =======
         painter = assetPainterOrPreview(path, PreviewAssets.id(path)),
@@ -86,6 +89,9 @@ fun NoteFlyer(
 =======
         bitmap = noteBitmap,
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+        painter = painterResource(noteRes),
+>>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier = Modifier

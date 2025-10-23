@@ -17,7 +17,6 @@
  package net.taler.wallet
 
  import android.os.Bundle
- import android.content.Intent
  import androidx.core.os.bundleOf
  import android.view.LayoutInflater
  import android.view.View
@@ -27,7 +26,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
  import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.Animatable
-import androidx.compose.foundation.background
  import androidx.compose.foundation.gestures.Orientation
  import androidx.compose.foundation.gestures.draggable
  import androidx.compose.foundation.gestures.rememberDraggableState
@@ -70,10 +68,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.ComposeView
+ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.graphics.Color
  import androidx.compose.ui.res.painterResource
  import androidx.compose.ui.res.stringResource
  import androidx.compose.ui.unit.IntOffset
@@ -101,7 +97,9 @@ import net.taler.wallet.compose.GridMenu
 import net.taler.wallet.compose.GridMenuItem
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.compose.collectAsStateLifecycleAware
-import net.taler.wallet.oim.receivemoney.uicompose.OIMPaymentDialog
+ import net.taler.wallet.oim.main.OIMChestScreen
+ import net.taler.wallet.oim.main.OIMHomeScreen
+//import net.taler.wallet.oim.receive.ui_compose.OIMPaymentDialog
  import net.taler.wallet.settings.SettingsFragment
  import net.taler.wallet.transactions.Transaction
  import net.taler.wallet.transactions.TransactionMajorState
@@ -152,7 +150,7 @@ import net.taler.wallet.oim.receivemoney.uicompose.OIMPaymentDialog
                      }
  
                     when (oimScreen) {
-                        OimScreen.HOME -> net.taler.wallet.oim.receivemoney.OIMHomeScreen(
+                        OimScreen.HOME -> OIMHomeScreen(
                             model = model,
                             onNavigateToChest = { oimScreen = OimScreen.CHEST },
                             onBackToTaler = {
@@ -161,7 +159,10 @@ import net.taler.wallet.oim.receivemoney.uicompose.OIMPaymentDialog
                             },
                             onReviewTos = { exchangeBaseUrl ->
                                 val bundle = bundleOf("exchangeBaseUrl" to exchangeBaseUrl)
-                                findNavController().navigate(R.id.action_global_reviewExchangeTos, bundle)
+                                findNavController().navigate(
+                                    R.id.action_global_reviewExchangeTos,
+                                    bundle
+                                )
                             },
                         )
                         OimScreen.CHEST -> run {
@@ -187,7 +188,7 @@ import net.taler.wallet.oim.receivemoney.uicompose.OIMPaymentDialog
                             }
 
                             Box(modifier = Modifier.fillMaxSize()) {
-                                net.taler.wallet.oim.receivemoney.OIMChestScreen(
+                                OIMChestScreen(
                                     model = model,
                                     onBackClick = { oimScreen = OimScreen.HOME },
                                     onSendClick = { oimScreen = OimScreen.SEND },
@@ -205,29 +206,29 @@ import net.taler.wallet.oim.receivemoney.uicompose.OIMPaymentDialog
                                     onWithdrawTestKudosClick = { model.withdrawManager.withdrawTestBalance() },
                                 )
 
-                                val state = termsToShow
-                                if (state != null) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(Color.Black.copy(alpha = 0.5f)),
-                                        contentAlignment = Alignment.Center,
-                                    ) {
-                                        OIMPaymentDialog(
-                                            terms = state,
-                                            onAccept = {
-                                                if (state is net.taler.wallet.peer.IncomingTosReview) {
-                                                    val bundle = bundleOf("exchangeBaseUrl" to state.exchangeBaseUrl)
-                                                    findNavController().navigate(R.id.action_global_reviewExchangeTos, bundle)
-                                                } else {
-                                                    peerManager.confirmPeerPushCredit(state)
-                                                }
-                                                // stay on chest; overlay will close on state change
-                                            },
-                                            onReject = { termsToShow = null },
-                                        )
-                                    }
-                                }
+//                                val state = termsToShow
+//                                if (state != null) {
+//                                    Box(
+//                                        modifier = Modifier
+//                                            .fillMaxSize()
+//                                            .background(Color.Black.copy(alpha = 0.5f)),
+//                                        contentAlignment = Alignment.Center,
+//                                    ) {
+//                                        OIMPaymentDialog(
+//                                            terms = state,
+//                                            onAccept = {
+//                                                if (state is net.taler.wallet.peer.IncomingTosReview) {
+//                                                    val bundle = bundleOf("exchangeBaseUrl" to state.exchangeBaseUrl)
+//                                                    findNavController().navigate(R.id.action_global_reviewExchangeTos, bundle)
+//                                                } else {
+//                                                    peerManager.confirmPeerPushCredit(state)
+//                                                }
+//                                                // stay on chest; overlay will close on state change
+//                                            },
+//                                            onReject = { termsToShow = null },
+//                                        )
+//                                    }
+//                                }
                             }
                         }
                         OimScreen.SEND -> {

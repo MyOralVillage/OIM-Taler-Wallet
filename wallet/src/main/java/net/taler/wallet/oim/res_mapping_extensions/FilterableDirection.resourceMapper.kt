@@ -15,25 +15,22 @@
  */
 
 package net.taler.wallet.oim.res_mapping_extensions
-
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.res.imageResource
 import net.taler.common.R.drawable.*
 import net.taler.database.data_models.*
 
 /**
- * Returns an [ImageBitmap] for this [TranxPurp].
- *
- * @receiver The [TranxPurp] to get a preview image for.
- * @return The [ImageBitmap] representing this purpose.
+ * @receiver The [FilterableDirection] to get a preview image for.
+ * @return The [DrawableRes] representing this purpose.
  */
 @Composable
-fun FilterableDirection.resourceMapper() : ImageBitmap =
+@DrawableRes
+fun FilterableDirection.resourceMapper() : Int =
     when (this) {
         FilterableDirection.OUTGOING ->
-            ImageBitmap.imageResource(outgoing_transaction)
+            outgoing_transaction
         FilterableDirection.INCOMING ->
-            ImageBitmap.imageResource(incoming_transaction)
+            incoming_transaction
     }
 

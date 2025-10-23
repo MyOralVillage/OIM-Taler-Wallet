@@ -25,30 +25,17 @@
  */
 package net.taler.wallet.oim.send.screens
 
-/*
- * GPLv3-or-later
- */
-/*
- * GPLv3-or-later
- */
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 <<<<<<< HEAD
@@ -147,13 +134,22 @@ import net.taler.wallet.oim.send.components.*
 =======
 =======
 import androidx.compose.ui.unit.sp
+<<<<<<< HEAD
 >>>>>>> 321d128 (updated send to be more dynamic)
+=======
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+<<<<<<< HEAD
+>>>>>>> 9068d57 (got rid of bugs in send apk)
+=======
+import androidx.compose.ui.res.painterResource
+>>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
 import net.taler.database.data_models.*
-import net.taler.wallet.oim.res_mapping_extensions.Tables
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
-import net.taler.wallet.oim.send.components.OimTopBarCentered
 import net.taler.wallet.oim.send.components.WoodTableBackground
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 @OptIn(ExperimentalLayoutApi::class)
@@ -161,8 +157,10 @@ import net.taler.wallet.oim.send.components.WoodTableBackground
 /**
  * Individual purpose card displaying a bitmap image.
  */
+=======
+>>>>>>> 9068d57 (got rid of bugs in send apk)
 @Composable
-internal fun PurposeCard(
+private fun PurposeCard(
     tranxPurp: TranxPurp,
     isSelected: Boolean,
     onClick: () -> Unit,
@@ -171,28 +169,24 @@ internal fun PurposeCard(
     val colour = Color(tranxPurp.colourInt())
     Card(
         modifier = modifier
-            .aspectRatio(0.6f)
+            .width(150.dp)
+            .aspectRatio(0.66f)
             .clickable(onClick = onClick)
             .border(
-                width = if (isSelected) 4.dp else 0.dp,
+                width = if (isSelected) 3.dp else 0.dp,
                 color = if (isSelected) colour else Color.Transparent,
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(10.dp)
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) colour.copy(alpha = 0.25f)
+            containerColor = if (isSelected) colour.copy(alpha = 0.18f)
             else MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(6.dp),
-            contentAlignment = Alignment.Center
-        ) {
+        Box(Modifier.fillMaxSize().padding(6.dp), contentAlignment = Alignment.Center) {
             Image(
-                bitmap = tranxPurp.resourceMapper(),
+                painter = painterResource(tranxPurp.resourceMapper()),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit
@@ -201,19 +195,24 @@ internal fun PurposeCard(
     }
 }
 
+<<<<<<< HEAD
 /**
  * Purpose selection screen with grid layout.
  * Only one can be selected at a time.
  */
 >>>>>>> 321d128 (updated send to be more dynamic)
+=======
+@OptIn(ExperimentalLayoutApi::class)
+>>>>>>> 9068d57 (got rid of bugs in send apk)
 @Composable
 fun PurposeScreen(
     balance: Amount,
     onBack: () -> Unit,
     onDone: (TranxPurp) -> Unit,
-    columns: Int = 4
 ) {
     Box(Modifier.fillMaxSize()) {
+<<<<<<< HEAD
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         Image(
@@ -228,30 +227,33 @@ fun PurposeScreen(
 =======
 //        WoodTableBackground(Modifier.fillMaxSize(), light = false)
 >>>>>>> e34a007 (Added purpose filters and direction filters to the same screen (non responsive just for POC))
+=======
+        WoodTableBackground(Modifier.fillMaxSize(), light = false)
+>>>>>>> 9068d57 (got rid of bugs in send apk)
+=======
+        WoodTableBackground(Modifier.fillMaxSize())
+>>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
 
-//        IconButton(
-//            onClick = onBack,
-//            modifier = Modifier
-//                .padding(8.dp)
-//                .size(40.dp)
-//                .align(Alignment.TopStart)
-//        ) {
-//            Icon(
-//                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-//                contentDescription = "Back",
-//                tint = Color.White
-//            )
-//        }
+        // tiny back button
+        FilledTonalButton(
+            onClick = onBack,
+            modifier = Modifier.padding(12.dp).align(Alignment.TopStart)
+        ) { Text("Back") }
 
         Column(
-            modifier = Modifier
+            Modifier
                 .fillMaxSize()
-                .padding(start = 16.dp, end = 16.dp, top = 8.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-//            OimTopBarCentered(balance = balance, onSendClick = { })
-
+            Text(
+                text = "Choose purpose",
+                color = Color.White,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.SemiBold
+            )
             Spacer(Modifier.height(8.dp))
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -269,17 +271,18 @@ fun PurposeScreen(
             FlowRow(
 =======
             val sortedPurposes = remember {
+=======
+            val allPurposes = remember {
+>>>>>>> 9068d57 (got rid of bugs in send apk)
                 tranxPurpLookup.values
                     .groupBy { it.tranxGroup }
                     .toSortedMap()
-                    .flatMap { (_, purposes) ->
-                        purposes.sortedBy { it.cmp }
-                    }
+                    .flatMap { (_, ps) -> ps.sortedBy { it.cmp } }
             }
 
-            // Track which purpose is currently selected
-            var selectedPurp by remember { mutableStateOf<TranxPurp?>(null) }
+            var selected by remember { mutableStateOf<TranxPurp?>(null) }
 
+<<<<<<< HEAD
             // Scrollable grid that always fits the screen
             LazyVerticalGrid(
                 columns = GridCells.Fixed(columns),
@@ -309,20 +312,34 @@ fun PurposeScreen(
                         onPick = { onDone(label) }
 =======
                 items(sortedPurposes) { tranxPurp ->
+=======
+            // One page, no scroll — FlowRow wraps items to fit space
+            FlowRow(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                maxItemsInEachRow = Int.MAX_VALUE
+            ) {
+                allPurposes.forEach { p ->
+>>>>>>> 9068d57 (got rid of bugs in send apk)
                     PurposeCard(
-                        tranxPurp = tranxPurp,
-                        isSelected = (tranxPurp == selectedPurp),
+                        tranxPurp = p,
+                        isSelected = (p == selected),
                         onClick = {
+<<<<<<< HEAD
                             selectedPurp = tranxPurp
                             onDone(tranxPurp)
                         },
                         modifier = Modifier.fillMaxWidth()
 >>>>>>> 321d128 (updated send to be more dynamic)
+=======
+                            selected = p
+                            onDone(p)
+                        }
+>>>>>>> 9068d57 (got rid of bugs in send apk)
                     )
                 }
             }
-
-            Spacer(Modifier.height(8.dp))
         }
     }
 }
@@ -330,6 +347,7 @@ fun PurposeScreen(
 >>>>>>> 5c7011a (fixed preview animations)
 =======
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 private fun purpUiLabel(p: TranxPurp): String = when (p) {
     EDUC_CLTH -> "School Uniforms"
@@ -354,14 +372,20 @@ private fun purpUiLabel(p: TranxPurp): String = when (p) {
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 =======
 @Preview(name = "Purpose Screen", showBackground = true, widthDp = 1280, heightDp = 800)
+=======
+@Preview(showBackground = true, widthDp = 1280, heightDp = 800)
+>>>>>>> 9068d57 (got rid of bugs in send apk)
 @Composable
 private fun PurposeScreenPreview() {
     MaterialTheme {
         PurposeScreen(
-            balance = Amount.fromString("SLE", "25"),
+            balance = Amount.fromString("KUDOS", "35"),
             onBack = {},
             onDone = {}
         )
     }
 }
+<<<<<<< HEAD
 >>>>>>> 321d128 (updated send to be more dynamic)
+=======
+>>>>>>> 9068d57 (got rid of bugs in send apk)

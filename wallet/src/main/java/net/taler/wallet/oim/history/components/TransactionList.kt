@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,17 +44,20 @@ import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 
 @Composable
 fun TransactionCard(
-    type: String,
     amount: String,
     currency: String,
     date: String,
     purpose: TranxPurp?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    dir: FilterableDirection
 ) {
     // Define variables that differ based on type
-    val directionIcon = if (type == "R") incoming_transaction else outgoing_transaction
-    val badgeColor = if (type == "R") Color(0xFFE8F5E9) else Color(0xFFFFB3B3)
-    val textColor = if (type == "R") Color(0xFF4CAF50) else Color(0xFFC32909)
+    val badgeColor =
+        if (dir.getValue()) Color(0xFFE8F5E9)
+        else Color(0xFFFFB3B3)
+    val textColor =
+        if (dir.getValue()) Color(0xFF4CAF50)
+        else Color(0xFFC32909)
 
     Card(
         modifier = modifier
@@ -86,15 +91,16 @@ fun TransactionCard(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = BitmapPainter(ImageBitmap.imageResource(directionIcon)),
+                Icon(
+                    painter = painterResource(dir.resourceMapper()),
                     contentDescription = "Transaction direction",
                     modifier = Modifier.size(70.dp)
                 )
 
+
                 if (purpose != null) {
-                    Image(
-                        painter = BitmapPainter(purpose.resourceMapper()),
+                    Icon(
+                        painter = painterResource(purpose.resourceMapper()),
                         contentDescription = "Transaction purpose",
                         modifier = Modifier.size(70.dp)
                     )

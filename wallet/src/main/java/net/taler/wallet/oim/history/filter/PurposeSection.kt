@@ -19,6 +19,7 @@ package net.taler.wallet.oim.history.filter
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.content.MediaType.Companion.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -29,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,7 +40,8 @@ import androidx.compose.ui.Alignment
 import net.taler.database.data_models.TranxPurp
 import net.taler.database.filter.PurposeFilter
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.tooling.preview.Preview
 import net.taler.database.data_models.EDUC_SCHL
 import net.taler.database.data_models.EXPN_GRCR
@@ -49,7 +52,7 @@ import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 
 
 /**
- * Individual purpose card displaying a bitmap image.
+ * Individual purpose card displaying an image.
  *
  * @param tranxPurp The transaction purpose object
  * @param isSelected Whether this purpose is currently selected
@@ -71,11 +74,11 @@ internal fun PurposeCard(
             .border(
                 width = if (isSelected) 3.dp else 0.dp,
                 color = if (isSelected) colour else Color.Transparent,
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(20.dp)
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) colour.copy(alpha = 0.1f)
+            containerColor = if (isSelected) colour.copy(alpha = 0.2f)
             else MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -87,10 +90,9 @@ internal fun PurposeCard(
             contentAlignment = Alignment.Center
         ) {
             Image(
-                bitmap = tranxPurp.resourceMapper(),
+                painter = painterResource(tranxPurp.resourceMapper()),
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit
+                modifier = Modifier.fillMaxSize()
             )
         }
     }

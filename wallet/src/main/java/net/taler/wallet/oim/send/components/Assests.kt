@@ -7,20 +7,19 @@ import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import net.taler.wallet.oim.res_mapping_extensions.Tables
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import net.taler.wallet.oim.res_mapping_extensions.Background
 
 /**
  * Simple helper to paint the wooden table background using drawable mappers.
- * @param light true → light wood, false → dark wood
  */
 @Composable
 fun WoodTableBackground(
     modifier: Modifier = Modifier,
-    light: Boolean = false
 ) {
-    val bmp = Tables(light).resourceMapper()
     Image(
-        bitmap = bmp,
+        painter = painterResource(Background(LocalContext.current).resourceMapper()),
         contentDescription = null,
         modifier = modifier,
         contentScale = ContentScale.Crop

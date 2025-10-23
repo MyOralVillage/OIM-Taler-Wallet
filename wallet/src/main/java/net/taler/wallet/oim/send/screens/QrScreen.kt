@@ -1,4 +1,5 @@
 /*
+<<<<<<< HEAD
  * GPLv3-or-later
  */
 <<<<<<< HEAD
@@ -7,6 +8,8 @@
  * GPLv3-or-later
  */
 /*
+=======
+>>>>>>> 9068d57 (got rid of bugs in send apk)
  * GPLv3-or-later
  */
 package net.taler.wallet.oim.send.screens
@@ -192,15 +195,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 =======
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+<<<<<<< HEAD
 <<<<<<< HEAD
 import androidx.compose.material3.*
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
@@ -210,6 +209,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 >>>>>>> 321d128 (updated send to be more dynamic)
+=======
+import androidx.compose.material3.*
+>>>>>>> 9068d57 (got rid of bugs in send apk)
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -217,6 +219,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+<<<<<<< HEAD
+<<<<<<< HEAD
 <<<<<<< HEAD
 import androidx.compose.ui.text.font.FontWeight
 <<<<<<< HEAD
@@ -240,12 +244,23 @@ import net.taler.wallet.oim.send.components.generateQrBitmap
 import androidx.compose.ui.tooling.preview.Preview
 >>>>>>> 321d128 (updated send to be more dynamic)
 import androidx.compose.ui.unit.dp
+=======
+=======
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+>>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+>>>>>>> 9068d57 (got rid of bugs in send apk)
 import net.taler.database.data_models.Amount
-import net.taler.database.data_models.EXPN_GRCR
 import net.taler.database.data_models.TranxPurp
-import net.taler.wallet.oim.res_mapping_extensions.Tables
+import net.taler.wallet.oim.res_mapping_extensions.Background
+import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 import net.taler.wallet.oim.send.components.generateQrBitmap
 
+<<<<<<< HEAD
 /**
 <<<<<<< HEAD
  * QR screen with wood background (assets now from res_mapping_extensions).
@@ -255,6 +270,8 @@ import net.taler.wallet.oim.send.components.generateQrBitmap
  * QR screen with wood background.
 >>>>>>> 321d128 (updated send to be more dynamic)
  */
+=======
+>>>>>>> 9068d57 (got rid of bugs in send apk)
 @Composable
 fun QrScreen(
     talerUri: String,
@@ -284,8 +301,12 @@ fun QrScreen(
             painter = assetPainterOrPreview(WOOD_TABLE, PreviewAssets.id(WOOD_TABLE)),
 =======
         Image(
+<<<<<<< HEAD
             bitmap = Tables(type = false).resourceMapper(),
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+            painter = painterResource(Background(LocalContext.current).resourceMapper()),
+>>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -324,7 +345,38 @@ fun QrScreen(
                 )
             }
 
-            // No text display - QR code only
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(start = 24.dp)
+            ) {
+                Text(
+                    text = amount.amountStr,
+                    color = Color.White,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 42.sp
+                )
+                Text(
+                    text = amount.spec?.name ?: amount.currency,
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp
+                )
+                if (purpose != null) {
+                    Spacer(Modifier.height(12.dp))
+                    Surface(
+                        color = Color(0x33000000),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(purpose.resourceMapper()),
+                            contentDescription = null,
+                            modifier = Modifier.size(96.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -335,6 +387,7 @@ fun QrScreen(
 =======
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 private data class ParsedDisplay(
     val amountNumber: String? = null,
@@ -370,15 +423,21 @@ private fun parseFromTalerUri(talerUri: String): ParsedDisplay {
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 =======
 @Preview(name = "QR Screen", showBackground = true, widthDp = 1280, heightDp = 800)
+=======
+@Preview(showBackground = true, widthDp = 1280, heightDp = 800)
+>>>>>>> 9068d57 (got rid of bugs in send apk)
 @Composable
 private fun QrScreenPreview() {
     MaterialTheme {
         QrScreen(
-            talerUri = "taler://pay-push?amount=SLE:3.00&summary=Groceries",
-            amount = Amount.fromString("SLE", "3"),
-            purpose = EXPN_GRCR,
+            talerUri = "ext+taler://pay-push/exchange.demo.taler.net/EXAMPLEPURSEID",
+            amount = Amount.fromString("KUDOS", "10"),
+            purpose = null,
             onBack = {}
         )
     }
 }
+<<<<<<< HEAD
 >>>>>>> 321d128 (updated send to be more dynamic)
+=======
+>>>>>>> 9068d57 (got rid of bugs in send apk)

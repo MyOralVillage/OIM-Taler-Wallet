@@ -20,20 +20,67 @@ import java.time.ZoneId
 
 /** Holds constants for the transaction history database schema */
 object Schema {
+
+    /** Current database version used for schema migrations. */
     const val VERSION = 1
+
+    /** Path to the test database file, versioned for consistency across migrations. */
+    const val TRXN_HIST_TEST_DB_PATH =
+        "transaction-history-test/v${VERSION}/transaction_history.db"
+
+    /** File name of the database used in production and testing environments. */
     const val DATABASE_NAME = "transaction_history.db"
+
+    /** Name of the primary SQLite table used to store transaction history entries. */
     const val TABLE_NAME = "TRANSACTION_HISTORY"
+
+    /** Column name for the unique index or identifier of each transaction record. */
     const val INDEX_COL = "id"
+
+    /** Column name storing the transaction timestamp in epoch milliseconds (UTC). */
     const val EPOCH_MILLI_COL = "epoch_milliseconds"
+
+    /** Column name representing the transaction amount in minor currency units. */
     const val AMOUNT_COL = "amount"
+
+    /** Column name storing the ISO 4217 currency code (e.g., "USD", "EUR"). */
     const val CURRENCY_COL = "currency"
-    const val CURRENCY_SPEC_COL = "currency_specifications" // if null, store as empty string
+
+    /**
+     * Column name for storing currency-specific metadata or formatting information.
+     * If no additional specification exists, this field should contain an empty string.
+     */
+    const val CURRENCY_SPEC_COL = "currency_specifications"
+
+    /** Column name describing the transaction purpose (e.g., "groceries", "salary"). */
     const val TRNX_PURPOSE_COL = "tranx_purpose"
-    const val TRNX_INCOMING_COL = "incoming" // incoming == true (1 in sql)
+
+    /**
+
+    Column name indicating whether the transaction is incoming or outgoing.
+    Stored as an integer: 1 for true (incoming), 0 for false (outgoing).
+     */
+    const val TRNX_INCOMING_COL = "incoming"
+
+    /** Column name representing the unique transaction identity or hash. */
     const val TID_COL = "transaction_identity"
+
+    /** Cursor factory used when creating readable
+     * or writable database connections. */
     val CURSOR_FACTORY = null
-    val DEFAULT_TIME_ZONE = ZoneId.of("UTC")
+
+    /** Default time zone used for all date-time conversions in the database (UTC). */
+    val DEFAULT_TIME_ZONE: ZoneId = ZoneId.of("UTC")
+
+    /** Index name for optimizing queries by transaction datetime. */
     const val DATETIME_INDEX = "idx_dtm"
+
+    /** Index name for optimizing queries by transaction amount. */
     const val AMOUNT_INDEX = "idx_amt"
+
+    /** Index name for optimizing queries by transaction direction */
+    const val TRXN_DIR_INDEX = "incoming_index"
+
+    /** Index name for optimizing queries by transaction purpose. */
     const val PURPOSE_INDEX = "idx_purp"
 }

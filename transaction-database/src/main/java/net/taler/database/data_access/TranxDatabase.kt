@@ -92,7 +92,7 @@ internal class TransactionDatabase(context: Context?)
         // main table
         val createTableQuery =
             """
-            CREATE TABLE ${Schema.TABLE_NAME} (
+            CREATE TABLE IF NOT EXISTS ${Schema.TABLE_NAME} (
                 ${Schema.INDEX_COL} INTEGER PRIMARY KEY AUTOINCREMENT,
                 ${Schema.TID_COL} TEXT UNIQUE NOT NULL,
                 ${Schema.EPOCH_MILLI_COL} INTEGER NOT NULL,
@@ -106,29 +106,37 @@ internal class TransactionDatabase(context: Context?)
         // create custom index based on amount (chained; first checks int, then frac)
         val createAmountIndexQuery =
             """
-            CREATE INDEX ${Schema.AMOUNT_INDEX}
+            CREATE INDEX IF NOT EXISTS ${Schema.AMOUNT_INDEX}
             ON ${Schema.TABLE_NAME}(${Schema.AMOUNT_COL})
             """.trimIndent()
 
         // create custom index on datetime (epoch milliseconds)
         val createTimeIndexQuery =
             """
-             CREATE INDEX ${Schema.DATETIME_INDEX}
+             CREATE INDEX IF NOT EXISTS ${Schema.DATETIME_INDEX}
              ON ${Schema.TABLE_NAME}(${Schema.EPOCH_MILLI_COL})
             """.trimIndent()
 
-// commented out for now; we don't always care abt tranx purpose :)
-//        // create custom index on transaction purpose
-//        val createPurposeIndexQuery =
-//            """
-//             CREATE INDEX ${Schema.PURPOSE_INDEX}
-//             ON ${Schema.TABLE_NAME}(${Schema.TRNX_PURPOSE_COL})
-//            """.trimIndent()
+        // create custom index on direction (boolean integers)
+        val createDirectionIndexQuery =
+            """
+            CREATE INDEX IF NOT EXISTS ${Schema.TRXN_DIR_INDEX}
+            ON ${Schema.TABLE_NAME}(${Schema.TRNX_INCOMING_COL})
+            """.trimIndent()
 
+        // create custom index on transaction purpose
+        val createPurposeIndexQuery =
+            """
+             CREATE INDEX IF NOT EXISTS ${Schema.PURPOSE_INDEX}
+             ON ${Schema.TABLE_NAME}(${Schema.TRNX_PURPOSE_COL})
+            """.trimIndent()
+
+        // build indices
         db.execSQL(createTableQuery)
         db.execSQL(createAmountIndexQuery)
         db.execSQL(createTimeIndexQuery)
-//        db.execSQL(createPurposeIndexQuery)
+        db.execSQL(createDirectionIndexQuery)
+        db.execSQL(createPurposeIndexQuery)
     }
 
     /**

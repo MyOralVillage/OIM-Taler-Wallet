@@ -15,15 +15,15 @@ package net.taler.wallet.oim.res_mapping_extensions
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.ImageBitmap
 import net.taler.common.R
-import androidx.compose.ui.res.imageResource
 import net.taler.database.data_models.*
 
 @Composable
-internal fun Amount.resourceMapper(): List<ImageBitmap> {
-    val result = mutableListOf<ImageBitmap>()
+@DrawableRes
+internal fun Amount.resourceMapper(): List<Int> {
+    val result = mutableListOf<Int>()
 
     when (currency) {
         "CHF" -> {
@@ -54,16 +54,17 @@ internal fun Amount.resourceMapper(): List<ImageBitmap> {
 }
 
 /** Map amount to bills/coins using provided denominations (descending order). */
+@DrawableRes
 @Composable
-private fun mapToBills(amount: Long, bills: List<Pair<Int, Int>>): List<ImageBitmap> {
-    val result = mutableListOf<ImageBitmap>()
+private fun mapToBills(amount: Long, bills: List<Pair<Int, Int>>): List<Int> {
+    val result = mutableListOf<Int>()
     var remaining = amount
 
     for ((billValue, resId) in bills) {
         while (remaining >= billValue) {
             remaining -= billValue
-            val bitmap: ImageBitmap = ImageBitmap.imageResource(resId)
-            result.add(bitmap)
+            val vector: Int = resId
+            result.add(vector)
         }
     }
 

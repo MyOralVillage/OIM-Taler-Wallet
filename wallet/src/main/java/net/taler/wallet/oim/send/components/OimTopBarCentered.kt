@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -111,10 +112,13 @@ fun OimTopBarCentered(
     balance: Amount,
     onSendClick: () -> Unit
 ) {
+<<<<<<< HEAD
     val sendBitmap = Buttons("send").resourceMapper()
     val chestBitmap = Buttons("chest_open").resourceMapper()
 
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+>>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -132,10 +136,14 @@ fun OimTopBarCentered(
         ) {
             Image(
 <<<<<<< HEAD
+<<<<<<< HEAD
                 painter = assetPainterOrPreview(ICON_SEND, PreviewAssets.id(ICON_SEND)),
 =======
                 bitmap = sendBitmap,
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+                painter = painterResource(Buttons("send").resourceMapper()),
+>>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
                 contentDescription = "Send",
                 modifier = Modifier.size(44.dp),
                 contentScale = ContentScale.Fit
@@ -149,10 +157,14 @@ fun OimTopBarCentered(
         ) {
             Image(
 <<<<<<< HEAD
+<<<<<<< HEAD
                 painter = assetPainterOrPreview(ICON_CHEST, PreviewAssets.id(ICON_CHEST)),
 =======
                 bitmap = chestBitmap,
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+                painter = painterResource(Buttons("chest_open").resourceMapper()),
+>>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
                 contentDescription = "Chest",
                 modifier = Modifier.size(64.dp),
                 contentScale = ContentScale.Fit

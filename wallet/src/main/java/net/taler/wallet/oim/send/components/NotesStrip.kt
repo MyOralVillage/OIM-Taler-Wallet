@@ -3,6 +3,7 @@
  */
 package net.taler.wallet.oim.send.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 <<<<<<< HEAD
@@ -117,7 +119,7 @@ import net.taler.database.data_models.Amount
 @Composable
 fun NotesStrip(
     noteThumbWidth: Dp,
-    notes: List<Pair<ImageBitmap, Amount>>,
+    notes: List<Pair<Int, Amount>>,
     onAddRequest: (Amount, Offset) -> Unit,
     onRemoveLast: (Amount) -> Unit
 >>>>>>> 321d128 (updated send to be more dynamic)
@@ -158,9 +160,9 @@ fun NotesStrip(
 >>>>>>> 321d128 (updated send to be more dynamic)
         verticalAlignment = Alignment.CenterVertically
     ) {
-        notes.forEach { (bmp, value) ->
+        notes.forEach { (@DrawableRes r, value) ->
             NoteThumb(
-                bmp = bmp,
+                res = r,
                 width = noteThumbWidth,
                 onTapWithPos = { centerInRoot ->
                     lastAdded = value
@@ -184,10 +186,14 @@ fun NotesStrip(
 @Composable
 private fun NoteThumb(
 <<<<<<< HEAD
+<<<<<<< HEAD
     path: String,
 =======
     bmp: ImageBitmap,
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+    @DrawableRes res: Int,
+>>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
     width: Dp,
     onTapWithPos: (centerInRoot: Offset) -> Unit
 ) {
@@ -210,10 +216,14 @@ private fun NoteThumb(
     ) {
         Image(
 <<<<<<< HEAD
+<<<<<<< HEAD
             painter = assetPainterOrPreview(path, PreviewAssets.id(path)),
 =======
             bitmap = bmp,
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
+=======
+            painter = painterResource(res),
+>>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop

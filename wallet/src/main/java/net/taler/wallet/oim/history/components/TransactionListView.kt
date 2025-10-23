@@ -17,85 +17,177 @@
 package net.taler.wallet.oim.history.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SwipeDownAlt
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.taler.database.data_models.Amount
 import net.taler.wallet.oim.history.filter.DirectionFilterRow
-import net.taler.wallet.oim.res_mapping_extensions.Buttons
-import net.taler.wallet.oim.res_mapping_extensions.Tables
-import net.taler.wallet.oim.send.screens.PurposeScreen
-import net.taler.database.filter.*                   // TranxFilter, toSQL()
-import net.taler.database.data_models.*              // Amount, Tranx, TranxPurp
-import net.taler.database.data_access.*              // TransactionDatabase, addTranx, queryTranx
+import net.taler.database.data_models.*
 import net.taler.database.TranxHistory
-import net.taler.database.TranxHistory.getHistory
+import net.taler.database.filter.PurposeFilter
 import net.taler.wallet.BuildConfig
+import net.taler.wallet.oim.history.filter.PurposeGrid
+import net.taler.wallet.oim.res_mapping_extensions.Background
+import net.taler.wallet.oim.res_mapping_extensions.Buttons
 import java.time.format.DateTimeFormatter
 
-// Constants
-private const val SIDEBAR_LEFT_WEIGHT = 0.1f
-private const val CONTENT_WEIGHT = 0.6f
-private const val SIDEBAR_RIGHT_WEIGHT = 0.3f
 
-// Data Models
-data class Transaction(
-    val type: String,
-    val amount: String,
-    val currency: String,
-    val date: String,
-    val purpose: TranxPurp?
-)
-
-// Sample Data
-//private val sampleTransactions = listOf(
-//    Transaction(type = "S", amount = "25", currency = "Leones", date = "25 Sept 2025", purpose = ""),
-//    Transaction(type = "R", amount = "20", currency = "Leones", date = "25 Sept 2025", purpose = ""),
-//    Transaction(type = "S", amount = "5", currency = "Leones", date = "25 Sept 2025", purpose = ""),
-//)
 
 @Composable
-fun TransactionsListView(
-//    transactions: List<Transaction> = sampleTransactions
-) {
+fun TransactionsListView() {
+    var showFilterOverlay by remember { mutableStateOf(false) }
+    var isPressed by remember { mutableStateOf(false) }
+
     Box(modifier = Modifier.fillMaxSize()) {
         BackgroundImage()
         MainLayout()
+
+        // Filter button
+        IconButton(
+            onClick = {
+                isPressed = true
+                showFilterOverlay = true
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(10.dp)
+                .size(100.dp),
+        ) {
+            Icon(
+                painter = painterResource(Buttons("filter").resourceMapper()),
+                contentDescription = "null",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        scaleX = if (isPressed) 1f else 0.8f
+                        scaleY = if (isPressed) 1f else 0.8f
+                    }
+                    .background(
+                        color = Color.Black.copy(alpha = 0.3f),
+                        shape = MaterialTheme.shapes.medium
+                    ),
+                tint = Color.Unspecified,
+                )
+        }
+
+        // Reset pressed state after animation
+        LaunchedEffect(isPressed) {
+            if (isPressed) {
+                kotlinx.coroutines.delay(500)
+                isPressed = false
+            }
+        }
+
+        // Filter overlay (shown when button clicked)
+        if (showFilterOverlay) {
+            FilterOverlay(
+                onDismiss = { showFilterOverlay = false }
+            )
+        }
     }
 }
 
 @Composable
+private fun FilterOverlay(
+    onDismiss: () -> Unit
+) {
+    // Semi-transparent background
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f))
+    ) {
+        // Filter content card
+        Card(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .fillMaxWidth(0.9f)
+                .fillMaxHeight(0.8f),
+            shape = MaterialTheme.shapes.large,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
+            ) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {}
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Filter content (scrollable)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    // Direction Filter
+                    var incomingSelected by remember { mutableStateOf(true) }
+                    var outgoingSelected by remember { mutableStateOf(true) }
+
+                    DirectionFilterRow(
+                        incomingSelected = incomingSelected,
+                        outgoingSelected = outgoingSelected,
+                        onIncomingClicked = { incomingSelected = !incomingSelected },
+                        onOutgoingClicked = { outgoingSelected = !outgoingSelected }
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // Purpose Filter
+                    var purposeFilter by remember { mutableStateOf<PurposeFilter?>(null) }
+
+                    PurposeGrid(
+                        purposeFilter = purposeFilter,
+                        onPurposeSelected = { purposeFilter = it },
+                        purposeMap = tranxPurpLookup
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Close icon button (centered at bottom)
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.SwipeDownAlt,
+                            contentDescription = "Close",
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+@Composable
 private fun BackgroundImage() {
+    val context = LocalContext.current
     Image(
-        painter = BitmapPainter(Tables(false).resourceMapper()),
+        painter = painterResource(Background(context).resourceMapper()),
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier = Modifier.fillMaxSize()
@@ -106,7 +198,6 @@ private fun BackgroundImage() {
 private fun MainLayout() {
     Row(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
         MainContent()
-        RightSidebar()
     }
 }
 
@@ -114,64 +205,39 @@ private fun MainLayout() {
 @OptIn(kotlinx.serialization.InternalSerializationApi::class)
 private fun RowScope.MainContent() {
     val context = LocalContext.current
-    var dbTransactions by remember { mutableStateOf<List<Transaction>>(emptyList()) }
+    var dbTransactions by remember { mutableStateOf<List<Tranx>>(emptyList()) }
 
     LaunchedEffect(Unit) {
         // Initialize database
         if (BuildConfig.DEBUG) TranxHistory.initTest(context)
-        else TranxHistory.initTest(context)
+        else TranxHistory.init(context)
 
         // Map Tranx objects to Transaction objects
-        dbTransactions = getHistory().map { tranx ->
-            Transaction(
-                type = if (tranx.direction.getValue()) "R" else "S",
-                amount = tranx.amount.value.toString() + "." + tranx.amount.fraction.toString(),
-                currency = tranx.amount.currency,
-                date = tranx.datetime.fmtString(DateTimeFormatter.ofPattern("MMMM dd, yyyy")),
-                purpose = tranx.purpose
-            )
-        }
+//        dbTransactions = getHistory().map { tranx ->
+//            Transaction(
+//                type = if (tranx.direction.getValue()) "R" else "S",
+//                amount = tranx.amount.value.toString() + "." + tranx.amount.fraction.toString(),
+//                currency = tranx.amount.currency,
+//                date = tranx.datetime.fmtString(DateTimeFormatter.ofPattern("MMMM dd, yyyy")),
+//                purpose = tranx.purpose
+//            )
+//        }
     }
 
     Column(
         modifier = Modifier
             .fillMaxHeight()
-            .weight(0.6f)
+            .weight(1f)
             .verticalScroll(rememberScrollState())
     ) {
-        dbTransactions.forEach { transaction: Transaction ->
+        dbTransactions.forEach { transaction: Tranx ->
             TransactionCard(
-                type = transaction.type,
-                amount = transaction.amount,
-                currency = transaction.currency,
-                date = transaction.date,
-                purpose = transaction.purpose
-            )
-        }
-    }
-}
-
-@Composable
-private fun RowScope.RightSidebar() {
-    Box(
-        modifier = Modifier
-            .fillMaxHeight()
-            .weight(0.4f)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            DirectionFilterRow(
-                incomingSelected = true,
-                outgoingSelected = false,
-                onIncomingClicked = { },
-                onOutgoingClicked = { },
-                modifier = Modifier.padding(16.dp)
-            )
-            PurposeScreen(
-                balance = Amount.fromString("SLE", "25"),
-                onBack = {},
-                onDone = {}
+                amount = transaction.amount.toString(false),
+                currency = transaction.amount.currency,
+                date = transaction.datetime.fmtString(
+                    DateTimeFormatter.ofPattern("yyyy-MM-DD")),
+                purpose = transaction.purpose,
+                dir = transaction.direction
             )
         }
     }

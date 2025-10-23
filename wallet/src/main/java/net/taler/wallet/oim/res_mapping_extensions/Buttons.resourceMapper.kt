@@ -16,9 +16,8 @@
 
 package net.taler.wallet.oim.res_mapping_extensions
 
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.res.imageResource
 import net.taler.common.R.drawable.*
 
 /**
@@ -27,32 +26,33 @@ Maps button names to their corresponding image resources.
  */
 internal class Buttons(val buttonName: String) {
     @Composable
-    fun resourceMapper() : ImageBitmap =
+    @DrawableRes
+    fun resourceMapper() : Int =
         when (this.buttonName.lowercase()) {
 
             // chest buttons
-            "chest_sl_open"     -> ImageBitmap.imageResource(chest_sl_open)
-            "chest_sl_closed"   -> ImageBitmap.imageResource(chest_sl_closed)
-            "chest_ci_open"     -> ImageBitmap.imageResource(chest_ci_open)
-            "chest_ci_closed"   -> ImageBitmap.imageResource(chest_ci_closed)
-            "chest_de_open"     -> ImageBitmap.imageResource(chest_de_open)
-            "chest_de_closed"   -> ImageBitmap.imageResource(chest_de_closed)
-            "chest_eu_open"     -> ImageBitmap.imageResource(chest_eu_open)
-            "chest_eu_closed"   -> ImageBitmap.imageResource(chest_eu_closed)
-            "chest_ch_open"     -> ImageBitmap.imageResource(chest_ch_open)
-            "chest_ch_closed"   -> ImageBitmap.imageResource(chest_ch_closed)
-            "chest_open"        -> ImageBitmap.imageResource(chest_open)
-            "chest_closed"      -> ImageBitmap.imageResource(chest_closed)
+            "chest_sl_open"     -> chest_sl_open
+            "chest_sl_closed"   -> chest_sl_closed
+            "chest_ci_open"     -> chest_ci_open
+            "chest_ci_closed"   -> chest_ci_closed
+            "chest_de_open"     -> chest_de_open
+            "chest_de_closed"   -> chest_de_closed
+            "chest_eu_open"     -> chest_eu_open
+            "chest_eu_closed"   -> chest_eu_closed
+            "chest_ch_open"     -> chest_ch_open
+            "chest_ch_closed"   -> chest_ch_closed
+            "chest_open"        -> chest_open
+            "chest_closed"      -> chest_closed
 
             // actions
-            "send"              -> ImageBitmap.imageResource(send)
-            "receive"           -> ImageBitmap.imageResource(receive)
-            "tranx_hist"        -> ImageBitmap.imageResource(transaction_history)
-            "deposit"           -> ImageBitmap.imageResource(deposit)
-            "withdraw"          -> ImageBitmap.imageResource(withdrawal)
-            "filter"            -> ImageBitmap.imageResource(filter)
+            "send"              -> send
+            "receive"           -> receive
+            "tranx_hist"        -> transaction_history
+            "deposit"           -> deposit
+            "withdraw"          -> withdraw_og
+            "filter"            -> filter
 
             else ->
-                throw IllegalArgumentException("Invalid button: " + buttonName)
+                throw IllegalArgumentException("Invalid button: $buttonName")
         }
 }

@@ -14,46 +14,49 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.wallet.oim.history.filter
+    package net.taler.wallet.oim.history.filter
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import net.taler.common.R.drawable.incoming_transaction
-import net.taler.common.R.drawable.outgoing_transaction
+    import androidx.annotation.DrawableRes
+    import androidx.compose.foundation.border
+    import androidx.compose.foundation.clickable
+    import androidx.compose.foundation.layout.Arrangement
+    import androidx.compose.foundation.layout.Box
+    import androidx.compose.foundation.layout.Row
+    import androidx.compose.foundation.layout.fillMaxSize
+    import androidx.compose.foundation.layout.fillMaxWidth
+    import androidx.compose.foundation.layout.height
+    import androidx.compose.foundation.layout.padding
+    import androidx.compose.foundation.shape.RoundedCornerShape
+    import androidx.compose.material3.Card
+    import androidx.compose.material3.CardDefaults
+    import androidx.compose.material3.Icon
+    import androidx.compose.material3.MaterialTheme
+    import androidx.compose.runtime.Composable
+    import androidx.compose.ui.Alignment
+    import androidx.compose.ui.Modifier
+    import androidx.compose.ui.graphics.Color
+    import androidx.compose.ui.tooling.preview.Preview
+    import androidx.compose.ui.unit.dp
+    import net.taler.common.R.drawable.incoming_transaction
+    import net.taler.common.R.drawable.outgoing_transaction
+    import androidx.compose.runtime.remember
+    import androidx.compose.runtime.mutableStateOf
+    import androidx.compose.runtime.getValue
+    import androidx.compose.runtime.setValue
+    import androidx.compose.ui.res.painterResource
 
 /**
- * Reusable card component for displaying a direction filter option with PNG image.
- *
- * @param icon The bitmap of the image to display
- * @param colour The color to use for the selection border and background tint
- * @param isSelected Whether this direction is currently selected
- * @param onClick Callback invoked when the user taps this card
- * @param modifier Optional modifier for customizing the card's layout
- */
+     * Reusable card component for displaying a direction filter option with PNG image.
+     *
+     * @param icon The [androidx.annotation.DrawableRes] of the image to display
+     * @param colour The color to use for the selection border and background tint
+     * @param isSelected Whether this direction is currently selected
+     * @param onClick Callback invoked when the user taps this card
+     * @param modifier Optional modifier for customizing the card's layout
+     */
 @Composable
 internal fun DirectionCard(
-    icon: ImageBitmap,
+    @DrawableRes icon: Int,
     colour: Color,
     isSelected: Boolean,
     onClick: () -> Unit,
@@ -70,9 +73,7 @@ internal fun DirectionCard(
             ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor =
-                if (isSelected) colour.copy(alpha = 0.15f)
-                else MaterialTheme.colorScheme.surface
+            containerColor = if (isSelected) colour.copy(alpha = 0.15f) else Color.Transparent
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -82,70 +83,71 @@ internal fun DirectionCard(
                 .padding(18.dp),
             contentAlignment = Alignment.Center
         ) {
-            Image(
-                bitmap = icon,
+            Icon(
+                painter = painterResource(icon),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit
+                tint = Color.Unspecified
             )
         }
     }
 }
 
-/**
- * Composable that returns a row of two direction filter cards.
- *
- * Displays incoming and outgoing transaction direction cards side by side.
- * Can be used independently in any composable.
- *
- * @param incomingSelected Whether the incoming card is selected
- * @param outgoingSelected Whether the outgoing card is selected
- * @param onIncomingClicked Callback when incoming card is clicked
- * @param onOutgoingClicked Callback when outgoing card is clicked
- * @param modifier Optional modifier for customizing the row's layout
- */
-@Composable
-fun DirectionFilterRow(
-    incomingSelected: Boolean,
-    outgoingSelected: Boolean,
-    onIncomingClicked: () -> Unit,
-    onOutgoingClicked: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val incomingImage = ImageBitmap.imageResource(incoming_transaction)
-    val outgoingImage = ImageBitmap.imageResource(outgoing_transaction)
-
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    /**
+     * Composable that returns a row of two direction filter cards.
+     *
+     * Displays incoming and outgoing transaction direction cards side by side.
+     * Can be used independently in any composable.
+     *
+     * @param incomingSelected Whether the incoming card is selected
+     * @param outgoingSelected Whether the outgoing card is selected
+     * @param onIncomingClicked Callback when incoming card is clicked
+     * @param onOutgoingClicked Callback when outgoing card is clicked
+     * @param modifier Optional modifier for customizing the row's layout
+     */
+    @Composable
+    fun DirectionFilterRow(
+        incomingSelected: Boolean,
+        outgoingSelected: Boolean,
+        onIncomingClicked: () -> Unit,
+        onOutgoingClicked: () -> Unit,
+        modifier: Modifier = Modifier
     ) {
-        DirectionCard(
-            icon = incomingImage,
-            colour = Color(0xFF4CAF50),
-            isSelected = incomingSelected,
-            onClick = onIncomingClicked,
-            modifier = Modifier.weight(1f)
-        )
 
-        DirectionCard(
-            icon = outgoingImage,
-            colour = Color(0xFFF44336),
-            isSelected = outgoingSelected,
-            onClick = onOutgoingClicked,
-            modifier = Modifier.weight(1f)
-        )
+        Row(
+            modifier = modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            DirectionCard(
+                icon = incoming_transaction,
+                colour = Color(0xFF4CAF50),
+                isSelected = incomingSelected,
+                onClick = onIncomingClicked,
+                modifier = Modifier.weight(1f)
+            )
+
+            DirectionCard(
+                icon = outgoing_transaction,
+                colour = Color(0xFFF44336),
+                isSelected = outgoingSelected,
+                onClick = onOutgoingClicked,
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
-}
 
 @Preview(showBackground = true, widthDp = 400, heightDp = 200)
 @Composable
 private fun DirectionFilterRowPreview() {
+    var incomingSelected by remember { mutableStateOf(true) }
+    var outgoingSelected by remember { mutableStateOf(false) }
+
     MaterialTheme {
         DirectionFilterRow(
-            incomingSelected = true,
-            outgoingSelected = false,
-            onIncomingClicked = { },
-            onOutgoingClicked = { },
+            incomingSelected = incomingSelected,
+            outgoingSelected = outgoingSelected,
+            onIncomingClicked = { incomingSelected = !incomingSelected },
+            onOutgoingClicked = { outgoingSelected = !outgoingSelected },
             modifier = Modifier.padding(16.dp)
         )
     }

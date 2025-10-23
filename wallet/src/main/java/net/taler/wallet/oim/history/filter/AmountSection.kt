@@ -18,7 +18,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -55,40 +54,47 @@ fun AmountFilterSelector(
 
     val supportsDecimals = selectedCurrency != "XOF"
 
-    val currentFilter by derivedStateOf {
-        when (filterType) {
-            FilterType.None -> null
-            FilterType.Exact -> {
-                if (exactValue.isNotBlank()) {
-                    AmountFilter.Exact(
-                        Amount(
-                            value = exactValue.toLongOrNull() ?: 0L,
-                            fraction = if (supportsDecimals) exactFraction.toIntOrNull() ?: 0 else 0,
-                            currency = selectedCurrency
+    val currentFilter by remember {
+        derivedStateOf {
+            when (filterType) {
+                FilterType.None -> null
+                FilterType.Exact -> {
+                    if (exactValue.isNotBlank()) {
+                        AmountFilter.Exact(
+                            Amount(
+                                value = exactValue.toLongOrNull() ?: 0L,
+                                fraction = if (supportsDecimals) exactFraction.toIntOrNull()
+                                    ?: 0 else 0,
+                                currency = selectedCurrency
+                            )
                         )
-                    )
-                } else null
-            }
-            FilterType.Range -> {
-                if (rangeMinValue.isNotBlank() && rangeMaxValue.isNotBlank()) {
-                    AmountFilter.Range(
-                        min = Amount(
-                            value = rangeMinValue.toLongOrNull() ?: 0L,
-                            fraction = if (supportsDecimals) rangeMinFraction.toIntOrNull() ?: 0 else 0,
-                            currency = selectedCurrency
-                        ),
-                        max = Amount(
-                            value = rangeMaxValue.toLongOrNull() ?: 0L,
-                            fraction = if (supportsDecimals) rangeMaxFraction.toIntOrNull() ?: 0 else 0,
-                            currency = selectedCurrency
+                    } else null
+                }
+
+                FilterType.Range -> {
+                    if (rangeMinValue.isNotBlank() && rangeMaxValue.isNotBlank()) {
+                        AmountFilter.Range(
+                            min = Amount(
+                                value = rangeMinValue.toLongOrNull() ?: 0L,
+                                fraction = if (supportsDecimals) rangeMinFraction.toIntOrNull()
+                                    ?: 0 else 0,
+                                currency = selectedCurrency
+                            ),
+                            max = Amount(
+                                value = rangeMaxValue.toLongOrNull() ?: 0L,
+                                fraction = if (supportsDecimals) rangeMaxFraction.toIntOrNull()
+                                    ?: 0 else 0,
+                                currency = selectedCurrency
+                            )
                         )
-                    )
-                } else null
-            }
-            FilterType.Multiple -> {
-                if (multipleAmounts.isNotEmpty()) {
-                    AmountFilter.OneOrMoreOf(multipleAmounts.toSet())
-                } else null
+                    } else null
+                }
+
+                FilterType.Multiple -> {
+                    if (multipleAmounts.isNotEmpty()) {
+                        AmountFilter.OneOrMoreOf(multipleAmounts.toSet())
+                    } else null
+                }
             }
         }
     }
@@ -209,7 +215,8 @@ fun AmountFilterSelector(
                                     if (tempValue.isNotBlank()) {
                                         val newAmount = Amount(
                                             value = tempValue.toLongOrNull() ?: 0L,
-                                            fraction = if (supportsDecimals) tempFraction.toIntOrNull() ?: 0 else 0,
+                                            fraction = if (supportsDecimals) tempFraction.toIntOrNull()
+                                                ?: 0 else 0,
                                             currency = selectedCurrency
                                         )
                                         if (!multipleAmounts.contains(newAmount)) {
@@ -321,7 +328,11 @@ fun AmountFilterSelector(
                                         Box(
                                             modifier = Modifier
                                                 .size(8.dp)
-                                                .border(2.dp, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(4.dp))
+                                                .border(
+                                                    2.dp,
+                                                    MaterialTheme.colorScheme.onSurface,
+                                                    RoundedCornerShape(4.dp)
+                                                )
                                         )
                                     }
                                 }
@@ -410,7 +421,9 @@ private fun FilterTypeButton(
         elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 1.dp)
     ) {
         Box(
-            modifier = Modifier.fillMaxSize().padding(8.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
             contentAlignment = Alignment.Center
         ) {
             when (filterType) {
@@ -446,7 +459,11 @@ private fun FilterTypeButton(
                                     Box(
                                         modifier = Modifier
                                             .size(4.dp)
-                                            .border(1.dp, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(2.dp))
+                                            .border(
+                                                1.dp,
+                                                MaterialTheme.colorScheme.onSurface,
+                                                RoundedCornerShape(2.dp)
+                                            )
                                     )
                                 }
                             }
