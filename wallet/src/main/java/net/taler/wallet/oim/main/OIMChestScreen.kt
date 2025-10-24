@@ -26,11 +26,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -88,203 +93,211 @@ fun OIMChestScreenContent(
                 modifier = Modifier.fillMaxSize(),
             )
 
-            /**
-             * Top row: Send (left), Chest (center), Receive (right)
-             */
-            Row(
+            Box(
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
             ) {
-                /** Left send button */
-                val sendInteraction = remember { MutableInteractionSource() }
-                val isSendPressed by sendInteraction.collectIsPressedAsState()
-
-
-                Box(
+                /**
+                 * Top row: Send (left), Chest (center), Receive (right)
+                 */
+                Row(
                     modifier = Modifier
-                        .size(110.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(
-                            Color(0xFFC32909).copy(alpha = if (isSendPressed) 0.9f else 0.3f)
-                        )
-                        .clickable(
-                            interactionSource = sendInteraction,
-                            indication = null,
-                            onClick = onSendClick
-                        ),
-                    contentAlignment = Alignment.Center
+                        .align(Alignment.TopCenter)
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.send),
-                        contentDescription = "Send",
-                        modifier = Modifier.size(100.dp)
-                    )
+                    /** Left send button */
+                    val sendInteraction = remember { MutableInteractionSource() }
+                    val isSendPressed by sendInteraction.collectIsPressedAsState()
+
+
+                    Box(
+                        modifier = Modifier
+                            .size(110.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                Color(0xFFC32909).copy(alpha = if (isSendPressed) 0.9f else 0.3f)
+                            )
+                            .clickable(
+                                interactionSource = sendInteraction,
+                                indication = null,
+                                onClick = onSendClick
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.send),
+                            contentDescription = "Send",
+                            modifier = Modifier.size(100.dp)
+                        )
+                    }
+
+                    /**
+                     * Center chest button (navigate back)
+                     * TODO: Make this dynamically match the user's region or currency.
+                     */
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clickable(onClick = onBackClick),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.chest_open),
+                            contentDescription = "Chest",
+                            modifier = Modifier.size(70.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+
+                    /** Right receive button */
+                    val receiveInteraction = remember { MutableInteractionSource() }
+                    val isReceivePressed by receiveInteraction.collectIsPressedAsState()
+
+                    Box(
+                        modifier = Modifier
+                            .size(110.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                Color(0xFF4CAF50).copy(alpha = if (isReceivePressed) 0.9f else 0.3f)
+                            )
+                            .clickable(
+                                interactionSource = receiveInteraction,
+                                indication = null,
+                                onClick = onRequestClick
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.receive),
+                            contentDescription = "Receive",
+                            modifier = Modifier.size(100.dp)
+                        )
+                    }
+
                 }
 
                 /**
-                 * Center chest button (navigate back)
-                 * TODO: Make this dynamically match the user's region or currency.
+                 * Center area — shows balance and "Withdraw Test KUDOS" button.
                  */
-                Box(
+                Column(
                     modifier = Modifier
-                        .size(80.dp)
-                        .clickable(onClick = onBackClick),
-                    contentAlignment = Alignment.Center
+                        .align(Alignment.Center)
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.chest_open),
-                        contentDescription = "Chest",
-                        modifier = Modifier.size(70.dp),
-                        contentScale = ContentScale.Fit
-                    )
-                }
+                    val selectedBalance = when (balanceState) {
+                        is BalanceState.Success -> {
+                            balanceState.balances.firstOrNull { it.currency == "KUDOS" }
+                                ?: balanceState.balances.firstOrNull { it.currency == "TESTKUDOS" }
+                                ?: balanceState.balances.firstOrNull()
+                        }
 
-                /** Right receive button */
-                val receiveInteraction = remember { MutableInteractionSource() }
-                val isReceivePressed by receiveInteraction.collectIsPressedAsState()
-
-                Box(
-                    modifier = Modifier
-                        .size(110.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(
-                            Color(0xFF4CAF50).copy(alpha = if (isReceivePressed) 0.9f else 0.3f)
-                        )
-                        .clickable(
-                            interactionSource = receiveInteraction,
-                            indication = null,
-                            onClick = onRequestClick
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.receive),
-                        contentDescription = "Receive",
-                        modifier = Modifier.size(100.dp)
-                    )
-                }
-
-            }
-
-            /**
-             * Center area — shows balance and "Withdraw Test KUDOS" button.
-             */
-            Column(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                val selectedBalance = when (balanceState) {
-                    is BalanceState.Success -> {
-                        balanceState.balances.firstOrNull { it.currency == "KUDOS" }
-                            ?: balanceState.balances.firstOrNull { it.currency == "TESTKUDOS" }
-                            ?: balanceState.balances.firstOrNull()
+                        else -> null
                     }
 
-                    else -> null
-                }
+                    val balanceText = when (balanceState) {
+                        is BalanceState.Success ->
+                            selectedBalance?.available?.toString(showSymbol = false) ?: "0"
 
-                val balanceText = when (balanceState) {
-                    is BalanceState.Success ->
-                        selectedBalance?.available?.toString(showSymbol = false) ?: "0"
+                        is BalanceState.Loading -> "Loading..."
+                        is BalanceState.Error -> "Error"
+                        else -> "0"
+                    }
 
-                    is BalanceState.Loading -> "Loading..."
-                    is BalanceState.Error -> "Error"
-                    else -> "0"
-                }
+                    val currencyText = selectedBalance?.currency ?: "KUDOS"
 
-                val currencyText = selectedBalance?.currency ?: "KUDOS"
-
-                Text(
-                    text = balanceText,
-                    color = Color.White,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 48.sp
-                )
-                Text(
-                    text = currencyText,
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 24.sp
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                /** Withdraw Test KUDOS button */
-                Box(
-                    modifier = Modifier
-                        .clickable(onClick = onWithdrawTestKudosClick)
-                        .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(8.dp))
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
                     Text(
-                        text = "Withdraw Test KUDOS",
-                        color = Color.Black,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
+                        text = balanceText,
+                        color = Color.White,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 48.sp
                     )
+                    Text(
+                        text = currencyText,
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 24.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    /** Withdraw Test KUDOS button */
+                    Box(
+                        modifier = Modifier
+                            .clickable(onClick = onWithdrawTestKudosClick)
+                            .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Withdraw Test KUDOS",
+                            color = Color.Black,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
-            }
 
-            /**
-             * Bottom row: Transaction History button (ledger icon)
-             */
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.Bottom
-            ) {
-
-                /** state for alpha values */
-                val histInteraction = remember { MutableInteractionSource() }
-                val isHistPressed by histInteraction.collectIsPressedAsState()
-
-                Box(
+                /**
+                 * Bottom row: Transaction History button (ledger icon)
+                 */
+                Row(
                     modifier = Modifier
-                        .size(110.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0x6600838F)
-                            .copy(alpha =if (isHistPressed) 0.9f else 0.3f))
-                        .clickable(onClick = onTransactionHistoryClick),
-                    contentAlignment = Alignment.Center
+                        .align(Alignment.BottomCenter)
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.Bottom
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.transaction_history),
-                        contentDescription = "Transaction History",
-                        modifier = Modifier.size(100.dp)
-                    )
+
+                    /** state for alpha values */
+                    val histInteraction = remember { MutableInteractionSource() }
+                    val isHistPressed by histInteraction.collectIsPressedAsState()
+
+                    Box(
+                        modifier = Modifier
+                            .size(110.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                Color(0x6600838F)
+                                    .copy(alpha = if (isHistPressed) 0.9f else 0.3f)
+                            )
+                            .clickable(onClick = onTransactionHistoryClick),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.transaction_history),
+                            contentDescription = "Transaction History",
+                            modifier = Modifier.size(100.dp)
+                        )
+                    }
                 }
             }
 
         }
     }
 }
-    /**
 
-     * Preview for the OIM Chest Screen.
-     * Uses a mock empty balance state.
-     */
-    @Preview
-    @Composable
-    fun OIMChestScreenPreview() {
-        MaterialTheme {
-            OIMChestScreenContent(
-                onBackClick = { },
-                onSendClick = { },
-                onRequestClick = { },
-                onTransactionHistoryClick = { },
-                onWithdrawTestKudosClick = { },
-                balanceState = BalanceState.Success(emptyList())
-            )
-        }
+/**
+ * Preview for the OIM Chest Screen.
+ * Uses a mock empty balance state.
+ */
+@Preview
+@Composable
+fun OIMChestScreenPreview() {
+    MaterialTheme {
+        OIMChestScreenContent(
+            onBackClick = { },
+            onSendClick = { },
+            onRequestClick = { },
+            onTransactionHistoryClick = { },
+            onWithdrawTestKudosClick = { },
+            balanceState = BalanceState.Success(emptyList())
+        )
     }
+}
 

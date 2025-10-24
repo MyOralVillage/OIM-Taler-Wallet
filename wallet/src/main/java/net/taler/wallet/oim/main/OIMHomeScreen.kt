@@ -20,9 +20,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -84,45 +89,52 @@ fun OIMHomeScreenContent(
                 contentScale = ContentScale.Crop
             )
 
-            // Back to Taler button at top-right (optional)
             Box(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(16.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color.White.copy(alpha = 0.9f))
-                    .clickable(onClick = onBackToTalerClick)
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {}
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .size(48.dp)
-                    .background(Color.Black.copy(alpha = 0.9f))
-                    .clickable(onClick = onScanQrClick),
-                contentAlignment = Alignment.Center
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_scan_qr),
-                    contentDescription = stringResource(R.string.button_scan_qr_code),
-                    modifier = Modifier,
-                    alignment = Alignment.Center
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(120.dp)
-                    .clickable(onClick = onChestClick),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.chest_closed),
-                    contentDescription = "Chest",
-                    modifier = Modifier.size(100.dp),
-                    contentScale = ContentScale.Fit
-                )
+                // Back to Taler button at top-right (optional)
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.White.copy(alpha = 0.9f))
+                        .clickable(onClick = onBackToTalerClick)
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {}
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(16.dp)
+                        .size(48.dp)
+                        .background(Color.Black.copy(alpha = 0.9f))
+                        .clickable(onClick = onScanQrClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_scan_qr),
+                        contentDescription = stringResource(R.string.button_scan_qr_code),
+                        modifier = Modifier,
+                        alignment = Alignment.Center
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(120.dp)
+                        .clickable(onClick = onChestClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.chest_closed),
+                        contentDescription = "Chest",
+                        modifier = Modifier.size(100.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
             }
         }
     }
