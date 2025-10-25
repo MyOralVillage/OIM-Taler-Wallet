@@ -16,19 +16,16 @@ package net.taler.wallet.oim.res_mapping_extensions
  */
 
 import androidx.annotation.DrawableRes
-import androidx.compose.runtime.Composable
 import net.taler.common.R
 import net.taler.database.data_models.*
 
-@Composable
+/** KUDOS mapped to Leones */
 @DrawableRes
 internal fun Amount.resourceMapper(): List<Int> {
     val result = mutableListOf<Int>()
 
     when (currency) {
         "CHF" -> {
-            // Convert CHF to half-franc units
-            // fraction is in units of 1e-8, so we need to divide by FRACTIONAL_BASE
             val totalHalfFrancs = value * 2 + (fraction * 2L / Amount.FRACTIONAL_BASE)
             result.addAll(mapToBills(totalHalfFrancs, CHF_BILLS))
         }
@@ -38,12 +35,11 @@ internal fun Amount.resourceMapper(): List<Int> {
             result.addAll(mapToBills(value, XOF_BILLS))
         }
         "EUR" -> {
-            // fraction is in units of 1e-8, convert to cents by dividing by 1e6
             val totalCents = value * 100 + (fraction / 1_000_000)
             result.addAll(mapToBills(totalCents, EUR_BILLS_CENTS))
         }
-        "SLE" -> {
-            // fraction is in units of 1e-8, convert to cents by dividing by 1e6
+
+         "SLE", "KUDOS", "KUD" -> {
             val totalCents = value * 100 + (fraction / 1_000_000)
             result.addAll(mapToBills(totalCents, SLE_BILLS_CENTS))
         }
@@ -55,7 +51,6 @@ internal fun Amount.resourceMapper(): List<Int> {
 
 /** Map amount to bills/coins using provided denominations (descending order). */
 @DrawableRes
-@Composable
 private fun mapToBills(amount: Long, bills: List<Pair<Int, Int>>): List<Int> {
     val result = mutableListOf<Int>()
     var remaining = amount
@@ -63,8 +58,7 @@ private fun mapToBills(amount: Long, bills: List<Pair<Int, Int>>): List<Int> {
     for ((billValue, resId) in bills) {
         while (remaining >= billValue) {
             remaining -= billValue
-            val vector: Int = resId
-            result.add(vector)
+            result.add(resId)
         }
     }
 
@@ -79,17 +73,17 @@ private fun mapToBills(amount: Long, bills: List<Pair<Int, Int>>): List<Int> {
 
 // === CHF denominations in half-franc units ===
 val CHF_BILLS = listOf(
-    200_000 to R.drawable.chf_hundred_thousand, // 1000 CHF
-    40_000  to R.drawable.chf_twenty_thousand,  // 200 CHF
-    20_000  to R.drawable.chf_ten_thousand,     // 100 CHF
-    10_000  to R.drawable.chf_five_thousand,    // 50 CHF
-    4_000   to R.drawable.chf_two_thousand,     // 20 CHF
-    2_000   to R.drawable.chf_one_thousand,     // 10 CHF
-    1_000   to R.drawable.chf_five_hundred,     // 5 CHF
-    400     to R.drawable.chf_two_hundred,      // 2 CHF
-    200     to R.drawable.chf_one_hundred,      // 1 CHF
-    2       to R.drawable.chf_one,              // 1 CHF coin
-    1       to R.drawable.chf_zero_point_five   // 0.5 CHF coin
+    200_000 to R.drawable.chf_hundred_thousand,
+    40_000  to R.drawable.chf_twenty_thousand,
+    20_000  to R.drawable.chf_ten_thousand,
+    10_000  to R.drawable.chf_five_thousand,
+    4_000   to R.drawable.chf_two_thousand,
+    2_000   to R.drawable.chf_one_thousand,
+    1_000   to R.drawable.chf_five_hundred,
+    400     to R.drawable.chf_two_hundred,
+    200     to R.drawable.chf_one_hundred,
+    2       to R.drawable.chf_one,
+    1       to R.drawable.chf_zero_point_five
 )
 
 // === XOF denominations (integer values only) ===
@@ -127,15 +121,15 @@ val EUR_BILLS_CENTS = listOf(
 
 // === SLE denominations (in cents, supports fractions) ===
 val SLE_BILLS_CENTS = listOf(
-    100_000 to R.drawable.sle_one_thousand,      // 1000.00 SLE
-    10_000  to R.drawable.sle_one_hundred,       // 100.00 SLE
-    4_000   to R.drawable.sle_forty,             // 40.00 SLE
-    2_000   to R.drawable.sle_twenty,            // 20.00 SLE
-    1_000   to R.drawable.sle_ten,               // 10.00 SLE
-    500     to R.drawable.sle_five,              // 5.00 SLE
-    200     to R.drawable.sle_two,               // 2.00 SLE
-    100     to R.drawable.sle_one,               // 1.00 SLE
-    50      to R.drawable.sle_zero_point_five,   // 0.50 SLE
+    100_000 to R.drawable.sle_one_thousand,
+    10_000  to R.drawable.sle_one_hundred,
+    4_000   to R.drawable.sle_forty,
+    2_000   to R.drawable.sle_twenty,
+    1_000   to R.drawable.sle_ten,
+    500     to R.drawable.sle_five,
+    200     to R.drawable.sle_two,
+    100     to R.drawable.sle_one,
+    50      to R.drawable.sle_zero_point_five,
     25      to R.drawable.sle_zero_point_twenty_five,
     10      to R.drawable.sle_zero_point_one,
     5       to R.drawable.sle_zero_point_zero_five,

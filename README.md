@@ -29,6 +29,7 @@ GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT MAY BREAK EXISTING GNU T
 - Transaction history should potentially explore pagination 
 - Transaction history might benefit from a default screen when there are no transactions in the system
 - App version is bugged
+- Only KUDOS are properly integrated; currently mapped to Leones (1:1)
 ---
 # Building and Structure
 

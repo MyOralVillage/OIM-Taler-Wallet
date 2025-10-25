@@ -1,6 +1,3 @@
-/*
- * GPLv3-or-later
- */
 package net.taler.wallet.oim.send.components
 
 import androidx.compose.foundation.Image
@@ -20,6 +17,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * A tile representing a selectable purpose in the OIM Send flow.
+ *
+ * Displays a bitmap icon above a label. Clicking the tile triggers [onPick].
+ *
+ * @param bitmap Icon representing the purpose.
+ * @param label Text label for the purpose.
+ * @param modifier Optional [Modifier] for styling/layout.
+ * @param onPick Callback invoked when the tile is selected.
+ */
 @Composable
 fun PurposeTile(
     bitmap: ImageBitmap,
@@ -40,15 +47,7 @@ fun PurposeTile(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-<<<<<<< HEAD
-<<<<<<< HEAD
-                painter = assetPainterOrPreview(path),
-=======
-                painter = assetPainterOrPreview(path, PreviewAssets.id(path)),
->>>>>>> 5c7011a (fixed preview animations)
-=======
                 bitmap = bitmap,
->>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
                 contentDescription = label,
                 modifier = Modifier
                     .fillMaxWidth()

@@ -1,40 +1,9 @@
-/*
- * This file is part of GNU Taler
- * (C) 2025 Taler Systems S.A.
- *
- * GNU Taler is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 3, or (at your option) any later version.
- *
- * GNU Taler is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
- */
-
-/**
- * ## NotesPile
- *
- * Composable that renders a centered stack of landed banknotes.
- * Each note is slightly rotated and offset to produce a natural,
- * scattered pile effect, representing received or accumulated
- * notes during the Send animation.
- *
- * This component is typically updated when [NoteFlyer] animations
- * complete, with new bitmaps appended to the [landedNotes] list.
- *
- * @param landedNotes List of note bitmaps that have "landed".
- * @param noteWidthPx Width of each note in pixels (used for size and proportion).
- * @see net.taler.wallet.oim.send.components.NoteFlyer
- */
-
 package net.taler.wallet.oim.send.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
@@ -45,13 +14,30 @@ import androidx.compose.ui.unit.dp
 import kotlin.random.Random
 
 /**
- * Centered stack of landed notes.
- * Call landedNotes.add(bmp) when a flyer arrives (see NoteFlyer usage).
+ * ## NotesPile
+ *
+ * Renders a visually scattered pile of banknotes centered on the screen.
+ * Each note is slightly rotated and offset for a natural, layered effect.
+ *
+ * This is typically used alongside [NoteFlyer]. When a flyer animation
+ * completes, its bitmap is added to [landedNotes] to appear in the pile.
+ *
+ * Notes are drawn in the order they appear in [landedNotes]: first items
+ * appear at the bottom, later items appear on top.
+ *
+ * @param landedNotes List of bitmaps representing notes that have landed.
+ *                     New notes should be appended to this list when
+ *                     flyer animations finish.
+ * @param noteWidthPx Width of each note in pixels. The height is
+ *                    automatically calculated as `0.55 × width` to
+ *                    maintain visual proportion with flyers.
+ *
+ * @see NoteFlyer for animated flying notes.
  */
 @Composable
 fun NotesPile(
     landedNotes: List<ImageBitmap>,
-    noteWidthPx: Float,              // keep same width as flyers
+    noteWidthPx: Float
 ) {
     val density = LocalDensity.current
     val wDp = with(density) { noteWidthPx.toDp() }
@@ -61,12 +47,12 @@ fun NotesPile(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        // draw bottom first → newest on top
+        // Draw notes bottom-to-top
         landedNotes.forEachIndexed { i, bmp ->
-            // stable randoms per item index
-            val rot = remember(i) { Random.nextFloat() * 18f - 9f }          // -9..+9 deg
-            val dx = remember(i) { (Random.nextInt(-10, 10)).dp }            // tiny shift
-            val dy = remember(i) { (Random.nextInt(-6, 6)).dp }
+            // Stable pseudo-random rotation and offset per note
+            val rot = remember(i) { Random.nextFloat() * 18f - 9f }   // -9..+9 degrees
+            val dx = remember(i) { (Random.nextInt(-10, 10)).dp }     // slight horizontal shift
+            val dy = remember(i) { (Random.nextInt(-6, 6)).dp }       // slight vertical shift
 
             Image(
                 bitmap = bmp,

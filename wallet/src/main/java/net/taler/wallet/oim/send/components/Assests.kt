@@ -23,11 +23,14 @@ import androidx.compose.ui.res.painterResource
 import net.taler.wallet.oim.res_mapping_extensions.Background
 
 /**
- * Simple helper to paint the wooden table background using drawable mappers.
+ * Paints the wooden table background using drawable mappers.
+ * @param modifier Optional [Modifier] for styling, sizing, or positioning the background.
+ * @param light Deprecated; previously used for legacy behavior. Pass `null`.
  */
 @Composable
 fun WoodTableBackground(
     modifier: Modifier = Modifier,
+    light: Boolean? = null
 ) {
     Image(
         painter = painterResource(Background(LocalContext.current).resourceMapper()),

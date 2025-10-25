@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 /*
-<<<<<<< HEAD
-<<<<<<< HEAD
  * This file is part of GNU Taler
  * (C) 2025 Taler Systems S.A.
  *
@@ -15,37 +12,6 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
- */
-
-/*
-=======
->>>>>>> 5c7011a (fixed preview animations)
-=======
->>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
- * GPLv3-or-later
-=======
-/**
- * ## NoteFlyer
- *
- * Composable animation of a “flying banknote” used during the Send
- * sequence in the OIM Wallet. The note bitmap moves smoothly from a
- * start to an end position while scaling and fading, visually
- * representing a payment in motion.
- *
- * The animation sequence:
- * 1. Fades in and scales up the note.
- * 2. Moves it across the screen toward the landing area.
- * 3. Fades it out and invokes [onArrive] when completed.
- *
- * Designed to be used alongside [NotesPile] to simulate incoming or
- * outgoing money transfer visuals.
- *
- * @param noteBitmap The image of the note to animate.
- * @param startInRoot Starting position (in root coordinates).
- * @param endInRoot Destination position (in root coordinates).
- * @param widthPx The width of the note bitmap in pixels.
- * @param onArrive Callback triggered when the animation ends.
->>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
  */
 
 package net.taler.wallet.oim.send.components
@@ -72,7 +38,21 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
 /**
- * Animated “flying banknote” using a provided bitmap.
+ * ## NoteFlyer
+ *
+ * Animates a “flying banknote” across the screen for visual feedback
+ * during a send transaction.
+ *
+ * The animation sequence:
+ * 1. The note fades in and scales from 0.7x to 1x.
+ * 2. Moves from [startInRoot] to [endInRoot] coordinates.
+ * 3. Fades out and invokes [onArrive] upon completion.
+ *
+ * @param noteRes Resource ID of the note image to animate.
+ * @param startInRoot Starting position of the note in root coordinates (pixels).
+ * @param endInRoot Ending position of the note in root coordinates (pixels).
+ * @param widthPx Width of the note in pixels. Height is calculated proportionally (≈0.55× width).
+ * @param onArrive Callback triggered when the animation finishes.
  */
 @Composable
 fun NoteFlyer(
@@ -104,19 +84,7 @@ fun NoteFlyer(
     val heightDp = with(density) { hPx.toDp() }
 
     Image(
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        painter = assetPainterOrPreview(path),
-=======
-        painter = assetPainterOrPreview(path, PreviewAssets.id(path)),
->>>>>>> 5c7011a (fixed preview animations)
-=======
-        bitmap = noteBitmap,
->>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
-=======
         painter = painterResource(noteRes),
->>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier = Modifier
