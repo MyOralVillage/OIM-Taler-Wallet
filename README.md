@@ -104,7 +104,7 @@ Orali Money provides a safe, inclusive financial tool that addresses this barrie
 ## Key Features
 - **Send Money** – Users can easily select how much money they wish to send using icons and banknotes, along with a purpose for the payment, also represented with icons. Upon confirmation, it displays a QR Code for a potential recipient to scan and Receive the payment.
 - **Receive Money** – Users can scan a QR Code to accept a incoming "Send Money" payment. Upon scanning, you will be redirected to a dialog that allows for clear notification when funds arrive, shown visually in their balance. Users can either accept or reject the payment.
-- **Transaction History** – Chronological and visual record of past activity, designed for easy comprehension with icons and visuals.
+- **Transaction History** – Chronological and visual record of past transactions, designed for easy comprehension with icons and visuals. 
 - **Shareability** – Literate users can easily share the app with loved ones, who can learn to use it in under a week.
 - **Error Handling** – Errors are conveyed with clear icons.
 
@@ -122,7 +122,12 @@ Orali Money provides a safe, inclusive financial tool that addresses this barrie
 8. The top center chest button, on the Wallet  screen, takes you back to the OIM Home Screen.
 9. Navigation: Use the provided Back to taler button to go back to the Taler Main UI. Use the android Back buttons to go back one screen.
 ---
+## Design Choices:
+Certain Design Choices were made in the development of the app and features that may not seem obvious at first glance. Provided here is a short justification as to why they were made.
 
+1.Banknote Stacks and certain Icons: In the wallet screen,home screen, etc. certain icons are used, and certain values are displayed as stacks in a certain way. For example, the 40 value is displayed as a specific stack
+with a 20 SLE vertically stacked on a horizontal 20 SLE note. A "Receive Money" is displayed as a hand accepting money icon. Our partners provided us this representation, and these are what they have come up with after their research in the field in Sierra Leone. That is why we have chose to display and use it this way.
+2. TEST KUDOS represented with SLE throughout the wallet: Because we were not provided with assets for the test currency, we decided to use SLE notes to represent it, as it seemed like the most obvious choice to us. We already had a workflow and integration with SLE elsewhere. Generic assets were not used, due to lack of availability when we tried finding some.
 ## Development requirements
 **Technical prerequisites:**
 - **OS:** Android 8+
