@@ -4,7 +4,6 @@ I. **Partners**
 
 * **Brett** – Partner at *My Oral Village* – Email: [brett@myoralvillage.org](mailto:brett@myoralvillage.org)
 * **David Myhre** – Partner at *My Oral Village* – Email: [dmyhre@myoralvillage.org](mailto:dmyhre@myoralvillage.org)
-* **Alam Aaman** – Software Advisor – Email: [aman@zauberkraft.ca](mailto:aman@zauberkraft.ca)
 * **Marc Stibane** – iOS Engineer – (working on usability tests) – \[email not listed]
 
 II. **Primary Partner Contact**
@@ -15,7 +14,6 @@ II. **Primary Partner Contact**
 **Secondary Partner Contacts**
 
 * **David Myhre** – [dmyhre@myoralvillage.org](mailto:dmyhre@myoralvillage.org)
-* **Alam Aaman** – [aman@zauberkraft.ca](mailto:aman@zauberkraft.ca)
 * **Marc Stibane** – iOS Engineer (supporting usability tests)
 
 III. **Teaching Assistant (TA)**

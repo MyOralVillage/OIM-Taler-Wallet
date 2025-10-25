@@ -4,6 +4,9 @@
 .AppleDouble
 .LSOverride
 
+# SDKMan!
+.sdkmanrc
+
 # Linux
 *~
 
