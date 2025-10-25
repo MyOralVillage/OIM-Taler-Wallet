@@ -28,9 +28,7 @@ import kotlin.random.Random
  * @param landedNotes List of bitmaps representing notes that have landed.
  *                     New notes should be appended to this list when
  *                     flyer animations finish.
- * @param noteWidthPx Width of each note in pixels. The height is
- *                    automatically calculated as `0.55 × width` to
- *                    maintain visual proportion with flyers.
+ * @param noteWidthPx Width of each note in pixels. Height follows the image's natural aspect ratio.
  *
  * @see NoteFlyer for animated flying notes.
  */
@@ -41,7 +39,6 @@ fun NotesPile(
 ) {
     val density = LocalDensity.current
     val wDp = with(density) { noteWidthPx.toDp() }
-    val hDp = with(density) { (noteWidthPx * 0.55f).toDp() }
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -59,12 +56,12 @@ fun NotesPile(
                 contentDescription = null,
                 modifier = Modifier
                     .offset(dx, dy)
-                    .size(wDp, hDp)
+                    .width(wDp) // Only constrain width, height is natural
                     .graphicsLayer {
                         rotationZ = rot
                         shadowElevation = 10f
                     },
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.FillWidth // Fill width, maintain aspect ratio
             )
         }
     }

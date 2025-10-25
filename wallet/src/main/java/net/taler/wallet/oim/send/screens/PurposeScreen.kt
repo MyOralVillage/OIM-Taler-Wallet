@@ -8,6 +8,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.House
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,14 +50,15 @@ fun PurposeCard(
         modifier = modifier
             .clickable(onClick = onClick)
             .border(
-                width = if (isSelected) 3.dp else 0.dp,
-                color = if (isSelected) colour else Color.Transparent,
+                width = if (isSelected) 6.dp else 3.dp,
+                color = colour,
                 shape = RoundedCornerShape(10.dp)
             ),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) colour.copy(alpha = 0.18f)
-            else Color(0x55FFFFFF)
+            containerColor =
+                if (isSelected) colour.copy(alpha = 0.01f)
+                else colour.copy(alpha = 0.2f)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -104,19 +108,19 @@ fun PurposeScreen(
             modifier = Modifier
                 .padding(12.dp)
                 .align(Alignment.TopStart)
-        ) { Text("Back") }
+        ) { Icon(
+            Icons.Filled.ArrowBackIosNew,
+            contentDescription = "Home",
+            tint = Color.White,
+            modifier = Modifier.size(34.dp),
+        ) }
 
         Column(
             Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp, vertical = 56.dp)
         ) {
-            Text(
-                text = "Choose purpose",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.SemiBold
-            )
+
             Spacer(Modifier.height(16.dp))
 
             // Scrollable grid of purposes

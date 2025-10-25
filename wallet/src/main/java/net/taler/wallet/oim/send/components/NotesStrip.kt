@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInRoot
@@ -33,6 +35,7 @@ import net.taler.database.data_models.Amount
  *
  * @param noteThumbWidth Width of each note thumbnail (typically 140–180 dp).
  * @param notes List of pairs of drawable resource IDs and their associated [Amount].
+ * @param enabledStates List of booleans indicating whether each note is affordable.
  * @param onAddRequest Callback invoked when a note is tapped; supplies the [Amount]
  *                     and the center position of the thumbnail in root coordinates,
  *                     used to determine the animation start for [NoteFlyer].
@@ -45,6 +48,7 @@ import net.taler.database.data_models.Amount
 fun NotesStrip(
     noteThumbWidth: Dp,
     notes: List<Pair<Int, Amount>>,
+    enabledStates: List<Boolean> = List(notes.size) { true }, // Default all enabled
     onAddRequest:(Amount, Offset) -> Unit,
     onRemoveLast: (Amount) -> Unit
 ) {
@@ -63,24 +67,19 @@ fun NotesStrip(
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        notes.forEach { (res, amount) ->
+        notes.forEachIndexed { index, (res, amount) ->
+            val isEnabled = enabledStates.getOrElse(index) { true }
             NoteThumb(
                 res = res,
-                width = noteThumbWidth
+                width = noteThumbWidth,
+                enabled = isEnabled
             ) { centerInRoot ->
-                lastAdded = amount
-                onAddRequest(amount, centerInRoot)
+                if (isEnabled) {
+                    lastAdded = amount
+                    onAddRequest(amount, centerInRoot)
+                }
             }
             Spacer(Modifier.width(14.dp))
-        }
-
-        Button(
-            onClick = { lastAdded?.let(onRemoveLast) },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDD3333)),
-            contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
-            modifier = Modifier.padding(start = 8.dp)
-        ) {
-            Text("Undo", color = Color.White)
         }
     }
 }
@@ -93,37 +92,52 @@ fun NotesStrip(
  *
  * @param res Drawable resource ID of the note.
  * @param width Width of the thumbnail in dp.
+ * @param enabled Whether the note can be tapped (greys out if false).
  * @param onTapWithPos Callback invoked on tap, supplying the center position in root coordinates.
  */
 @Composable
 private fun NoteThumb(
     @DrawableRes res: Int,
     width: Dp,
+    enabled: Boolean = true,
     onTapWithPos: (centerInRoot: Offset) -> Unit
 ) {
     var center by remember { mutableStateOf(Offset.Zero) }
 
     val corner = 16.dp
     val border = 3.dp
-    val height = width * 0.58f
+
+    // Greyscale color matrix for disabled state
+    val greyMatrix = ColorMatrix().apply {
+        setToSaturation(0f)
+    }
 
     Card(
         modifier = Modifier
-            .width(width)
-            .height(height)
+            .width(width) // Only constrain width
             .onGloballyPositioned { lc -> center = lc.boundsInRoot().center }
-            .clickable { onTapWithPos(center) }
-            .border(border, Color(0xFF00D9FF), RoundedCornerShape(corner))
+            .clickable(enabled = enabled) { onTapWithPos(center) }
+            .border(
+                border,
+                if (enabled) Color(0xFF00D9FF) else Color(0x66FFFFFF),
+                RoundedCornerShape(corner)
+            )
             .padding(4.dp),
         shape = RoundedCornerShape(corner),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0x66FFFFFF))
+        elevation = CardDefaults.cardElevation(defaultElevation = if (enabled) 8.dp else 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (enabled) Color(0x66FFFFFF) else Color(0x33FFFFFF)
+        )
     ) {
         Image(
             painter = painterResource(res),
             contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Fit
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(), // Let height wrap to content
+            contentScale = ContentScale.FillWidth, // Fill width, maintain aspect ratio
+            alpha = if (enabled) 1f else 0.4f,
+            colorFilter = if (!enabled) ColorFilter.colorMatrix(greyMatrix) else null
         )
     }
 }

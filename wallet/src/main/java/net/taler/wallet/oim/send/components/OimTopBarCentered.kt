@@ -50,8 +50,8 @@ fun OimTopBarCentered(
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .size(64.dp)
-                .clip(RoundedCornerShape(32.dp))
+                .size(120.dp)
+                .clip(RoundedCornerShape(110.dp))
                 .background(Color(0x33000000))
                 .clickable { onSendClick() },
             contentAlignment = Alignment.Center
@@ -59,7 +59,7 @@ fun OimTopBarCentered(
             Image(
                 bitmap = ImageBitmap.imageResource(sendBitmap),
                 contentDescription = "Send",
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(100.dp),
                 contentScale = ContentScale.Fit
             )
         }
@@ -72,14 +72,14 @@ fun OimTopBarCentered(
             Image(
                 painter = painterResource(chestBitmap),
                 contentDescription = "Chest",
-                modifier = Modifier.size(64.dp),
+                modifier = Modifier.size(100.dp),
                 contentScale = ContentScale.Fit
             )
             Spacer(Modifier.height(8.dp))
             Text(
                 text = "${balance.amountStr} ${balance.spec?.name ?: balance.currency}",
                 color = Color.White,
-                fontSize = 28.sp,
+                fontSize = 32.sp,
                 fontWeight = FontWeight.SemiBold
             )
         }

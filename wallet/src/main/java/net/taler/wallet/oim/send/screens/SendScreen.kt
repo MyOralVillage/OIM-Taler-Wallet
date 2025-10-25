@@ -2,13 +2,12 @@ package net.taler.wallet.oim.send.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.imageResource
@@ -21,6 +20,9 @@ import net.taler.database.data_models.Amount
 import net.taler.wallet.oim.res_mapping_extensions.*
 import net.taler.wallet.oim.send.components.*
 import java.math.BigDecimal
+import androidx.compose.material.icons.filled.MoneyOff
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 
 /**
  * Main screen for sending money.
@@ -64,16 +66,6 @@ fun SendScreen(
     BoxWithConstraints(Modifier.fillMaxSize()) {
         WoodTableBackground(modifier = Modifier.fillMaxSize(), light = false)
 
-        // Home button
-        IconButton(
-            onClick = onHome,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(8.dp)
-                .size(60.dp)
-        ) {
-            Icon(Icons.Filled.Home, contentDescription = "Home", tint = Color.White)
-        }
 
         // Flying note state
         data class Pending(val value: Amount, val bmp: Int, val start: Offset)
@@ -95,6 +87,49 @@ fun SendScreen(
             landedNotes = pile.map { ImageBitmap.imageResource(it) },
             noteWidthPx = pileWidthPx
         )
+
+        // After the Home button in SendScreen
+        IconButton(
+            onClick = onHome,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(8.dp)
+                .size(60.dp)
+        ) {
+            Icon(
+                Icons.Filled.House,
+                contentDescription = "Home",
+                tint = Color.White,
+                modifier = Modifier.size(120.dp),
+                )
+        }
+
+// Add Undo button in top-right
+        Button(
+            onClick = {
+                if (pileAmounts.isNotEmpty()) {
+                    val popped = pileAmounts.removeAt(pileAmounts.lastIndex)
+                    if (pile.isNotEmpty()) pile.removeAt(pile.lastIndex)
+                    displayAmount = minus(displayAmount, popped)
+                    onRemoveLast(popped)
+                }
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+            contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(8.dp)
+                .size(100.dp)
+                .alpha(0.6f)
+        ) {
+            Icon(
+                imageVector = Icons.Default.MoneyOff,
+                contentDescription = "Undo",
+                tint = Color.White,
+                modifier = Modifier.size(100.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+        }
 
         Column(
             Modifier
@@ -129,31 +164,70 @@ fun SendScreen(
 
                 FloatingActionButton(
                     onClick = onSend,
-                    containerColor = MaterialTheme.colorScheme.primary
+                    containerColor = Color(0xFFC32909),
+                    modifier = Modifier.alpha(0.8f)
                 ) {
                     Icon(
                         painter = painterResource(Buttons("send").resourceMapper()),
                         contentDescription = "Send",
                         tint = Color.Unspecified,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(100.dp)
                     )
                 }
             }
 
-            // Determine bills based on Amount.resourceMapper()
-            val noteThumbnails: List<Pair<Int, Amount>> = displayAmount.resourceMapper().map { resId ->
-                resId to displayAmount
+
+            // Get available denominations based on currency
+            val currency = displayAmount.spec?.name ?: displayAmount.currency
+            val availableDenominations = when (currency) {
+                "CHF" -> CHF_BILLS
+                "XOF" -> XOF_BILLS
+                "EUR" -> EUR_BILLS_CENTS
+                "SLE", "KUDOS", "KUD" -> SLE_BILLS_CENTS
+                else -> emptyList()
+            }
+
+            // Calculate remaining balance
+            val remainingBalance = minus(balance, displayAmount)
+
+            // Create note thumbnails with all denominations
+            val noteThumbnails: List<Pair<Int, Amount>> = availableDenominations.map {
+                (denomValue, resId) ->
+                val amountStr = when (currency) {
+                    "CHF" -> {
+                        val francs = denomValue / 2
+                        val halfFrancs = denomValue % 2
+                        if (halfFrancs == 0) "$francs.00" else "$francs.50"
+                    }
+                    "XOF" -> denomValue.toString()
+                    "EUR", "SLE", "KUDOS", "KUD" -> {
+                        val whole = denomValue / 100
+                        val cents = denomValue % 100
+                        "$whole.${cents.toString().padStart(2, '0')}"
+                    }
+                    else -> "0"
+                }
+                val noteAmount = Amount.fromString(currency, amountStr)
+                resId to noteAmount
+            }
+
+            // Check which notes are affordable
+            val affordableNotes = noteThumbnails.map { (resId, noteAmount) ->
+                val noteValue = BigDecimal(noteAmount.amountStr)
+                val remainingValue = BigDecimal(remainingBalance.amountStr)
+                noteValue <= remainingValue
             }
 
             NotesStrip(
                 noteThumbWidth = 160.dp,
                 notes = noteThumbnails,
+                enabledStates = affordableNotes,
                 onAddRequest = { billAmount, startCenter ->
                     val bmp = billAmount.resourceMapper().firstOrNull() ?: return@NotesStrip
                     pending = Pending(billAmount, bmp, startCenter)
                 },
                 onRemoveLast = {
-                    if (pileAmounts.isNotEmpty()) {
+                    if (pileAmounts.isNotEmpty( )) {
                         val popped = pileAmounts.removeAt(pileAmounts.lastIndex)
                         if (pile.isNotEmpty()) pile.removeAt(pile.lastIndex)
                         displayAmount = minus(displayAmount, popped)
@@ -190,8 +264,8 @@ fun SendScreen(
 private fun SendScreenPreview() {
     MaterialTheme {
         SendScreen(
-            balance = Amount.fromString("KUDOS", "25"),
-            amount = Amount.fromString("KUDOS", "0"),
+            balance = Amount.fromString("KUDOS", "100"),  // Wallet has 100
+            amount = Amount.fromString("KUDOS", "0"),     // Starting with 0 selected
             onAdd = {},
             onRemoveLast = {},
             onChoosePurpose = {},
