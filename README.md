@@ -127,7 +127,7 @@ Orali Money provides a safe, inclusive financial tool that addresses this barrie
 8. The top center chest button, on the Wallet  screen, takes you back to the OIM Home Screen.
 9. Navigation: Use the provided Back to taler button to go back to the Taler Main UI. Use the android Back buttons to go back one screen.
 ---
-## Design Choices:
+## Design Choices
 Certain Design Choices were made in the development of the app and features that may not seem obvious at first glance. Provided here is a short justification as to why they were made.
 
 1.Banknote Stacks and certain Icons: In the wallet screen,home screen, etc. certain icons are used, and certain values are displayed as stacks in a certain way. For example, the 40 value is displayed as a specific stack
