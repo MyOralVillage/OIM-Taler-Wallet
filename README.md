@@ -59,7 +59,11 @@ GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT MAY BREAK EXISTING GNU T
 - Protobuf of user settings not fully integrated
 - Withdrawing KUDOS in dev mode sometimes bugs out
 - Transaction database needs to be integrated into wallet-core 
+<<<<<<< HEAD
 >>>>>>> 3c73fbf (update gradle builds, proguard, readme)
+=======
+- Icons need touch-ups and resizing
+>>>>>>> aee51aa (updated readme)
 ---
 # Building and Structure
 

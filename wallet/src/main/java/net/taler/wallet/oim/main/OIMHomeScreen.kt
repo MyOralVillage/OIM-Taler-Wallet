@@ -53,6 +53,13 @@ import net.taler.wallet.oim.res_mapping_extensions.Buttons
 //================================================================================
 // 1. STATEFUL COMPOSABLE
 //================================================================================
+/**
+ * High-level entry point for the OIM home screen that wires the view model callbacks
+ * to the stateless UI implementation.
+ *
+ * @param modifier external modifier injected from the hosting container.
+ * @param viewModel shared [MainViewModel] used to fire navigation and scan actions.
+ */
 @Composable
 fun OIMHomeScreen(
     modifier: Modifier = Modifier,
@@ -70,6 +77,15 @@ fun OIMHomeScreen(
 //================================================================================
 // 2. STATELESS COMPOSABLE (For your actual app)
 
+/**
+ * Stateless OIM home screen that shows the wooden background, QR scan shortcut, and the
+ * navigation chest button.
+ *
+ * @param modifier layout modifier applied by the caller.
+ * @param onScanQrClick invoked when the scan shortcut is pressed.
+ * @param onChestClick invoked when the central chest is tapped.
+ * @param onBackToTalerClick optional callback for the back-to-Taler affordance.
+ */
 @Composable
 fun OIMHomeScreenContent(
     modifier: Modifier = Modifier,

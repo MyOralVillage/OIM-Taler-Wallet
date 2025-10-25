@@ -55,12 +55,18 @@ import net.taler.wallet.systemBarsPaddingBottom
  
  private const val TAG = "OIMCompose"
  
- /**
-  * OIM Home screen rendered as a composable inside the existing Compose flow.
-  * Preserves previous OIM features: QR scan, payment dialog overlay, and navigation to chest.
-  */
- @Composable
- fun OIMHomeScreen(
+/**
+ * Entry point for rendering the OIM home experience inside the main Compose navigator.
+ *
+ * @param model shared [MainViewModel] exposing peer, balance, and exchange managers.
+ * @param onNavigateToChest callback invoked when the user opens their chest.
+ * @param onBackToTaler callback that returns the user to the classic wallet experience.
+ * @param onReviewTos optional handler used when an exchange requires terms review.
+ * @param modifier host modifier for positioning within the parent layout.
+ * @param showDevToasts toggles additional debugging toasts for development builds.
+ */
+@Composable
+fun OIMHomeScreen(
      model: MainViewModel,
      onNavigateToChest: () -> Unit,
      onBackToTaler: () -> Unit,
@@ -196,11 +202,20 @@ import net.taler.wallet.systemBarsPaddingBottom
      }
  }
  
- /**
-  * OIM Chest screen as a composable.
-  */
- @Composable
- fun OIMChestScreen(
+/**
+ * Entry point for the OIM chest screen that wires the view model state to the
+ * stateless [OIMChestScreenContent].
+ *
+ * @param model shared [MainViewModel] providing balances and withdraw actions.
+ * @param onBackClick callback for the central chest button.
+ * @param onSendClick callback for the send shortcut.
+ * @param onRequestClick callback for the receive shortcut.
+ * @param onTransactionHistoryClick opens the transaction history view.
+ * @param onWithdrawTestKudosClick optional dev helper for minting test kudos.
+ * @param modifier root modifier supplied by the host.
+ */
+@Composable
+fun OIMChestScreen(
      model: MainViewModel,
      onBackClick: () -> Unit,
      onSendClick: () -> Unit,
@@ -225,7 +240,8 @@ import net.taler.wallet.systemBarsPaddingBottom
  
  // --- Helpers ---
  
- private fun validateIncomingPushUri(uri: String): Boolean {
+/** Validates that the supplied URI represents an OIM peer push request. */
+private fun validateIncomingPushUri(uri: String): Boolean {
      return try {
          val normalized = uri.trim().lowercase()
          if (normalized.startsWith("payto://")) return false
