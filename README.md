@@ -38,12 +38,13 @@ GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT MAY BREAK EXISTING GNU T
 
 ## Installation Instructions
 1. Download the correct APK
-  - arm64 for most Android devices (armeabi for legacy devices)
-  - x86_64 for emulation  (x86 for legacy devices)
-  - debug apks reccomended for development; else use regular apk
-2. [Withdraw test kudos](https://bank.demo.taler.net/?lang=en) to begin
-  - if in a debug apk, do: Settigs->Developer mode -> Withdraw demo KUDOS
-  - you may have to play around clicking "Withdraw demo KUDOS" and "Providers", buggy connecting to the backend is a known issue
+    - INSERT OFFICIAL FDROID REPO HERE
+    - debug apks reccomended for development; else use regular apk
+    - arm64 for most Android devices (armeabi for legacy devices)
+    - x86_64 for emulation  (x86 for legacy devices)
+3. [Withdraw test kudos](https://bank.demo.taler.net/?lang=en) to begin
+    - if in a debug apk, do: Settigs->Developer mode -> Withdraw demo KUDOS
+    - you may have to play around clicking "Withdraw demo KUDOS" and "Providers", buggy connecting to the backend is a known issue
 3. Click Balance button, then click the blue "Switch to OIM" button
 4. Click on the chest to enter the wallet screen, where you should see the test currency and the features in the corners.
 5. The top left button represents the Receive Money user story. Click this icon to scan a QR Code to accept a incoming payment.
