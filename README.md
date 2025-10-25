@@ -10,7 +10,7 @@ This is an **EXPERIMENTAL IMPLEMENTATION** of [the GNU Taler Android wallet](htt
 See the [Taler manual](https://docs.taler.net) and [Taler wallet](https://www.taler.net/en/wallet.html)
 for more information.
 
-## this version is *PURLEY A PROOF OF CONCEPT!* 
+## this version is *PURELY A PROOF OF CONCEPT!* 
 
 Under no circumstances should it be
 used for financial transactions, sensitive financial information, nor as a supplement to any existing
@@ -24,6 +24,10 @@ GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT MAY BREAK EXISTING GNU T
 - Withdrawing KUDOS in dev mode sometimes bugs out
 - Transaction database needs to be integrated into wallet-core 
 - Icons need touch-ups and resizing
+- Transaction history cards do not display bills and show date in a written format instead of icons
+- Transaction history requires filters by amount of currency spent, currency in transaction, or by date 
+- Transaction history should potentially explore pagination 
+- Transaction history might benefit from a default screen when there are no transactions in the system
 ---
 # Building and Structure
 
