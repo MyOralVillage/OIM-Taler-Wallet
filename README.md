@@ -17,53 +17,13 @@ used for financial transactions, sensitive financial information, nor as a suppl
 GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT MAY BREAK EXISTING GNU TALER ANDROID BUILDS!**
 
 ## this version has known issues:
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-- [Hardcoded app version](wallet/src/main/java/net/taler/wallet/settings/SettingsFragment.kt) 
-  - Old version: BuildConfig.VERSION_NAME; changed to hard coded string
-=======
-
-- User preferences (selected scope, action button state) are stored in memory only
-  + Preferences will be lost when app restarts
-  + This is a temporary workaround - proper persistence will be added in future versions
-=======
-- [Protobuf is borked](/wallet/src/main/proto) 
-  - we've patched together a temporary fix but it comes with downsides...
-  - user preferences (selected scope, action button state) are stored in memory only
-    -due to protobuf not working in current build
-      + preferences will be lost when app restarts
-      + his is a temporary workaround - proper persistence will be added in future versions
->>>>>>> f4e1e5e (hardcoded merchant + wallet protocols -> 36:2:8, changed app version to OIM-v0.1.0-alpha)
-- Not compatible with GNU Taler Android 
-  + list issues here 
-  + and more issues
-  + proposed solutions?
-- Gradle version (possible upgrade?)
-- Database is hardcoded and not yet integrated with main wallet app
-- [App version is hardcoded](/wallet/src/main/java/net/taler/wallet/settings/SettingsFragment.kt) 
-  - BuildConfig_PLACEHOLDER = "OIM-v0.1.0-alpha" 
-  - due to issues with protobuf 
-- [Merchant and wallet protocols are hardcoded](/wallet/src/main/java/net/taler/wallet/MainViewModel.kt) 
-  - hardcodes to protocol version 32:2:8 
-  - walletVersionHash is not synced to walletVersion
-  - borking very likely due to gradle/agp/sdk updates breaking protobuf
-- Minification is disabled 
-  - causing very large APKs
-  - likely to be reimplemented when integration with existing GNU Taler Android is completed
->>>>>>> d9ac853 (exchange still borked -> hardcoding merchant  + wallet protocols to 17:0:0; built new debug apk)
-=======
 - Transaction database is hardcoded to test path
 - Proper transaction filtering in history is not yet implemented
 - Chests do not dynamically update
 - Protobuf of user settings not fully integrated
 - Withdrawing KUDOS in dev mode sometimes bugs out
 - Transaction database needs to be integrated into wallet-core 
-<<<<<<< HEAD
->>>>>>> 3c73fbf (update gradle builds, proguard, readme)
-=======
 - Icons need touch-ups and resizing
->>>>>>> aee51aa (updated readme)
 ---
 # Building and Structure
 
@@ -142,23 +102,25 @@ Orali Money provides a safe, inclusive financial tool that addresses this barrie
 ---
 
 ## Key Features
-- **Send Money** – Transfer money securely using icons and colors, with minimal text.
-- **Receive Money** – Users get clear notifications when funds arrive, shown visually in their balance.
-- **Request Money** – Ask others for money using simple icons, coin stacks, or bar visuals.
-- **Pending Transactions** – Keep track of transfers that haven’t yet been “picked up,” with the ability to cancel or wait until they expire.
-- **Transaction History** – Chronological and visual record of past activity, designed for easy comprehension.
+- **Send Money** – Users can easily select how much money they wish to send using icons and banknotes, along with a purpose for the payment, also represented with icons. Upon confirmation, it displays a QR Code for a potential recipient to scan and Receive the payment.
+- **Receive Money** – Users can scan a QR Code to accept a incoming "Send Money" payment. Upon scanning, you will be redirected to a dialog that allows for clear notification when funds arrive, shown visually in their balance. Users can either accept or reject the payment.
+- **Transaction History** – Chronological and visual record of past activity, designed for easy comprehension with icons and visuals.
 - **Shareability** – Literate users can easily share the app with loved ones, who can learn to use it in under a week.
-- **Error Handling** – Errors are conveyed with clear icons and audio cues.
-- **Onboarding/Demo** – First-time users are guided through a walkthrough demo transaction.
+- **Error Handling** – Errors are conveyed with clear icons.
 
 ---
 
 ## Instructions
 
 1. Download the correct APK (arm64 for most Android devices; x86_64 for emulation) 
-2. [Withdraw test kudos](https://bank.demo.taler.net/?lang=en)
+2. [Withdraw test kudos](https://bank.demo.taler.net/?lang=en) to begin
 3. Click Balance button, then click the blue "Switch to OIM" button
-4. Click on the chest to enter the interactive mode
+4. Click on the chest to enter the wallet screen, where you should see the test currency and the features in the corners.
+5. The top left button represents the Receive Money user story. Click this icon to scan a QR Code to accept a incoming payment.
+6. The top right button represents the Send Money user story. Click the icon to be entered into a screen where you can visually select the amount of money to send, along with a purpose for the transaction.
+7. The bottom left Ledger icon represents transaction history. Click the icon to view the transaction history of your past transactions.
+8. The top center chest button, on the Wallet  screen, takes you back to the OIM Home Screen.
+9. Navigation: Use the provided Back to taler button to go back to the Taler Main UI. Use the android Back buttons to go back one screen.
 ---
 
 ## Development requirements
