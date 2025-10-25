@@ -69,7 +69,7 @@ internal fun PurposeCard(
     val colour = Color(tranxPurp.colourInt())
     Card(
         modifier = modifier
-            .aspectRatio(0.5f)
+            .aspectRatio(1f)
             .clickable(onClick = onClick)
             .border(
                 width = if (isSelected) 3.dp else 0.dp,
@@ -114,7 +114,7 @@ internal fun PurposeGrid(
     purposeFilter: PurposeFilter?,
     onPurposeSelected: (PurposeFilter?) -> Unit,
     purposeMap: Map<String, TranxPurp>,
-    columns: Int = 4,
+    columns: Int = 6,
 ) {
     // Determine which purposes are currently selected
     val selectedPurposes = when (purposeFilter) {
@@ -265,3 +265,4 @@ private fun PurposeGridPreviewMultiSelect() {
         }
     }
 }
+

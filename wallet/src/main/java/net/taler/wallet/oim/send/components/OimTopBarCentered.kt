@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
 <<<<<<< HEAD
  * This file is part of GNU Taler
@@ -22,7 +23,25 @@
 =======
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
  * GPLv3-or-later
+=======
+/**
+ * ## OimTopBarCentered
+ *
+ * Center-aligned top bar composable displaying the user’s wallet balance and a
+ * *Send* button in the upper-right corner. Part of the OIM Send UI, it provides
+ * quick access to initiate transfers while visually anchoring the balance
+ * display with the “chest” icon.
+ *
+ * The component retrieves its button and chest imagery via drawable mappers
+ * from [net.taler.wallet.oim.res_mapping_extensions.Buttons].
+ *
+ * @param balance The current wallet balance shown at the top center.
+ * @param onSendClick Callback invoked when the Send button is pressed.
+ *
+ * @see net.taler.wallet.oim.res_mapping_extensions.Buttons
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
  */
+
 package net.taler.wallet.oim.send.components
 
 import androidx.compose.foundation.Image

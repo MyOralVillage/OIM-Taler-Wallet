@@ -1,18 +1,19 @@
-/*
- * This file is part of GNU Taler
- * (C) 2025 Taler Systems S.A.
+/**
+ * ## OimTheme
  *
- * GNU Taler is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 3, or (at your option) any later version.
+ * Minimal Material 3 theme wrapper for the OIM Send UI.
+ * Provides consistent typography, color, and shape defaults across
+ * composables such as [SendScreen], [PurposeScreen], and [QrScreen].
  *
- * GNU Taler is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * This lightweight theme currently delegates directly to
+ * [MaterialTheme] but exists as an extension point for future
+ * customization (e.g. Taler-specific color palettes or dark-mode tuning).
  *
- * You should have received a copy of the GNU General Public License along with
- * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
+ * @param content The composable hierarchy to be styled within the theme.
+ *
+ * @see androidx.compose.material3.MaterialTheme
  */
+
 
 package net.taler.wallet.oim.send.app
 

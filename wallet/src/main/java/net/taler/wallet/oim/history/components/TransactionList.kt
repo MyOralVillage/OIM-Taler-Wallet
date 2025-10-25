@@ -79,7 +79,7 @@ fun TransactionCard(
             // Date
             Text(
                 text = date,
-                fontSize = 14.sp,
+                fontSize = 18.sp,
                 color = Color.Gray
             )
 
@@ -94,7 +94,8 @@ fun TransactionCard(
                 Icon(
                     painter = painterResource(dir.resourceMapper()),
                     contentDescription = "Transaction direction",
-                    modifier = Modifier.size(70.dp)
+                    modifier = Modifier.size(80.dp),
+                    tint = Color.Unspecified
                 )
 
 
@@ -102,7 +103,8 @@ fun TransactionCard(
                     Icon(
                         painter = painterResource(purpose.resourceMapper()),
                         contentDescription = "Transaction purpose",
-                        modifier = Modifier.size(70.dp)
+                        modifier = Modifier.size(80.dp),
+                        tint = Color.Unspecified
                     )
                 }
 

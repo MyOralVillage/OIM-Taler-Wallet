@@ -1,6 +1,25 @@
-/*
- * GPLv3-or-later
+/**
+ * ## NotesStrip
+ *
+ * Horizontally scrollable strip displaying note thumbnails, used in the OIM
+ * *Send* flow for visual money selection. Each note represents an available
+ * denomination that can be “sent” as an animated flyer.
+ *
+ * When a thumbnail is tapped, its on-screen position is reported via
+ * [onAddRequest] so the animation origin can be determined for [NoteFlyer].
+ * An Undo button allows reversing the most recent addition through
+ * [onRemoveLast].
+ *
+ * @param noteThumbWidth Width of each note thumbnail (typically 140–180 dp).
+ * @param notes List of image–amount pairs representing available notes.
+ * @param onAddRequest Callback triggered when a note is tapped; supplies
+ * the [Amount] and its screen center position.
+ * @param onRemoveLast Callback to remove the last added note (used by Undo).
+ *
+ * @see net.taler.wallet.oim.send.components.NoteFlyer
+ * @see net.taler.wallet.oim.send.components.NotesPile
  */
+
 package net.taler.wallet.oim.send.components
 
 import androidx.annotation.DrawableRes
@@ -12,11 +31,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -116,6 +131,7 @@ fun NotesStrip(
     onRemoveLast: (removed: Int) -> Unit
 =======
 import net.taler.database.data_models.Amount
+
 @Composable
 fun NotesStrip(
     noteThumbWidth: Dp,
@@ -130,7 +146,9 @@ fun NotesStrip(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .heightIn(min = (noteThumbWidth * 0.75f) + 36.dp) // more headroom
             .horizontalScroll(scroll)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             .clip(RoundedCornerShape(20.dp))
@@ -158,12 +176,16 @@ fun NotesStrip(
             .border(3.dp, Color.White.copy(alpha = 0.7f), RoundedCornerShape(24.dp))
             .padding(12.dp),
 >>>>>>> 321d128 (updated send to be more dynamic)
+=======
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
         verticalAlignment = Alignment.CenterVertically
     ) {
         notes.forEach { (@DrawableRes r, value) ->
             NoteThumb(
                 res = r,
                 width = noteThumbWidth,
+<<<<<<< HEAD
                 onTapWithPos = { centerInRoot ->
                     lastAdded = value
                     onAddRequest(value, centerInRoot)
@@ -171,12 +193,20 @@ fun NotesStrip(
                 }
             )
             Spacer(Modifier.width(10.dp))
+=======
+            ) { centerInRoot ->
+                lastAdded = value
+                onAddRequest(value, centerInRoot)
+            }
+            Spacer(Modifier.width(14.dp))
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
         }
 
         Button(
-            onClick = { lastAdded?.let { onRemoveLast(it) } },
+            onClick = { lastAdded?.let(onRemoveLast) },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDD3333)),
-            modifier = Modifier.padding(start = 6.dp)
+            contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
+            modifier = Modifier.padding(start = 8.dp)
         ) {
             Text("Undo", color = Color.White)
         }
@@ -199,20 +229,21 @@ private fun NoteThumb(
 ) {
     var center by remember { mutableStateOf(Offset.Zero) }
 
+    val corner = 16.dp
+    val border = 3.dp
+    val height = width * 0.58f
+
     Card(
         modifier = Modifier
             .width(width)
-            .height(width * 0.55f)
+            .height(height)
             .onGloballyPositioned { lc -> center = lc.boundsInRoot().center }
             .clickable { onTapWithPos(center) }
-            .border(
-                width = 4.dp,
-                color = Color(0xFF00D9FF),
-                shape = RoundedCornerShape(14.dp)
-            ),
-        shape = RoundedCornerShape(14.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0x55FFFFFF))
+            .border(border, Color(0xFF00D9FF), RoundedCornerShape(corner))
+            .padding(4.dp),               // inner breathing room prevents visual “cut”
+        shape = RoundedCornerShape(corner),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0x66FFFFFF))
     ) {
         Image(
 <<<<<<< HEAD
@@ -226,7 +257,7 @@ private fun NoteThumb(
 >>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Fit      // show whole note instead of cropping
         )
     }
 }

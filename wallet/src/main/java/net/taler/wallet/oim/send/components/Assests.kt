@@ -1,5 +1,16 @@
-/*
- * GPLv3-or-later
+/**
+ * ## Asser loader - WoodTableBackground
+ *
+ * Composable utility for rendering the wooden table texture beneath
+ * send screen in the OIM Send flow. Uses the `Tables` drawable
+ * mapper to load either a light or dark wood variant.
+ *
+ * Typically serves as a static visual base for the Send screen and
+ * is layered behind animated components such as [NoteFlyer] and [NotesPile].
+ *
+ * @param modifier Layout modifier for positioning or scaling the background.
+ * @param light When `true`, uses a light wood texture; otherwise uses dark wood.
+ * @see net.taler.wallet.oim.res_mapping_extensions.Tables
  */
 package net.taler.wallet.oim.send.components
 

@@ -127,16 +127,17 @@ val EUR_BILLS_CENTS = listOf(
 
 // === SLE denominations (in cents, supports fractions) ===
 val SLE_BILLS_CENTS = listOf(
-    1_000_00 to R.drawable.sle_one_thousand,
-    40_00    to R.drawable.sle_forty,
-    20_00    to R.drawable.sle_twenty,
-    10_00    to R.drawable.sle_ten,
-    5_00     to R.drawable.sle_five,
-    2_00     to R.drawable.sle_two,
-    1_00     to R.drawable.sle_one,
-    50       to R.drawable.sle_zero_point_five,
-    25       to R.drawable.sle_zero_point_twenty_five,
-    10       to R.drawable.sle_zero_point_one,
-    5        to R.drawable.sle_zero_point_zero_five,
-    1        to R.drawable.sle_zero_point_zero_one
+    100_000 to R.drawable.sle_one_thousand,      // 1000.00 SLE
+    10_000  to R.drawable.sle_one_hundred,       // 100.00 SLE
+    4_000   to R.drawable.sle_forty,             // 40.00 SLE
+    2_000   to R.drawable.sle_twenty,            // 20.00 SLE
+    1_000   to R.drawable.sle_ten,               // 10.00 SLE
+    500     to R.drawable.sle_five,              // 5.00 SLE
+    200     to R.drawable.sle_two,               // 2.00 SLE
+    100     to R.drawable.sle_one,               // 1.00 SLE
+    50      to R.drawable.sle_zero_point_five,   // 0.50 SLE
+    25      to R.drawable.sle_zero_point_twenty_five,
+    10      to R.drawable.sle_zero_point_one,
+    5       to R.drawable.sle_zero_point_zero_five,
+    1       to R.drawable.sle_zero_point_zero_one
 )

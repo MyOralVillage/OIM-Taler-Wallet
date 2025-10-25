@@ -44,14 +44,12 @@ import net.taler.wallet.oim.res_mapping_extensions.Background
 import net.taler.wallet.oim.res_mapping_extensions.Buttons
 import java.time.format.DateTimeFormatter
 
-
-
 @Composable
 fun TransactionsListView() {
     var showFilterOverlay by remember { mutableStateOf(false) }
     var isPressed by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
         BackgroundImage()
         MainLayout()
 
@@ -80,7 +78,7 @@ fun TransactionsListView() {
                         shape = MaterialTheme.shapes.medium
                     ),
                 tint = Color.Unspecified,
-                )
+            )
         }
 
         // Reset pressed state after animation
@@ -124,7 +122,7 @@ private fun FilterOverlay(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp)
+                    .padding(16.dp)
             ) {
                 // Header
                 Row(
@@ -133,7 +131,7 @@ private fun FilterOverlay(
                     verticalAlignment = Alignment.CenterVertically
                 ) {}
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Filter content (scrollable)
                 Column(
@@ -152,7 +150,7 @@ private fun FilterOverlay(
                         onOutgoingClicked = { outgoingSelected = !outgoingSelected }
                     )
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     // Purpose Filter
                     var purposeFilter by remember { mutableStateOf<PurposeFilter?>(null) }
@@ -175,7 +173,7 @@ private fun FilterOverlay(
                         Icon(
                             imageVector = Icons.Default.SwipeDownAlt,
                             contentDescription = "Close",
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
@@ -212,22 +210,20 @@ private fun RowScope.MainContent() {
         if (BuildConfig.DEBUG) TranxHistory.initTest(context)
         else TranxHistory.init(context)
 
-        // Map Tranx objects to Transaction objects
-//        dbTransactions = getHistory().map { tranx ->
-//            Transaction(
-//                type = if (tranx.direction.getValue()) "R" else "S",
-//                amount = tranx.amount.value.toString() + "." + tranx.amount.fraction.toString(),
-//                currency = tranx.amount.currency,
-//                date = tranx.datetime.fmtString(DateTimeFormatter.ofPattern("MMMM dd, yyyy")),
-//                purpose = tranx.purpose
-//            )
-//        }
+        dbTransactions = TranxHistory.getHistory()
     }
-
     Column(
         modifier = Modifier
             .fillMaxHeight()
-            .weight(1f)
+            .fillMaxWidth(0.1f)
+            .verticalScroll(rememberScrollState())
+    ){
+
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .fillMaxWidth(0.8f)
             .verticalScroll(rememberScrollState())
     ) {
         dbTransactions.forEach { transaction: Tranx ->
@@ -235,7 +231,7 @@ private fun RowScope.MainContent() {
                 amount = transaction.amount.toString(false),
                 currency = transaction.amount.currency,
                 date = transaction.datetime.fmtString(
-                    DateTimeFormatter.ofPattern("yyyy-MM-DD")),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                 purpose = transaction.purpose,
                 dir = transaction.direction
             )

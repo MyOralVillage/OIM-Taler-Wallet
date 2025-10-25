@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -22,20 +23,45 @@
 =======
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
  * GPLv3-or-later
+=======
+/**
+ * ## PurposeScreen
+ *
+ * Allows the user to choose or confirm the *purpose* of a transaction
+ * (e.g., groceries, donation, utilities) before initiating a payment
+ * in the OIM Send flow.
+ *
+ * Displays a responsive grid of [TranxPurp] icons categorized by type.
+ * The user can select one, return to the previous screen, or navigate home.
+ * Internally uses [WoodTableBackground] for visual consistency with the rest
+ * of the send interface.
+ *
+ * @param balance Current wallet balance shown at the top.
+ * @param onBack Called when the user presses the "Back" button.
+ * @param onDone Called when a purpose is selected, returning the chosen [TranxPurp].
+ * @param onHome Optional handler for returning to the app’s home screen.
+ *
+ * @see net.taler.database.data_models.TranxPurp
+ * @see net.taler.wallet.oim.send.components.WoodTableBackground
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
  */
+
 package net.taler.wallet.oim.send.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 <<<<<<< HEAD
@@ -135,6 +161,7 @@ import net.taler.wallet.oim.send.components.*
 =======
 import androidx.compose.ui.unit.sp
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 321d128 (updated send to be more dynamic)
 =======
 import androidx.compose.ui.text.font.FontWeight
@@ -143,9 +170,21 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 <<<<<<< HEAD
 >>>>>>> 9068d57 (got rid of bugs in send apk)
 =======
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+<<<<<<< HEAD
+<<<<<<< HEAD
+import androidx.compose.ui.res.painterResource
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
+=======
 import androidx.compose.ui.res.painterResource
 >>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
 import net.taler.database.data_models.*
+=======
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.TranxPurp
+import net.taler.database.data_models.tranxPurpLookup
+>>>>>>> f82ba56 (UI changes and fix qr code loading for send)
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 import net.taler.wallet.oim.send.components.WoodTableBackground
 
@@ -180,11 +219,14 @@ private fun PurposeCard(
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) colour.copy(alpha = 0.18f)
-            else MaterialTheme.colorScheme.surface
+            else Color(0x55FFFFFF)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Box(Modifier.fillMaxSize().padding(6.dp), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier.fillMaxSize().padding(6.dp),
+            contentAlignment = Alignment.Center
+        ) {
             Image(
                 painter = painterResource(tranxPurp.resourceMapper()),
                 contentDescription = null,
@@ -209,8 +251,10 @@ fun PurposeScreen(
     balance: Amount,
     onBack: () -> Unit,
     onDone: (TranxPurp) -> Unit,
+    onHome: () -> Unit = {}
 ) {
     Box(Modifier.fillMaxSize()) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -221,6 +265,32 @@ fun PurposeScreen(
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+=======
+        WoodTableBackground(Modifier.fillMaxSize())
+
+        // tiny back button
+        FilledTonalButton(
+            onClick = onBack,
+            modifier = Modifier.padding(12.dp).align(Alignment.TopStart)
+        ) { Text("Back") }
+=======
+//        WoodTableBackground(Modifier.fillMaxSize(), light = false)
+
+//        IconButton(
+//            onClick = onBack,
+//            modifier = Modifier
+//                .padding(8.dp)
+//                .size(40.dp)
+//                .align(Alignment.TopStart)
+//        ) {
+//            Icon(
+//                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+//                contentDescription = "Back",
+//                tint = Color.White
+//            )
+//        }
+>>>>>>> 8d7e8e2 (Added purpose filters and direction filters to the same screen (non responsive just for POC))
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
 =======
         WoodTableBackground(Modifier.fillMaxSize(), light = false)
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
@@ -239,11 +309,32 @@ fun PurposeScreen(
             onClick = onBack,
             modifier = Modifier.padding(12.dp).align(Alignment.TopStart)
         ) { Text("Back") }
+<<<<<<< HEAD
+=======
+>>>>>>> c4c1157 (got rid of bugs in send apk)
+=======
+        WoodTableBackground(modifier = Modifier.fillMaxSize(), light = false)
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .align(Alignment.TopCenter),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onHome) {
+                Icon(Icons.Filled.Home, contentDescription = "Home", tint = Color.White)
+            }
+            FilledTonalButton(onClick = onBack) { Text("Back") }
+        }
+>>>>>>> f82ba56 (UI changes and fix qr code loading for send)
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
 
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 16.dp, vertical = 56.dp)
         ) {
             Text(
                 text = "Choose purpose",
@@ -295,6 +386,7 @@ fun PurposeScreen(
             ) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 PurposeIcons.forEach { (path, label) ->
                     PurposeTile(
                         path = path,
@@ -313,7 +405,11 @@ fun PurposeScreen(
 =======
                 items(sortedPurposes) { tranxPurp ->
 =======
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
+=======
             // One page, no scroll — FlowRow wraps items to fit space
+=======
+>>>>>>> f82ba56 (UI changes and fix qr code loading for send)
             FlowRow(
                 modifier = Modifier.fillMaxSize(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -381,7 +477,8 @@ private fun PurposeScreenPreview() {
         PurposeScreen(
             balance = Amount.fromString("KUDOS", "35"),
             onBack = {},
-            onDone = {}
+            onDone = {},
+            onHome = {}
         )
     }
 }

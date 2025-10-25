@@ -3,13 +3,11 @@
 ## this repo extends the GNU Taler Android Repository
 
 This git repository contains code for the GNU Taler Android wallet app,
-non app-specific GNU Taler Android libraries, and an implementation of the *OIM Salome* pictographic library. (**verify official name**).
+non app-specific GNU Taler Android libraries, and an implementation of [OIM](https://myoralvillage.org/our-model-oim/).
 
-This is an **EXPERIMENTAL IMPLEMENTATION** of the GNU Taler Android wallet:
+This is an **EXPERIMENTAL IMPLEMENTATION** of [the GNU Taler Android wallet](https://git.taler.net/taler-android.git/):
 
-    https://git.taler.net/taler-android.git
-
-See the [Taler manual](https://docs.taler.net).
+See the [Taler manual](https://docs.taler.net) and [Taler wallet](https://www.taler.net/en/wallet.html)
 for more information.
 
 ## this version is *PURLEY A PROOF OF CONCEPT!* 
@@ -19,6 +17,7 @@ used for financial transactions, sensitive financial information, nor as a suppl
 GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT MAY BREAK EXISTING GNU TALER ANDROID BUILDS!**
 
 ## this version has known issues:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 - [Hardcoded app version](wallet/src/main/java/net/taler/wallet/settings/SettingsFragment.kt) 
@@ -53,6 +52,14 @@ GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT MAY BREAK EXISTING GNU T
   - causing very large APKs
   - likely to be reimplemented when integration with existing GNU Taler Android is completed
 >>>>>>> d9ac853 (exchange still borked -> hardcoding merchant  + wallet protocols to 17:0:0; built new debug apk)
+=======
+- Transaction database is hardcoded to test path
+- Proper transaction filtering in history is not yet implemented
+- Chests do not dynamically update
+- Protobuf of user settings not fully integrated
+- Withdrawing KUDOS in dev mode sometimes bugs out
+- Transaction database needs to be integrated into wallet-core 
+>>>>>>> 3c73fbf (update gradle builds, proguard, readme)
 ---
 # Building and Structure
 
@@ -144,13 +151,15 @@ Orali Money provides a safe, inclusive financial tool that addresses this barrie
 
 ## Instructions
 
-*TODO* 
-
+1. Download the correct APK (arm64 for most Android devices; x86_64 for emulation) 
+2. [Withdraw test kudos](https://bank.demo.taler.net/?lang=en)
+3. Click Balance button, then click the blue "Switch to OIM" button
+4. Click on the chest to enter the interactive mode
 ---
 
 ## Development requirements
 **Technical prerequisites:**
-- **OS:** Android 8++
+- **OS:** Android 8+
 - **Language/Frameworks:** Kotlin, Jetpack Compose
 - **Build System:** Gradle (Android Gradle Plugin 9.x)
 - **Dependencies:** AndroidX, Compose UI, OIM graphic library
@@ -206,6 +215,3 @@ We follow **Kotlin style guidelines** and **Google Android best practices**, enf
 - camelCase for variables/methods
 - PascalCase for classes
 - Clear comments and documentation where functionality is non-obvious
-
-
-

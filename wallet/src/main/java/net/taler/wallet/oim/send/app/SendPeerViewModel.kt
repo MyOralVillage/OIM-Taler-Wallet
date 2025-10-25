@@ -1,3 +1,30 @@
+/**
+ * ## SendPeerViewModel
+ *
+ * ViewModel responsible for handling **peer-to-peer “send” transactions**
+ * in the OIM flow. Acts as a thin abstraction layer over the wallet-core
+ * peer APIs exposed through [WalletBackendApi] and [PeerManager].
+ *
+ * ### Responsibilities
+ * - Starts a *peer-push debit* transaction via [PeerManager.initiatePeerPushDebit].
+ * - Observes [PeerManager.pushState] until an [OutgoingResponse] is received.
+ * - Queries wallet-core through raw API calls to retrieve the generated
+ *   `talerUri` once the transaction is created.
+ * - Exposes [createdTalerUri] as a [StateFlow] for composables such as
+ *   [QrScreen] to display.
+ * - Provides [reset] to clear state and cancel the current peer push session.
+ *
+ * This class mirrors the internal flow used by the main wallet to support
+ * preview or standalone “Send OIM” use cases.
+ *
+ * @property api Low-level backend interface to the wallet-core service.
+ * @property exchangeManager Exchange manager used to resolve base URLs and scopes.
+ *
+ * @see net.taler.wallet.peer.PeerManager
+ * @see net.taler.wallet.peer.OutgoingResponse
+ * @see net.taler.wallet.backend.WalletBackendApi
+ */
+
 package net.taler.wallet.oim.send.app
 
 import android.app.Application

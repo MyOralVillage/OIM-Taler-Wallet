@@ -1,6 +1,20 @@
-/*
- * GPLv3-or-later
+/**
+ * ## generateQrBitmap
+ *
+ * Utility function to generate a QR code bitmap for the given text string.
+ * Used in the OIM Send flow to encode payment URIs or peer-to-peer transfer
+ * identifiers.
+ *
+ * Internally uses ZXing’s [QRCodeWriter] to create a monochrome square bitmap
+ * of the specified size.
+ *
+ * @param text Text content to encode into the QR code.
+ * @param size Width and height of the generated bitmap in pixels.
+ * @return A [Bitmap] representing the generated QR code.
+ *
+ * @see com.google.zxing.qrcode.QRCodeWriter
  */
+
 package net.taler.wallet.oim.send.components
 
 import android.annotation.SuppressLint

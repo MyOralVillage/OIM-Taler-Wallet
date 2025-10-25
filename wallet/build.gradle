@@ -167,6 +167,7 @@ android {
         abi {
             enable true
             reset()
+<<<<<<< HEAD
             include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"  // All architectures
 =======
     // Optional: split per-ABI when 'splitApk' property is set
@@ -176,6 +177,9 @@ android {
             reset()
             include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
 >>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
+=======
+            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+>>>>>>> 3c73fbf (update gradle builds, proguard, readme)
             universalApk false
         }
     }
@@ -185,11 +189,15 @@ android {
 <<<<<<< HEAD
         abortOnError true
         ignoreWarnings false
+<<<<<<< HEAD
         checkGeneratedSources false  // ADDED: Ignore lint in generated code
 =======
         abortOnError = true
         ignoreWarnings = false
 >>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
+=======
+        checkGeneratedSources false
+>>>>>>> 3c73fbf (update gradle builds, proguard, readme)
     }
 }
 
@@ -222,7 +230,7 @@ dependencies {
     implementation "androidx.browser:browser:1.8.0"
     implementation "androidx.biometric:biometric-ktx:1.4.0-alpha02"
 
-    // Compose
+    // Compose - OPTIMIZED (removed duplicate version overrides)
     implementation platform('androidx.compose:compose-bom:2025.05.00')
     implementation 'androidx.compose.ui:ui'
     implementation 'androidx.compose.material3:material3'
@@ -237,11 +245,11 @@ dependencies {
 >>>>>>> 5c7011a (fixed preview animations)
     implementation "androidx.compose.runtime:runtime-livedata"
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose"
-    implementation "com.google.accompanist:accompanist-themeadapter-material3:0.28.0"
     implementation 'androidx.activity:activity-compose:1.9.3'
     implementation 'androidx.compose.ui:ui-tooling-preview'
     implementation 'androidx.compose.ui:ui-viewbinding'
     implementation "androidx.fragment:fragment-compose:1.8.6"
+<<<<<<< HEAD
     implementation 'androidx.compose.foundation:foundation:1.9.3'
 <<<<<<< HEAD
 =======
@@ -265,7 +273,11 @@ dependencies {
     implementation 'androidx.compose.ui:ui-graphics:1.9.3'
     implementation 'androidx.compose.material3:material3:1.4.0'
 >>>>>>> 321d128 (updated send to be more dynamic)
+=======
+>>>>>>> 58ace4b (added 100 stack for sle; fixed issues w/ SLE_BILLS_CENTS)
     debugImplementation 'androidx.compose.ui:ui-tooling'
+    // REMOVED: Duplicate Compose dependencies managed by BOM
+    // REMOVED: Accompanist (not used)
 
 <<<<<<< HEAD
     // Lists
@@ -285,6 +297,8 @@ dependencies {
     // Lifecycle / LiveData
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
 
+<<<<<<< HEAD
+<<<<<<< HEAD
     // QR code support (embedded ZXing)
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0@aar'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
@@ -296,14 +310,34 @@ dependencies {
     // Misc UI helpers
 >>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
     implementation 'me.zhanghai.android.materialprogressbar:library:1.6.1'
+=======
+    // QR codes
+    implementation 'com.google.zxing:core:3.5.2'
+    implementation 'com.journeyapps:zxing-android-embedded:4.3.0@aar'
+>>>>>>> 58ace4b (added 100 stack for sle; fixed issues w/ SLE_BILLS_CENTS)
 
     // Markdown rendering via Markwon
     def markwon_version = '4.6.2'
     implementation "io.noties.markwon:core:$markwon_version"
-    implementation "io.noties.markwon:ext-tables:$markwon_version"
-    implementation "io.noties.markwon:recycler:$markwon_version"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+    // JNA
+=======
+    // JNA/Desugaring
+>>>>>>> 58ace4b (added 100 stack for sle; fixed issues w/ SLE_BILLS_CENTS)
+    implementation "net.java.dev.jna:jna:5.17.0@aar"
+=======
+    // QR codes - OPTIMIZED (generation only)
+>>>>>>> 3c73fbf (update gradle builds, proguard, readme)
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    implementation 'com.google.zxing:core:3.5.2'
+
+    // Markdown rendering - OPTIMIZED (core only)
+    implementation "io.noties.markwon:core:4.6.2"
+    // REMOVED: ext-tables (not used)
+    // REMOVED: recycler (not used)
+
     // JNA
     implementation "net.java.dev.jna:jna:5.17.0@aar"
 

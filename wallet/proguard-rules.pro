@@ -6,7 +6,7 @@
 -mergeinterfacesaggressively
 -repackageclasses ''
 
-# OBFUSCATION IS NOW ENABLED (removed -dontobfuscate)
+# OBFUSCATION IS NOW ENABLED
 
 # Keep source file names and line numbers for crash reports
 -keepattributes SourceFile,LineNumberTable
@@ -61,14 +61,6 @@
     public *;
 }
 
-# ============================================
-# Wallet - Keep public APIs only
-# ============================================
-# Keep only public/protected members, allow private to be obfuscated
--keep public class net.taler.wallet.** {
-    public protected *;
-}
-
 # Keep native methods (JNI)
 -keepclasseswithmembernames,includedescriptorclasses class * {
     native <methods>;
@@ -101,28 +93,51 @@
 -keep class com.google.protobuf.** { *; }
 
 # ============================================
-# Third-party libraries
+# Third-party libraries - OPTIMIZED
 # ============================================
-# Ktor
--keep class io.ktor.** { *; }
+
+# Ktor - OPTIMIZED (only keep what's needed)
+-keep class io.ktor.client.HttpClient { *; }
+-keep class io.ktor.client.engine.** { *; }
+-keep class io.ktor.client.request.** { *; }
+-keep class io.ktor.client.statement.** { *; }
+-keep class io.ktor.client.plugins.contentnegotiation.** { *; }
+-keep class io.ktor.serialization.kotlinx.json.** { *; }
+-keep class io.ktor.http.** { *; }
 -keepclassmembers class io.ktor.** { volatile <fields>; }
+-dontwarn io.ktor.**
 
 # OkHttp (used by Ktor)
 -dontwarn okhttp3.**
 -dontwarn okio.**
 -keepnames class okhttp3.internal.publicsuffix.PublicSuffixDatabase
 
-# ZXing QR code library
--keep class com.google.zxing.** { *; }
--dontwarn com.google.zxing.client.result.**
+# ZXing QR code - OPTIMIZED (only keep generation, not scanning)
+-keep class com.google.zxing.BarcodeFormat { *; }
+-keep class com.google.zxing.EncodeHintType { *; }
+-keep class com.google.zxing.MultiFormatWriter { *; }
+-keep class com.google.zxing.Writer { *; }
+-keep class com.google.zxing.common.BitMatrix { *; }
+-keep class com.google.zxing.qrcode.QRCodeWriter { *; }
+-keep class com.google.zxing.qrcode.encoder.** { *; }
+-dontwarn com.google.zxing.**
 
-# JNA
--keep class com.sun.jna.** { *; }
--keep class * implements com.sun.jna.** { *; }
+# JNA - OPTIMIZED (minimal keep)
+-keep class com.sun.jna.Pointer { *; }
+-keep class com.sun.jna.Structure { *; }
+-keep class com.sun.jna.Native { *; }
+-keep class * implements com.sun.jna.Library { *; }
+-dontwarn com.sun.jna.**
 
-# Coil image loading
--keep class coil.** { *; }
--keep interface coil.** { *; }
+# Coil image loading - Let R8 handle it (Coil is R8-friendly)
+# Removed: -keep class coil.** { *; }
+-dontwarn coil.**
+
+# Markwon - OPTIMIZED (only core, no tables/recycler)
+-keep class io.noties.markwon.Markwon { *; }
+-keep class io.noties.markwon.MarkwonConfiguration { *; }
+-keep class io.noties.markwon.MarkwonPlugin { *; }
+-dontwarn io.noties.markwon.**
 
 # Compose - keep composable functions
 -keepclassmembers class * {
@@ -150,6 +165,11 @@
 # Remove debug logging from kotlinx.coroutines
 -assumenosideeffects class kotlinx.coroutines.debug.internal.DebugProbesKt {
     public static *** probeCoroutine*(...);
+}
+
+# Remove Ktor logging (since we moved it to debugImplementation)
+-assumenosideeffects class io.ktor.client.plugins.logging.** {
+    public static *** *(...);
 }
 
 # ============================================

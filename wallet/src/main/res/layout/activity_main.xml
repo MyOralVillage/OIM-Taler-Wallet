@@ -38,13 +38,11 @@
         android:orientation="vertical"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
-        <me.zhanghai.android.materialprogressbar.MaterialProgressBar
-            android:id="@+id/progress_bar"
-            style="@style/Widget.MaterialProgressBar.ProgressBar"
+        <ProgressBar
+            android:indeterminate="true"
             android:layout_width="match_parent"
             android:layout_height="4dp"
             android:elevation="4dp"
-            android:indeterminate="true"
             android:visibility="gone"
             app:mpb_progressStyle="horizontal"
             app:mpb_useIntrinsicPadding="false"

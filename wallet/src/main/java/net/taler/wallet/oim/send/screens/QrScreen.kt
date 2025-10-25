@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
 <<<<<<< HEAD
  * GPLv3-or-later
@@ -11,7 +12,28 @@
 =======
 >>>>>>> 9068d57 (got rid of bugs in send apk)
  * GPLv3-or-later
+=======
+/**
+ * ## QrScreen
+ *
+ * Displays the generated Taler payment QR code for peer-to-peer transfers.
+ * Shows amount, currency, and purpose alongside the scannable code, and
+ * gracefully handles loading states while the payment URI is being prepared.
+ *
+ * Includes navigation controls (Home, Back) and uses [WoodTableBackground]
+ * for the contextual table texture backdrop.
+ *
+ * @param talerUri The Taler payment URI to encode as a QR code (null while loading).
+ * @param amount The payment amount and currency to display.
+ * @param purpose The transaction purpose icon to show next to the QR code.
+ * @param onBack Invoked when the user presses the "Back" button.
+ * @param onHome Optional callback to return to the home screen.
+ *
+ * @see net.taler.wallet.oim.send.components.generateQrBitmap
+ * @see net.taler.wallet.oim.send.components.WoodTableBackground
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
  */
+
 package net.taler.wallet.oim.send.screens
 
 <<<<<<< HEAD
@@ -198,6 +220,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -216,6 +239,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -250,14 +274,25 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 >>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 >>>>>>> 9068d57 (got rid of bugs in send apk)
 import net.taler.database.data_models.Amount
 import net.taler.database.data_models.TranxPurp
+<<<<<<< HEAD
 import net.taler.wallet.oim.res_mapping_extensions.Background
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+import net.taler.wallet.oim.res_mapping_extensions.Background
+=======
+import net.taler.wallet.oim.res_mapping_extensions.Tables
+>>>>>>> c4c1157 (got rid of bugs in send apk)
+=======
+>>>>>>> f82ba56 (UI changes and fix qr code loading for send)
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.oim.send.components.WoodTableBackground
 import net.taler.wallet.oim.send.components.generateQrBitmap
 
 <<<<<<< HEAD
@@ -274,11 +309,13 @@ import net.taler.wallet.oim.send.components.generateQrBitmap
 >>>>>>> 9068d57 (got rid of bugs in send apk)
 @Composable
 fun QrScreen(
-    talerUri: String,
+    talerUri: String?,        // null => show preparing state
     amount: Amount,
     purpose: TranxPurp?,
     onBack: () -> Unit,
+    onHome: () -> Unit = {}
 ) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     // Parse what we can from the URI for display fallbacks
@@ -297,6 +334,10 @@ fun QrScreen(
     Box(Modifier.fillMaxSize()) {
 <<<<<<< HEAD
         // SAME WOOD BACKGROUND AS BEFORE
+=======
+    Box(Modifier.fillMaxSize()) {
+<<<<<<< HEAD
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
         Image(
             painter = assetPainterOrPreview(WOOD_TABLE, PreviewAssets.id(WOOD_TABLE)),
 =======
@@ -325,26 +366,71 @@ fun QrScreen(
                 tint = Color.White
             )
         }
+=======
+        WoodTableBackground(modifier = Modifier.fillMaxSize(), light = false)
+>>>>>>> f82ba56 (UI changes and fix qr code loading for send)
 
+        // Top controls
         Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
+                .fillMaxWidth()
+                .padding(8.dp)
+                .align(Alignment.TopCenter),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            IconButton(onClick = onHome) {
+                Icon(Icons.Filled.Home, contentDescription = "Home", tint = Color.White)
+            }
+            FilledTonalButton(onClick = onBack) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = null
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("Back")
+            }
+        }
+
+        // Main content
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // QR or spinner while preparing
             Surface(
                 color = Color.White,
                 shape = RoundedCornerShape(24.dp),
-                shadowElevation = 6.dp
+                shadowElevation = 8.dp,
+                modifier = Modifier.size(360.dp)
             ) {
-                Image(
-                    bitmap = qr.asImageBitmap(),
-                    contentDescription = "QR",
-                    modifier = Modifier.size(320.dp)
-                )
+                if (talerUri == null) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator()
+                        Spacer(Modifier.height(12.dp))
+                        Text("Preparing payment…", color = Color.Black)
+                    }
+                } else {
+                    val qr = remember(talerUri) { generateQrBitmap(talerUri, 1024) }
+                    Image(
+                        bitmap = qr.asImageBitmap(),
+                        contentDescription = "Taler QR",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit
+                    )
+                }
             }
 
+            // Amount + purpose
             Column(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.Center,
@@ -354,32 +440,41 @@ fun QrScreen(
                     text = amount.amountStr,
                     color = Color.White,
                     fontWeight = FontWeight.ExtraBold,
-                    fontSize = 42.sp
+                    fontSize = 48.sp
                 )
                 Text(
                     text = amount.spec?.name ?: amount.currency,
-                    color = Color.White,
+                    color = Color.White.copy(alpha = 0.9f),
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp
+                    fontSize = 22.sp
                 )
                 if (purpose != null) {
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(16.dp))
                     Surface(
                         color = Color(0x33000000),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        shadowElevation = 2.dp
                     ) {
                         Image(
                             painter = painterResource(purpose.resourceMapper()),
                             contentDescription = null,
-                            modifier = Modifier.size(96.dp),
+                            modifier = Modifier.size(112.dp),
                             contentScale = ContentScale.Fit
                         )
                     }
+                } else {
+                    Spacer(Modifier.height(16.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(112.dp)
+                            .alpha(0f)
+                    )
                 }
             }
         }
     }
 }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> 5c7011a (fixed preview animations)
@@ -441,3 +536,5 @@ private fun QrScreenPreview() {
 >>>>>>> 321d128 (updated send to be more dynamic)
 =======
 >>>>>>> 9068d57 (got rid of bugs in send apk)
+=======
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)

@@ -1,18 +1,23 @@
-/*
- * This file is part of GNU Taler
- * (C) 2025 Taler Systems S.A.
+/**
+ * ## PreviewScreens
  *
- * GNU Taler is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 3, or (at your option) any later version.
+ * Provides Compose design-time previews for key OIM Send flow screens —
+ * [SendScreen], [QrScreen], and [PurposeScreen] — rendered within [OimTheme].
  *
- * GNU Taler is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * These previews simulate realistic input data (amounts, currencies, and
+ * purposes) to allow layout validation and visual testing directly in Android
+ * Studio’s preview pane without requiring a running wallet instance.
  *
- * You should have received a copy of the GNU General Public License along with
- * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
+ * ### Includes:
+ * - `QrScreenPreview_WithSeparateFields()` – QR code view showing encoded Taler URI.
+ * - `PurposeScreenPreview()` – purpose selection grid with back navigation.
+ * - `SendScreenPreview()` – send interface with balance display and animated note setup.
+ *
+ * @see net.taler.wallet.oim.send.screens.SendScreen
+ * @see net.taler.wallet.oim.send.screens.QrScreen
+ * @see net.taler.wallet.oim.send.screens.PurposeScreen
  */
+
 
 package net.taler.wallet.oim.send.preview
 

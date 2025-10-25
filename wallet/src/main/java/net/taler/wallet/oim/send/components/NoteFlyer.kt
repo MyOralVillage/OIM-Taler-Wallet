@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -22,7 +23,31 @@
 =======
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
  * GPLv3-or-later
+=======
+/**
+ * ## NoteFlyer
+ *
+ * Composable animation of a “flying banknote” used during the Send
+ * sequence in the OIM Wallet. The note bitmap moves smoothly from a
+ * start to an end position while scaling and fading, visually
+ * representing a payment in motion.
+ *
+ * The animation sequence:
+ * 1. Fades in and scales up the note.
+ * 2. Moves it across the screen toward the landing area.
+ * 3. Fades it out and invokes [onArrive] when completed.
+ *
+ * Designed to be used alongside [NotesPile] to simulate incoming or
+ * outgoing money transfer visuals.
+ *
+ * @param noteBitmap The image of the note to animate.
+ * @param startInRoot Starting position (in root coordinates).
+ * @param endInRoot Destination position (in root coordinates).
+ * @param widthPx The width of the note bitmap in pixels.
+ * @param onArrive Callback triggered when the animation ends.
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
  */
+
 package net.taler.wallet.oim.send.components
 
 import androidx.annotation.DrawableRes

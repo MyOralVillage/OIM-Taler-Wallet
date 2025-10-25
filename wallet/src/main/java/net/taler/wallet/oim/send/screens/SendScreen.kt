@@ -1,10 +1,41 @@
-/*
- * GPLv3-or-later
+/**
+ * ## SendScreen
+ *
+ * Main UI for sending digital cash in the OIM Send flow. Combines balance
+ * display, denomination selection, animated note transfer visualization,
+ * and navigation to purpose and confirmation screens.
+ *
+ * The screen allows users to:
+ * - View their current wallet balance ([OimTopBarCentered]).
+ * - Choose note denominations from [NotesStrip].
+ * - Watch notes “fly” to the center pile ([NoteFlyer] → [NotesPile]).
+ * - Undo the last added note or select a payment purpose.
+ * - Trigger a send action once the desired amount is built.
+ *
+ * Includes local arithmetic utilities for amount addition/subtraction,
+ * ensuring accurate incremental updates to [Amount] values.
+ *
+ * @param balance The user’s wallet balance.
+ * @param amount The initial amount currently selected for sending.
+ * @param onAdd Called when a note is added to the pile.
+ * @param onRemoveLast Called when the user undoes the last addition.
+ * @param onChoosePurpose Opens the purpose selection screen.
+ * @param onSend Executes the send/payment action.
+ * @param onHome Optional callback to navigate back to the home screen.
+ *
+ * @see net.taler.wallet.oim.send.components.NotesStrip
+ * @see net.taler.wallet.oim.send.components.NoteFlyer
+ * @see net.taler.wallet.oim.send.components.NotesPile
+ * @see net.taler.wallet.oim.send.components.OimTopBarCentered
+ * @see net.taler.wallet.oim.send.components.WoodTableBackground
  */
+
 package net.taler.wallet.oim.send.screens
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,26 +75,29 @@ import net.taler.common.R.drawable.*
 import net.taler.wallet.oim.send.components.NoteFlyer
 import net.taler.wallet.oim.send.components.NotesStrip
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 321d128 (updated send to be more dynamic)
 /**
  * Main send screen (drawable-backed UI using res_mapping_extensions).
  */
 =======
+=======
+import net.taler.wallet.oim.send.components.NotesPile
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
 import java.math.BigDecimal
 
 >>>>>>> 9068d57 (got rid of bugs in send apk)
 @Composable
 fun SendScreen(
     balance: Amount,
-    amount: Amount,                 // source of truth from parent
+    amount: Amount,
     onAdd: (Amount) -> Unit,
     onRemoveLast: (Amount) -> Unit,
     onChoosePurpose: () -> Unit,
-    onSend: () -> Unit
+    onSend: () -> Unit,
+    onHome: () -> Unit = {}
 ) {
-    // ---------- UI-local mirror so the number updates instantly ----------
     var displayAmount by remember { mutableStateOf(amount) }
-    // keep mirror in sync if parent changes it from the outside
     LaunchedEffect(amount) { displayAmount = amount }
 
     // helpers to add/sub amounts as strings (avoids relying on data class ops)
@@ -89,7 +123,45 @@ fun SendScreen(
 
         // ---------- animated note state ----------
         data class Pending(val value: Amount, val res: Int, val start: Offset)
+<<<<<<< HEAD
+=======
+=======
+
+    fun plus(a: Amount, b: Amount): Amount {
+        val cur = a.spec?.name ?: a.currency
+        val sum = BigDecimal(a.amountStr) + BigDecimal(b.amountStr)
+        return Amount.fromString(cur, sum.stripTrailingZeros().toPlainString())
+    }
+
+    fun minus(a: Amount, b: Amount): Amount {
+        val cur = a.spec?.name ?: a.currency
+        val diff = (BigDecimal(a.amountStr) - BigDecimal(b.amountStr)).coerceAtLeast(BigDecimal.ZERO)
+        return Amount.fromString(cur, diff.stripTrailingZeros().toPlainString())
+    }
+
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        WoodTableBackground(modifier = Modifier.fillMaxSize(), light = false)
+
+        // Home button (top-left)
+        IconButton(
+            onClick = onHome,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(8.dp)
+                .size(60.dp)
+        ) {
+            Icon(Icons.Filled.Home, contentDescription = "Home", tint = Color.White)
+        }
+
+        // animated note state
+        data class Pending(val value: Amount, val bmp: ImageBitmap, val start: Offset)
+>>>>>>> c4c1157 (got rid of bugs in send apk)
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
         var pending by remember { mutableStateOf<Pending?>(null) }
+
+        val pile = remember { mutableStateListOf<ImageBitmap>() }
+        val pileAmounts = remember { mutableStateListOf<Amount>() }
+
         val density = LocalDensity.current
 <<<<<<< HEAD
 
@@ -251,10 +323,16 @@ fun SendScreen(
         val endCenter = with(density) {
             Offset(
                 x = (this@BoxWithConstraints.maxWidth / 2).toPx(),
-                y = (this@BoxWithConstraints.maxHeight * 0.38f).toPx()
+                y = (this@BoxWithConstraints.maxHeight / 2).toPx()
             )
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
         }
+
+        val pileWidthPx = with(density) { 160.dp.toPx() }
+        NotesPile(
+            landedNotes = pile,
+            noteWidthPx = pileWidthPx
+        )
 
         Column(
             Modifier
@@ -273,12 +351,15 @@ fun SendScreen(
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             // Amount + actions
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 =======
             // amount & actions
 >>>>>>> 9068d57 (got rid of bugs in send apk)
+=======
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -288,7 +369,7 @@ fun SendScreen(
             ) {
                 Column {
                     Text(
-                        text = displayAmount.amountStr,  // <- use local mirror
+                        text = displayAmount.amountStr,
                         color = Color.White,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 64.sp
@@ -366,7 +447,6 @@ fun SendScreen(
                 }
             }
 
-            // ---------- notes ----------
             val currency = displayAmount.currency
 <<<<<<< HEAD
 >>>>>>> 9068d57 (got rid of bugs in send apk)
@@ -375,32 +455,23 @@ fun SendScreen(
             val thumbNotes: List<Pair<Int, Amount>> =
 >>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
                 when (currency) {
-                    "KUDOS" -> EUR_BILLS_CENTS
-                        .filter { it.first >= 100 }
-                        .take(7)
+                    "KUDOS" -> SLE_BILLS_CENTS.filter { it.first >= 100 }.take(7)
                         .map { (cents, resId) ->
                             resId to Amount.fromString("KUDOS", (cents / 100.0).toString())
                         }
-                    "EUR" -> EUR_BILLS_CENTS
-                        .filter { it.first >= 100 }
-                        .take(7)
+                    "EUR" -> EUR_BILLS_CENTS.filter { it.first >= 100 }.take(7)
                         .map { (cents, resId) ->
                             resId to Amount.fromString("EUR", (cents / 100.0).toString())
                         }
-                    "SLE" -> SLE_BILLS_CENTS
-                        .filter { it.first >= 100 }
-                        .take(7)
+                    "SLE" -> SLE_BILLS_CENTS.filter { it.first >= 100 }.take(7)
                         .map { (cents, resId) ->
                             resId to Amount.fromString("SLE", (cents / 100.0).toString())
                         }
-                    "CHF" -> CHF_BILLS
-                        .filter { it.first >= 200 }
-                        .take(7)
+                    "CHF" -> CHF_BILLS.filter { it.first >= 200 }.take(7)
                         .map { (half, resId) ->
                             resId to Amount.fromString("CHF", (half / 2.0).toString())
                         }
-                    "XOF" -> XOF_BILLS
-                        .take(7)
+                    "XOF" -> XOF_BILLS.take(7)
                         .map { (value, resId) ->
                             resId to Amount.fromString("XOF", value.toString())
                         }
@@ -416,8 +487,10 @@ fun SendScreen(
 //                    else -> null
 //                }
 
+            val thumbWidth = 160.dp
+
             NotesStrip(
-                noteThumbWidth = 96.dp,
+                noteThumbWidth = thumbWidth,
                 notes = thumbNotes,
 <<<<<<< HEAD
                 onAddRequest = { value, startCenter ->
@@ -431,23 +504,34 @@ fun SendScreen(
                         ?: return@NotesStrip
                     // enqueue flyer
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+                    pending = Pending(billAmount, res, startCenter)
+=======
+                    val bmp = thumbNotes.firstOrNull { it.second.amountStr == billAmount.amountStr }?.first
+                        ?: fallbackBmp ?: return@NotesStrip
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
                     pending = Pending(billAmount, bmp, startCenter)
 >>>>>>> 321d128 (updated send to be more dynamic)
 =======
                     pending = Pending(billAmount, res, startCenter)
 >>>>>>> 89f0c7f (refactored svgs to webp, reduced og taler/res by ~80%; total APK size down by ~50%. Needs more fixes/integration)
                 },
-                onRemoveLast = { last ->
-                    // update local UI immediately
-                    displayAmount = minus(displayAmount, last)
-                    // inform parent
-                    onRemoveLast(last)
+                onRemoveLast = { _ ->
+                    if (pileAmounts.isNotEmpty()) {
+                        val lastIdxAmt = pileAmounts.lastIndex
+                        val popped = pileAmounts.removeAt(lastIdxAmt)
+                        if (pile.isNotEmpty()) pile.removeAt(pile.lastIndex)
+                        displayAmount = minus(displayAmount, popped)
+                        onRemoveLast(popped)
+                    }
                 },
             )
 
             Spacer(Modifier.height(8.dp))
         }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         pending?.let { p ->
@@ -459,8 +543,10 @@ fun SendScreen(
 =======
         // ---------- flying note ----------
 >>>>>>> 9068d57 (got rid of bugs in send apk)
+=======
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
         pending?.let { p ->
-            val widthPx = with(density) { 140.dp.toPx() }
+            val widthPx = with(density) { 160.dp.toPx() }
             NoteFlyer(
 <<<<<<< HEAD
                 noteBitmap = p.bmp,
@@ -472,9 +558,9 @@ fun SendScreen(
                 endInRoot = endCenter,
                 widthPx = widthPx,
                 onArrive = {
-                    // update local UI instantly
+                    pile.add(p.bmp)
+                    pileAmounts.add(p.value)
                     displayAmount = plus(displayAmount, p.value)
-                    // also tell parent so its state can catch up
                     onAdd(p.value)
                     pending = null
                 },
@@ -484,28 +570,37 @@ fun SendScreen(
 }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 5c7011a (fixed preview animations)
 =======
 
 @Preview(showBackground = true, widthDp = 1280, heightDp = 800)
 =======
 >>>>>>> 9068d57 (got rid of bugs in send apk)
+=======
+
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
 @Composable
 @Preview(showBackground = true, widthDp = 1280, heightDp = 800)
 private fun SendScreenPreview() {
     MaterialTheme {
         SendScreen(
             balance = Amount.fromString("KUDOS", "25"),
-            amount = Amount.fromString("KUDOS", "10"),
+            amount = Amount.fromString("KUDOS", "0"),
             onAdd = {},
             onRemoveLast = {},
             onChoosePurpose = {},
-            onSend = {}
+            onSend = {},
+            onHome = {}
         )
     }
+<<<<<<< HEAD
 <<<<<<< HEAD
 }
 >>>>>>> 3e69811 (refactored to use res_mapping and fixed oimsendapp and asset errors)
 =======
 }
 >>>>>>> 9068d57 (got rid of bugs in send apk)
+=======
+}
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)

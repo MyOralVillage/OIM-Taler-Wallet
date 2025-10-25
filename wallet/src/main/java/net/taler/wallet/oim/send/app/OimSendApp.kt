@@ -1,13 +1,61 @@
+/**
+ * ## OimSendApp
+ *
+ * Composable root of the OIM Send application flow, coordinating UI screens,
+ * wallet-core interactions, and peer-to-peer push payment logic.
+ *
+ * ### Responsibilities
+ * - Manages navigation between [SendScreen], [PurposeScreen], and [QrScreen].
+ * - Interfaces with [MainViewModel] to:
+ *   - Observe wallet balances and scope selection.
+ *   - Initiate peer-to-peer debit transfers.
+ *   - Track outgoing transaction progress and retry on throttled states.
+ * - Maintains ephemeral UI state such as chosen amount, purpose, retry counters,
+ *   and live Taler URI updates.
+ * - Provides graceful recovery via automatic soft-retry and reset helpers.
+ *
+ * ### Internal Flow
+ * 1. **SendScreen** → user builds an amount visually (animated banknotes).
+ * 2. **PurposeScreen** → select transaction purpose.
+ * 3. **QrScreen** → display payment QR until purse creation and URI ready.
+ *
+ * Includes bounded exponential back-off for rate-limited wallet responses
+ * and clears state safely when returning home via [resetAndGoHome].
+ *
+ * @param model Shared [MainViewModel] providing access to balances, peer manager,
+ * and transaction manager.
+ * @param onHome Callback to navigate back to the wallet home without forcing screen reset.
+ *
+ * @see net.taler.wallet.peer.PeerManager
+ * @see net.taler.wallet.transactions.TransactionManager
+ * @see net.taler.wallet.oim.send.screens.SendScreen
+ * @see net.taler.wallet.oim.send.screens.PurposeScreen
+ * @see net.taler.wallet.oim.send.screens.QrScreen
+ */
+
 package net.taler.wallet.oim.send.app
 
 import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.TranxPurp
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.balances.BalanceState
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> c4c1157 (got rid of bugs in send apk)
+=======
+import net.taler.wallet.balances.ScopeInfo
+import net.taler.wallet.backend.TalerErrorInfo
+>>>>>>> f82ba56 (UI changes and fix qr code loading for send)
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
 import net.taler.wallet.oim.send.screens.PurposeScreen
 import net.taler.wallet.oim.send.screens.QrScreen
 import net.taler.wallet.oim.send.screens.SendScreen
@@ -32,19 +80,28 @@ import net.taler.wallet.peer.OutgoingError
 import net.taler.wallet.peer.OutgoingIntro
 import net.taler.wallet.peer.OutgoingResponse
 import net.taler.wallet.peer.OutgoingState
+<<<<<<< HEAD
 import net.taler.database.data_models.Amount
 import net.taler.database.data_models.TranxPurp
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 >>>>>>> 9068d57 (got rid of bugs in send apk)
+=======
+import net.taler.wallet.transactions.TransactionAction
+import net.taler.wallet.transactions.TransactionPeerPushDebit
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
 
 private enum class Screen { Send, Purpose, Qr }
 
 @Composable
-fun OimSendApp(model: MainViewModel) {
+fun OimSendApp(
+    model: MainViewModel,
+    onHome: () -> Unit = {},
+) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -304,23 +361,23 @@ private fun mapPickedPurposeToTranxPurp(picked: String): TranxPurp? {
 }
 >>>>>>> 321d128 (updated send to be more dynamic)
 =======
+=======
+    // ---- balance / scope ----
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
     val balanceState by model.balanceManager.state.observeAsState(BalanceState.None)
     val selectedScope by model.transactionManager.selectedScope.collectAsStateWithLifecycle(initialValue = null)
 
-    // Prefer KUDOS/TESTKUDOS when nothing is selected
-    val activeScope = remember(balanceState, selectedScope) {
+    val activeScope: ScopeInfo? = remember(balanceState, selectedScope) {
         selectedScope ?: (balanceState as? BalanceState.Success)?.let { bs ->
             bs.balances.firstOrNull { it.currency.equals("KUDOS", true) }?.scopeInfo
                 ?: bs.balances.firstOrNull { it.currency.equals("TESTKUDOS", true) }?.scopeInfo
         }
     }
 
-    // Amount in active scope currency
     var amount by remember(activeScope) {
         mutableStateOf(Amount.fromString(activeScope?.currency ?: "KUDOS", "0"))
     }
 
-    // Balance label for top bar
     val balanceLabel: Amount = remember(balanceState, activeScope) {
         val success = balanceState as? BalanceState.Success
         val entry = success?.balances?.firstOrNull { it.scopeInfo == activeScope }
@@ -330,40 +387,126 @@ private fun mapPickedPurposeToTranxPurp(picked: String): TranxPurp? {
         )
     }
 
-    var screen by remember { mutableStateOf(Screen.Send) }
-    var chosenPurpose by remember { mutableStateOf<TranxPurp?>(null) }
-    var talerUri by remember { mutableStateOf<String?>(null) }
+    // ---- nav & state ----
+    var screen by rememberSaveable { mutableStateOf(Screen.Send) }
+    var chosenPurpose by rememberSaveable { mutableStateOf<TranxPurp?>(null) }
+    var talerUri by rememberSaveable { mutableStateOf<String?>(null) }
+    var creating by rememberSaveable { mutableStateOf(false) }
+    var anchorTxId by rememberSaveable { mutableStateOf<String?>(null) }
 
-    // Keep the exchange URL returned by the fee check
-    var lastExchangeBaseUrl by remember { mutableStateOf<String?>(null) }
+    // retry/backoff guards
+    var lastProgressTick by rememberSaveable { mutableStateOf(System.currentTimeMillis()) }
+    var retries by rememberSaveable { mutableStateOf(0) }
+    var retryInFlight by rememberSaveable { mutableStateOf(false) }
 
-    // Observe backend progress
+    // follow wallet push-state to get tx id quickly
     val pushState: OutgoingState by model.peerManager.pushState.collectAsStateWithLifecycle(OutgoingIntro)
+    // live selected transaction (we'll point selection at the tx once we get the id)
+    val selectedTx by model.transactionManager.selectedTransaction.collectAsStateWithLifecycle(initialValue = null)
 
+    // 1) New tx created -> go to QR immediately (spinner shown until URI is present)
     LaunchedEffect(pushState) {
         when (val s = pushState) {
             is OutgoingResponse -> {
-                // txId = "txn:peer-push-debit:<PURSE_ID>"
-                val purseId = s.transactionId.substringAfterLast(':')
-                val ex = lastExchangeBaseUrl
-                talerUri = if (ex != null) {
-                    // IMPORTANT: percent-encode the *full* exchange URL (scheme + host + optional slash)
-                    val encoded = URLEncoder.encode(ex, StandardCharsets.UTF_8.toString())
-                    // Receiver-friendly URI understood by HandleUriFragment → preparePeerPushCredit
-                    "ext+taler://pay-push/$encoded/$purseId"
-                } else {
-                    // Fallback (not ideal, but shows something)
-                    "ext+taler://pay-push/$purseId"
-                }
+                anchorTxId = s.transactionId
+                talerUri = null
+                creating = true
+                retries = 0
+                retryInFlight = false
+                lastProgressTick = System.currentTimeMillis()
+
+                model.transactionManager.selectTransaction(s.transactionId)
                 screen = Screen.Qr
             }
             is OutgoingError -> {
+                creating = false
                 Toast.makeText(ctx, s.info.userFacingMsg ?: "Send failed", Toast.LENGTH_LONG).show()
             }
             else -> Unit
         }
     }
 
+    // 2) React to tx updates: set real talerUri or (if throttled) nudge with retry
+    LaunchedEffect(selectedTx, anchorTxId) {
+        val tx = selectedTx as? TransactionPeerPushDebit ?: return@LaunchedEffect
+        if (tx.transactionId != anchorTxId) return@LaunchedEffect
+
+        // Success — real URI is ready
+        tx.talerUri?.takeIf { it.isNotBlank() }?.let { uri ->
+            talerUri = uri
+            creating = false
+            lastProgressTick = System.currentTimeMillis()
+            return@LaunchedEffect
+        }
+
+        // Still waiting in "create purse"?
+        val isCreatePurse =
+            tx.txState?.major?.name?.equals("PENDING", true) == true &&
+                    tx.txState?.minor?.name?.equals("CREATE_PURSE", true) == true
+
+        val canRetry = tx.txActions?.contains(TransactionAction.Retry) == true
+        val throttled = tx.error.isThrottled()
+
+        // Gentle bounded backoff when throttled
+        if (screen == Screen.Qr && isCreatePurse && throttled && canRetry && !retryInFlight && retries < 6) {
+            retryInFlight = true
+            val delayMs = (1200L * (retries + 1)).coerceAtMost(7000L)
+            scope.launch {
+                delay(delayMs)
+                model.transactionManager.retryTransaction(tx.transactionId) { /* ignore one-shot error */ }
+                retries += 1
+                retryInFlight = false
+                lastProgressTick = System.currentTimeMillis()
+            }
+        }
+
+        // If we left create-purse **without** an URI and can't retry, bail gracefully
+        if (screen == Screen.Qr && !isCreatePurse && talerUri == null && !canRetry) {
+            creating = false
+            Toast.makeText(ctx, "Send could not be prepared. Please try again.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // 3) Watchdog: if we made no progress for a while, try a soft retry (prevents “forever spinner”)
+    LaunchedEffect(screen, anchorTxId, talerUri) {
+        if (screen != Screen.Qr || anchorTxId == null || talerUri != null) return@LaunchedEffect
+        scope.launch {
+            while (screen == Screen.Qr && talerUri == null && anchorTxId != null) {
+                val idleFor = System.currentTimeMillis() - lastProgressTick
+                if (idleFor > 12_000 && !retryInFlight && retries < 6) {
+                    (selectedTx as? TransactionPeerPushDebit)?.let { tx ->
+                        if (tx.txActions?.contains(TransactionAction.Retry) == true) {
+                            retryInFlight = true
+                            model.transactionManager.retryTransaction(tx.transactionId) { }
+                            retries += 1
+                            retryInFlight = false
+                            lastProgressTick = System.currentTimeMillis()
+                        }
+                    }
+                }
+                delay(1500)
+            }
+        }
+    }
+
+    /** Clean state and let the host navigate to OIM Home (do *not* force `screen = Send`). */
+    fun resetAndGoHome() {
+        // clean UI + wallet-core selection
+        amount = Amount.zero(amount.currency)
+        chosenPurpose = null
+        talerUri = null
+        anchorTxId = null
+        creating = false
+        retries = 0
+        retryInFlight = false
+        model.peerManager.resetPushPayment()
+        model.transactionManager.selectTransaction(null)
+
+        // IMPORTANT: don't change `screen` here; the host performs navigation to OIM Home.
+        onHome()
+    }
+
+    // --- UI ---
     when (screen) {
         Screen.Send -> SendScreen(
             balance = balanceLabel,
@@ -384,14 +527,17 @@ private fun mapPickedPurposeToTranxPurp(picked: String): TranxPurp? {
                 }
             },
             onChoosePurpose = { screen = Screen.Purpose },
-            onSend = { screen = Screen.Purpose }
+            onSend = { screen = Screen.Purpose },
+            onHome = ::resetAndGoHome
         )
 
         Screen.Purpose -> PurposeScreen(
             balance = balanceLabel,
             onBack = { screen = Screen.Send },
             onDone = { picked ->
+                if (creating) return@PurposeScreen // single-flight
                 chosenPurpose = picked
+
                 val scopeInfo = activeScope
                 when {
                     scopeInfo == null ->
@@ -401,7 +547,7 @@ private fun mapPickedPurposeToTranxPurp(picked: String): TranxPurp? {
                     amount.currency != scopeInfo.currency ->
                         Toast.makeText(ctx, "Currency mismatch with account", Toast.LENGTH_SHORT).show()
                     else -> {
-                        // 1) Check fees/balance constrained to this scope (gets us the exchange URL)
+                        creating = true
                         scope.launch {
                             when (val check = model.peerManager.checkPeerPushFees(
                                 amount = amount.toCommonAmount(),
@@ -409,8 +555,7 @@ private fun mapPickedPurposeToTranxPurp(picked: String): TranxPurp? {
                                 restrictScope = scopeInfo
                             )) {
                                 is CheckFeeResult.Success -> {
-                                    lastExchangeBaseUrl = check.exchangeBaseUrl // <-- save for URI
-                                    // 2) Initiate
+                                    // kick off tx; QR screen will open as soon as we get OutgoingResponse
                                     model.peerManager.initiatePeerPushDebit(
                                         amount = amount.toCommonAmount(),
                                         summary = picked.cmp,
@@ -419,40 +564,60 @@ private fun mapPickedPurposeToTranxPurp(picked: String): TranxPurp? {
                                     )
                                 }
                                 is CheckFeeResult.InsufficientBalance -> {
+                                    creating = false
                                     val max = check.maxAmountEffective
                                     val msg = if (max != null && !max.isZero())
                                         "Insufficient balance. Max now: ${max.amountStr} ${max.currency}"
-                                    else
-                                        "Insufficient balance. Get Test KUDOS or switch account."
+                                    else "Insufficient balance."
                                     Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
                                 }
                                 is CheckFeeResult.None -> {
+                                    creating = false
                                     Toast.makeText(ctx, "Could not check balance/fees", Toast.LENGTH_LONG).show()
                                 }
                             }
                         }
                     }
                 }
-            }
+            },
+            onHome = ::resetAndGoHome
         )
 
         Screen.Qr -> QrScreen(
-            talerUri = talerUri ?: "taler://invalid",
+            talerUri = talerUri,   // null => spinner until purse & URI exist
             amount = amount,
             purpose = chosenPurpose,
             onBack = {
+                // reset + return to Send
                 amount = Amount.zero(amount.currency)
                 chosenPurpose = null
                 talerUri = null
-                lastExchangeBaseUrl = null
+                anchorTxId = null
+                creating = false
+                retries = 0
+                retryInFlight = false
                 model.peerManager.resetPushPayment()
+                model.transactionManager.selectTransaction(null)
                 screen = Screen.Send
-            }
+            },
+            onHome = ::resetAndGoHome
         )
     }
 }
 
-/* helpers */
 private fun Amount.toCommonAmount(): net.taler.common.Amount =
     net.taler.common.Amount.fromString(this.currency, this.amountStr)
+<<<<<<< HEAD
 >>>>>>> 9068d57 (got rid of bugs in send apk)
+=======
+
+/** Detect throttling hints from wallet-core error (code 7004, “throttled”, “rate limit”, etc.). */
+private fun TalerErrorInfo?.isThrottled(): Boolean {
+    if (this == null) return false
+    val text = buildString {
+        hint?.let { append(it.lowercase()).append(' ') }
+        message?.let { append(it.lowercase()).append(' ') }
+    }
+    return "throttl" in text || "rate limit" in text || "429" in text
+}
+>>>>>>> 938e3e6 (UI changes and fix qr code loading for send)
