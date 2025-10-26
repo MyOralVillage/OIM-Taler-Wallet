@@ -38,7 +38,7 @@ GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT MAY BREAK EXISTING GNU T
 
 ## Installation Instructions
 1. Download the correct APK
-    - INSERT OFFICIAL FDROID REPO HERE
+    - for non-debug: please search for the app on FDroid
     - debug apks reccomended for development; else use regular apk
     - arm64 for most Android devices (armeabi for legacy devices)
     - x86_64 for emulation  (x86 for legacy devices)
