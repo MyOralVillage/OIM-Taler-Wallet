@@ -50,6 +50,8 @@ fun SendScreen(
     var displayAmount by remember { mutableStateOf(amount) }
     LaunchedEffect(amount) { displayAmount = amount }
 
+
+
     // Arithmetic helpers
     fun plus(a: Amount, b: Amount): Amount {
         val cur = a.spec?.name ?: a.currency
@@ -162,18 +164,6 @@ fun SendScreen(
                     )
                 }
 
-                FloatingActionButton(
-                    onClick = onSend,
-                    containerColor = Color(0xFFC32909),
-                    modifier = Modifier.alpha(0.8f)
-                ) {
-                    Icon(
-                        painter = painterResource(Buttons("send").resourceMapper()),
-                        contentDescription = "Send",
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(100.dp)
-                    )
-                }
             }
 
 
