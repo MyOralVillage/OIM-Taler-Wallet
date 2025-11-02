@@ -8,7 +8,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.taler.database.TranxHistory
 import net.taler.database.data_models.Amount
+import net.taler.database.data_models.FilterableDirection
+import net.taler.database.data_models.Timestamp
 import net.taler.database.data_models.TranxPurp
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.balances.BalanceState
@@ -30,6 +33,13 @@ fun OimSendApp(
 ) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    // --- NEW: Ensure the test DB is initialized once ---
+    LaunchedEffect(Unit) {
+        // Only the test DB as requested
+        TranxHistory.initTest(ctx)
+    }
+    // ---------------------------------------------------
 
     // ---- balance / scope ----
     val balanceState by model.balanceManager.state.observeAsState(BalanceState.None)
@@ -67,6 +77,10 @@ fun OimSendApp(
     var retries by rememberSaveable { mutableStateOf(0) }
     var retryInFlight by rememberSaveable { mutableStateOf(false) }
 
+    // --- NEW: keep track of which txIds we have already recorded to DB ---
+    val recordedTxIds = remember { mutableStateListOf<String>() }
+    // ---------------------------------------------------------------------
+
     // follow wallet push-state to get tx id quickly
     val pushState: net.taler.wallet.peer.OutgoingState by model.peerManager.pushState.collectAsStateWithLifecycle(
         net.taler.wallet.peer.OutgoingIntro
@@ -82,6 +96,28 @@ fun OimSendApp(
                 creating = true
                 retries = 0
                 retryInFlight = false
+
+                // --- NEW: insert transaction into test DB exactly once ---
+// --- insert transaction into test DB exactly once ---
+                if (!recordedTxIds.contains(s.transactionId)) {
+                    try {
+                        val now: Timestamp = Timestamp.now()
+                        val dir = FilterableDirection.OUTGOING
+
+                        TranxHistory.newTransaction(
+                            tid = s.transactionId,
+                            purp = chosenPurpose,
+                            amt = amount,
+                            dir = dir,
+                            tms = now
+                        )
+                        recordedTxIds.add(s.transactionId)
+                    } catch (_: Exception) {
+                    }
+                }
+
+
+                // -----------------------------------------------------------
 
                 model.transactionManager.selectTransaction(s.transactionId)
                 screen = Screen.Qr
@@ -155,17 +191,22 @@ fun OimSendApp(
 
     /** Clean state and let the host navigate to OIM Home */
     fun resetAndGoHome() {
-        amount = Amount.zero(amount.currency)
-        chosenPurpose = null
-        talerUri = null
-        anchorTxId = null
-        creating = false
-        retries = 0
-        retryInFlight = false
-        model.peerManager.resetPushPayment()
-        model.transactionManager.selectTransaction(null)
-        onHome()
+        try {
+            amount = Amount.zero(amount.currency)
+            chosenPurpose = null
+            talerUri = null
+            anchorTxId = null
+            creating = false
+            retries = 0
+            retryInFlight = false
+
+            model.peerManager.resetPushPayment()
+            model.transactionManager.selectTransaction(null)
+        } finally {
+            onHome()
+        }
     }
+
 
     // --- UI ---
     when (screen) {

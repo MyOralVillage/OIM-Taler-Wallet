@@ -23,6 +23,8 @@ import java.math.BigDecimal
 import androidx.compose.material.icons.filled.MoneyOff
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.zIndex
+
 
 /**
  * Main screen for sending money.
@@ -97,13 +99,14 @@ fun SendScreen(
                 .align(Alignment.TopStart)
                 .padding(8.dp)
                 .size(60.dp)
+                .zIndex(2f)
         ) {
             Icon(
                 Icons.Filled.House,
                 contentDescription = "Home",
                 tint = Color.White,
                 modifier = Modifier.size(120.dp),
-                )
+            )
         }
 
 // Add Undo button in top-right

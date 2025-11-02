@@ -26,6 +26,11 @@ class OimSendActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { OimSendApp(model = model) }
+        setContent {
+            OimSendApp(
+                model = model,
+                onHome = { finish() }
+            )
+        }
     }
 }

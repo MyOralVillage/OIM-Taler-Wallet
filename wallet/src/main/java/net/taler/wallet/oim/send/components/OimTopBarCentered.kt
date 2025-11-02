@@ -76,12 +76,12 @@ fun OimTopBarCentered(
                 contentScale = ContentScale.Fit
             )
             Spacer(Modifier.height(8.dp))
-            Text(
-                text = "${balance.amountStr} ${balance.spec?.name ?: balance.currency}",
-                color = Color.White,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.SemiBold
-            )
+//            Text(
+//                text = "${balance.amountStr} ${balance.spec?.name ?: balance.currency}",
+//                color = Color.White,
+//                fontSize = 32.sp,
+//                fontWeight = FontWeight.SemiBold
+//            )
         }
     }
 }
