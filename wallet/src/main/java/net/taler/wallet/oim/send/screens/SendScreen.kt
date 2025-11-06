@@ -63,8 +63,11 @@ fun SendScreen(
         return Amount.fromString(cur, diff.stripTrailingZeros().toPlainString())
     }
 
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        WoodTableBackground(modifier = Modifier.fillMaxSize(), light = false)
+    BoxWithConstraints(Modifier
+        .fillMaxSize()
+        .statusBarsPadding()
+    ) {
+        WoodTableBackground(modifier = Modifier.fillMaxSize().statusBarsPadding(), light = false)
 
 
         // Flying note state
@@ -89,47 +92,47 @@ fun SendScreen(
         )
 
         // After the Home button in SendScreen
-        IconButton(
-            onClick = onHome,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(8.dp)
-                .size(60.dp)
-        ) {
-            Icon(
-                Icons.Filled.House,
-                contentDescription = "Home",
-                tint = Color.White,
-                modifier = Modifier.size(120.dp),
-                )
-        }
+//        IconButton(
+//            onClick = onHome,
+//            modifier = Modifier
+//                .align(Alignment.TopStart)
+//                .padding(8.dp)
+//                .size(60.dp)
+//        ) {
+//            Icon(
+//                Icons.Filled.House,
+//                contentDescription = "Home",
+//                tint = Color.White,
+//                modifier = Modifier.size(120.dp),
+//                )
+//        }
 
 // Add Undo button in top-right
-        Button(
-            onClick = {
-                if (pileAmounts.isNotEmpty()) {
-                    val popped = pileAmounts.removeAt(pileAmounts.lastIndex)
-                    if (pile.isNotEmpty()) pile.removeAt(pile.lastIndex)
-                    displayAmount = minus(displayAmount, popped)
-                    onRemoveLast(popped)
-                }
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
-            contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(8.dp)
-                .size(100.dp)
-                .alpha(0.6f)
-        ) {
-            Icon(
-                imageVector = Icons.Default.MoneyOff,
-                contentDescription = "Undo",
-                tint = Color.White,
-                modifier = Modifier.size(100.dp)
-            )
-            Spacer(Modifier.width(8.dp))
-        }
+//        Button(
+//            onClick = {
+//                if (pileAmounts.isNotEmpty()) {
+//                    val popped = pileAmounts.removeAt(pileAmounts.lastIndex)
+//                    if (pile.isNotEmpty()) pile.removeAt(pile.lastIndex)
+//                    displayAmount = minus(displayAmount, popped)
+//                    onRemoveLast(popped)
+//                }
+//            },
+//            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+//            contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
+//            modifier = Modifier
+//                .align(Alignment.CenterEnd)
+//                .padding(8.dp)
+//                .size(100.dp)
+//                .alpha(0.6f)
+//        ) {
+//            Icon(
+//                imageVector = Icons.Default.MoneyOff,
+//                contentDescription = "Undo",
+//                tint = Color.White,
+//                modifier = Modifier.size(100.dp)
+//            )
+//            Spacer(Modifier.width(8.dp))
+//        }
 
         Column(
             Modifier
@@ -143,7 +146,7 @@ fun SendScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 12.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -152,28 +155,50 @@ fun SendScreen(
                         text = displayAmount.amountStr,
                         color = Color.White,
                         fontWeight = FontWeight.ExtraBold,
-                        fontSize = 64.sp
+                        fontSize = 60.sp
                     )
                     Text(
                         text = displayAmount.spec?.name ?: displayAmount.currency,
                         color = Color.White,
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 26.sp
+                        fontSize = 18.sp
                     )
                 }
-
-                FloatingActionButton(
-                    onClick = onSend,
-                    containerColor = Color(0xFFC32909),
-                    modifier = Modifier.alpha(0.8f)
+                Button(
+                    onClick = {
+                        if (pileAmounts.isNotEmpty()) {
+                            val popped = pileAmounts.removeAt(pileAmounts.lastIndex)
+                            if (pile.isNotEmpty()) pile.removeAt(pile.lastIndex)
+                            displayAmount = minus(displayAmount, popped)
+                            onRemoveLast(popped)
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                    contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
+                    modifier = Modifier
+                        .size(80.dp)
+                        .alpha(0.8f)
                 ) {
                     Icon(
-                        painter = painterResource(Buttons("send").resourceMapper()),
-                        contentDescription = "Send",
-                        tint = Color.Unspecified,
+                        imageVector = Icons.Default.MoneyOff,
+                        contentDescription = "Undo",
+                        tint = Color.White,
                         modifier = Modifier.size(100.dp)
                     )
                 }
+
+//                FloatingActionButton(
+//                    onClick = onSend,
+//                    containerColor = Color(0xFFC32909),
+//                    modifier = Modifier.alpha(0.8f)
+//                ) {
+//                    Icon(
+//                        painter = painterResource(Buttons("send").resourceMapper()),
+//                        contentDescription = "Send",
+//                        tint = Color.Unspecified,
+//                        modifier = Modifier.size(100.dp)
+//                    )
+//                }
             }
 
 
@@ -219,7 +244,7 @@ fun SendScreen(
             }
 
             NotesStrip(
-                noteThumbWidth = 160.dp,
+                noteThumbWidth = 120.dp,
                 notes = noteThumbnails,
                 enabledStates = affordableNotes,
                 onAddRequest = { billAmount, startCenter ->
@@ -235,8 +260,6 @@ fun SendScreen(
                     }
                 }
             )
-
-            Spacer(Modifier.height(8.dp))
         }
 
         // Flying note animation
@@ -259,7 +282,7 @@ fun SendScreen(
     }
 }
 
-@Preview(showBackground = true, widthDp = 1280, heightDp = 800)
+@Preview(showBackground = true, device = "spec:width=411dp,height=891dp,orientation=landscape")
 @Composable
 private fun SendScreenPreview() {
     MaterialTheme {
