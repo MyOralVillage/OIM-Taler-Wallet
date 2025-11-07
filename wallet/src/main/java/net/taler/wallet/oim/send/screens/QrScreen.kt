@@ -2,6 +2,7 @@ package net.taler.wallet.oim.send.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -51,111 +52,114 @@ fun QrScreen(
     onBack: () -> Unit,
     onHome: () -> Unit = {}
 ) {
-    Box(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize().statusBarsPadding()) {
         // Background
         WoodTableBackground(modifier = Modifier.fillMaxSize(), light = false)
 
         // Top navigation controls
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-                .align(Alignment.TopCenter),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onHome) {
-                Icon(Icons.Filled.Home, contentDescription = "Home", tint = Color.White)
-            }
-            FilledTonalButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = null
-                )
-                Spacer(Modifier.width(8.dp))
-                Text("Back")
-            }
-        }
-
-        // Main content: QR code and amount/purpose
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // QR code or loading spinner
-            Surface(
-                color = Color.White,
-                shape = RoundedCornerShape(24.dp),
-                shadowElevation = 8.dp,
-                modifier = Modifier.size(360.dp)
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                if (talerUri == null) {
-                    // Loading state
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(24.dp),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        CircularProgressIndicator()
-                        Spacer(Modifier.height(12.dp))
-                        Text("Preparing payment…", color = Color.Black)
-                    }
-                } else {
-                    // Generate and display the QR code bitmap
-                    val qrBitmap = remember(talerUri) { generateQrBitmap(talerUri, 1024) }
-                    Image(
-                        bitmap = qrBitmap.asImageBitmap(),
-                        contentDescription = "Taler QR",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Fit
+                IconButton(onClick = onHome) {
+                    Icon(Icons.Filled.Home,
+                        contentDescription = "Home",
+                        tint = Color.White,
+                        modifier = Modifier.size(80.dp))
+                }
+                FilledTonalButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null
                     )
+                    Spacer(Modifier.width(8.dp))
+                    Text("Back")
                 }
             }
 
-            // Amount and purpose display
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(start = 24.dp)
+            // Main content: QR code and amount/purpose
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = amount.amountStr,
+                // QR code or loading spinner
+                Surface(
                     color = Color.White,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 48.sp
-                )
-                Text(
-                    text = amount.spec?.name ?: amount.currency,
-                    color = Color.White.copy(alpha = 0.9f),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 22.sp
-                )
-                if (purpose != null) {
-                    Spacer(Modifier.height(16.dp))
-                    Surface(
-                        color = Color(0x33000000),
-                        shape = RoundedCornerShape(12.dp),
-                        shadowElevation = 2.dp
-                    ) {
+                    shape = RoundedCornerShape(12.dp),
+                    shadowElevation = 8.dp,
+                    modifier = Modifier.size(300.dp)
+                ) {
+                    if (talerUri == null) {
+                        // Loading state
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(10.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator()
+                            Spacer(Modifier.height(12.dp))
+                            Text("Preparing payment…", color = Color.Black)
+                        }
+                    } else {
+                        // Generate and display the QR code bitmap
+                        val qrBitmap = remember(talerUri) { generateQrBitmap(talerUri, 2048) }
                         Image(
-                            painter = painterResource(purpose.resourceMapper()),
-                            contentDescription = null,
-                            modifier = Modifier.size(112.dp),
+                            bitmap = qrBitmap.asImageBitmap(),
+                            contentDescription = "Taler QR",
+                            modifier = Modifier.fillMaxSize().aspectRatio(1f),
                             contentScale = ContentScale.Fit
                         )
                     }
-                } else {
-                    Spacer(Modifier.height(16.dp))
-                    Box(
-                        modifier = Modifier
-                            .size(112.dp)
-                            .alpha(0f)
+                }
+
+                // Amount and purpose display
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = amount.amountStr,
+                        color = Color.White,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 48.sp
                     )
+                    Text(
+                        text = amount.spec?.name ?: amount.currency,
+                        color = Color.White.copy(alpha = 0.9f),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 22.sp
+                    )
+                    if (purpose != null) {
+                        Spacer(Modifier.height(16.dp))
+                        Surface(
+                            color = Color(0x33000000),
+                            shape = RoundedCornerShape(12.dp),
+                            shadowElevation = 2.dp
+                        ) {
+                            Image(
+                                painter = painterResource(purpose.resourceMapper()),
+                                contentDescription = null,
+                                modifier = Modifier.size(112.dp),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+                    } else {
+                        Spacer(Modifier.height(16.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(112.dp)
+                                .alpha(0f)
+                        )
+                    }
                 }
             }
         }
@@ -165,7 +169,7 @@ fun QrScreen(
 /**
  * Preview for [QrScreen].
  */
-@Preview(showBackground = true, widthDp = 1280, heightDp = 800)
+@Preview(showBackground = true, showSystemUi = false, device  = "spec:width=411dp,height=891dp,orientation=landscape")
 @Composable
 private fun QrScreenPreview() {
     MaterialTheme {

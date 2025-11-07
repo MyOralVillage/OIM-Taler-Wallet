@@ -35,12 +35,12 @@ internal fun Amount.resourceMapper(): List<Int> {
             result.addAll(mapToBills(value, XOF_BILLS))
         }
         "EUR" -> {
-            val totalCents = value * 100 + (fraction / 1_000_000)
+            val totalCents = value * 100 + (fraction * 100L / Amount.FRACTIONAL_BASE)
             result.addAll(mapToBills(totalCents, EUR_BILLS_CENTS))
         }
 
          "SLE", "KUDOS", "KUD" -> {
-            val totalCents = value * 100 + (fraction / 1_000_000)
+            val totalCents = value * 100 + (fraction * 100L / Amount.FRACTIONAL_BASE)
             result.addAll(mapToBills(totalCents, SLE_BILLS_CENTS))
         }
         else -> throw IllegalArgumentException("Unsupported currency: $currency")

@@ -4,7 +4,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,17 +17,20 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.taler.database.data_models.Amount
+import net.taler.wallet.oim.history.components.TransactionsListView
 import net.taler.wallet.oim.res_mapping_extensions.Buttons
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 
 /**
  * ## OimTopBarCentered
  *
- * Center-aligned top bar displaying the user’s wallet balance and a *Send* button
+ * Center-aligned top bar displaying the user's wallet balance and a *Send* button
  * at the top-right corner. Shows a chest icon for visual anchoring of the balance.
  *
  * The Send and Chest images are resolved via [Buttons] resource mapping.
@@ -41,47 +46,61 @@ fun OimTopBarCentered(
     val sendBitmap = Buttons("send").resourceMapper()
     val chestBitmap = Buttons("chest_open").resourceMapper()
 
-    Box(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 0.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // Top-right SEND button
+        // Left side: Chest + Balance
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Image(
+                painter = painterResource(chestBitmap),
+                contentDescription = "Chest",
+                modifier = Modifier.size(60.dp),
+                contentScale = ContentScale.Fit
+            )
+            Spacer(Modifier.width(18.dp))
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = balance.amountStr,
+                    color = Color.White,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = balance.currency,
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+
+        // Right side: Send button
         Box(
             modifier = Modifier
-                .align(Alignment.TopEnd)
-                .size(120.dp)
-                .clip(RoundedCornerShape(110.dp))
-                .background(Color(0x33000000))
+                .size(75.dp)
+                .background(
+                    color = Color(0xD0C32909),
+                    shape = RoundedCornerShape(8.dp)
+                )
                 .clickable { onSendClick() },
             contentAlignment = Alignment.Center
         ) {
             Image(
                 bitmap = ImageBitmap.imageResource(sendBitmap),
                 contentDescription = "Send",
-                modifier = Modifier.size(100.dp),
+                modifier = Modifier.size(65.dp),
                 contentScale = ContentScale.Fit
             )
-        }
-
-        // Centered chest + balance
-        Column(
-            modifier = Modifier.align(Alignment.TopCenter),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = painterResource(chestBitmap),
-                contentDescription = "Chest",
-                modifier = Modifier.size(100.dp),
-                contentScale = ContentScale.Fit
-            )
-            Spacer(Modifier.height(8.dp))
-//            Text(
-//                text = "${balance.amountStr} ${balance.spec?.name ?: balance.currency}",
-//                color = Color.White,
-//                fontSize = 32.sp,
-//                fontWeight = FontWeight.SemiBold
-//            )
         }
     }
 }

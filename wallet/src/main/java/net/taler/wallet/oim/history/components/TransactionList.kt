@@ -38,9 +38,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.taler.common.R.drawable.incoming_transaction
 import net.taler.common.R.drawable.outgoing_transaction
+import net.taler.database.data_models.Amount
 import net.taler.database.data_models.FilterableDirection
 import net.taler.database.data_models.TranxPurp
+import net.taler.wallet.oim.components.Bills
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.oim.res_mapping_extensions.resourceMapper // Amount
 
 @Composable
 fun TransactionCard(
@@ -49,7 +52,8 @@ fun TransactionCard(
     date: String,
     purpose: TranxPurp?,
     modifier: Modifier = Modifier,
-    dir: FilterableDirection
+    dir: FilterableDirection,
+    displayAmount: Amount
 ) {
     // Define variables that differ based on type
     val badgeColor =
@@ -107,6 +111,17 @@ fun TransactionCard(
                         tint = Color.Unspecified
                     )
                 }
+
+                Bills(
+                    amount = displayAmount,
+                    billWidth = 100,      // 120 × 0.833
+                    billHeight = 64,      // 77 × 0.833 ≈ 64
+                    coinSize = 33,        // 40 × 0.833 ≈ 33
+                    billOffsetX = 7,      // 8 × 0.833 ≈ 7
+                    billOffsetY = 12,     // 15 × 0.833 ≈ 12
+                    coinOffsetX = 15,     // 15 × 0.833 ≈ 12
+                    coinOffsetY = 24      // 25 × 0.833 ≈ 21
+                )
 
                 // Amount Badge
                 Box(

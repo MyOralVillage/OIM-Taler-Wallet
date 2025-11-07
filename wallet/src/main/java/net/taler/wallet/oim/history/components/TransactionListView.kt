@@ -233,9 +233,34 @@ private fun RowScope.MainContent() {
                 date = transaction.datetime.fmtString(
                     DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                 purpose = transaction.purpose,
-                dir = transaction.direction
+                dir = transaction.direction,
+                displayAmount = transaction.amount
             )
         }
+//        TransactionCard(
+//            amount = "24.5",
+//            currency ="SLE",
+//            date = "2025-10-28",
+//            purpose = tranxPurpLookup["EXPN_GRCR"],
+//            dir = FilterableDirection.OUTGOING,
+//            displayAmount = Amount(
+//                currency = "SLE",
+//                value = 24L,
+//                fraction = 50_000_000
+//            )
+//        )
+//        TransactionCard(
+//            amount = "28.5",
+//            currency ="SLE",
+//            date = "2025-10-28",
+//            purpose = tranxPurpLookup["EXPN_GRCR"],
+//            dir = FilterableDirection.OUTGOING,
+//            displayAmount = Amount(
+//                currency = "SLE",
+//                value = 0L,
+//                fraction = 50_000_000
+//            )
+//        )
     }
 }
 

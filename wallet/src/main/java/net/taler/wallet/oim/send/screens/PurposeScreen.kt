@@ -1,6 +1,7 @@
 package net.taler.wallet.oim.send.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -50,16 +51,12 @@ fun PurposeCard(
         modifier = modifier
             .clickable(onClick = onClick)
             .border(
-                width = if (isSelected) 6.dp else 3.dp,
-                color = colour,
+                width = if (isSelected) 4.dp else 3.dp,
+                color = if (isSelected) Color(0xFF16CA58) else Color.White,  // ← Green when selected
                 shape = RoundedCornerShape(10.dp)
             ),
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(
-            containerColor =
-                if (isSelected) colour.copy(alpha = 0.01f)
-                else colour.copy(alpha = 0.2f)
-        ),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(
@@ -94,59 +91,66 @@ fun PurposeScreen(
     balance: Amount,
     onBack: () -> Unit,
     onDone: (TranxPurp) -> Unit,
-    columns: Int = 3,
+    columns: Int = 6,
     onHome: () -> Unit = {}
 ) {
     var selected by remember { mutableStateOf<TranxPurp?>(null) }
 
-    Box(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize().statusBarsPadding()) {
         WoodTableBackground()
 
         // Top-left back button
-        FilledTonalButton(
-            onClick = onBack,
-            modifier = Modifier
-                .padding(12.dp)
-                .align(Alignment.TopStart)
-        ) { Icon(
-            Icons.Filled.ArrowBackIosNew,
-            contentDescription = "Home",
-            tint = Color.White,
-            modifier = Modifier.size(34.dp),
-        ) }
-
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 56.dp)
-        ) {
-
-            Spacer(Modifier.height(16.dp))
-
-            // Scrollable grid of purposes
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(columns),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal=16.dp, vertical=8.dp)
             ) {
-                val sortedPurposes = tranxPurpLookup.values
-                    .sortedBy { it.cmp }
-
-                items(sortedPurposes) { p ->
-                    PurposeCard(
-                        tranxPurp = p,
-                        isSelected = (p == selected),
-                        onClick = {
-                            selected = p
-                            onDone(p)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(0.66f)
+                FilledTonalButton(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .background(
+                            color = Color(0x00000000)
+                        )
+                ) {
+                    Icon(
+                        Icons.Filled.ArrowBackIosNew,
+                        contentDescription = "Home",
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp),
                     )
+                }
+            }
+
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+
+                // Scrollable grid of purposes
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(columns),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 0.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val sortedPurposes = tranxPurpLookup.values
+                        .sortedBy { it.cmp }
+
+                    items(sortedPurposes) { p ->
+                        PurposeCard(
+                            tranxPurp = p,
+                            isSelected = (p == selected),
+                            onClick = {
+                                selected = p
+                                onDone(p)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                        )
+                    }
                 }
             }
         }
@@ -156,7 +160,7 @@ fun PurposeScreen(
 /**
  * Preview for PurposeScreen.
  */
-@Preview(showBackground = true)
+@Preview(showBackground = true, device="spec:width=411dp,height=891dp,orientation=landscape")
 @Composable
 fun PurposeScreenPreview() {
     MaterialTheme {
