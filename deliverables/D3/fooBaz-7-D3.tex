@@ -1,0 +1,472 @@
+\documentclass[12pt]{article}
+
+% ====== FONT SETUP (must come early for XeLaTeX) ======
+\usepackage{fontspec}
+\setmainfont{texgyreheros}[
+    Extension = .otf,
+    UprightFont = *-regular,
+    BoldFont = *-bold,
+    ItalicFont = *-italic,
+    BoldItalicFont = *-bolditalic
+]
+
+% ====== PAGE SETUP ======
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\setstretch{1.0} % single spacing
+\usepackage{microtype} % improved typography and line breaking
+
+% ====== GRAPHICS AND FIGURES ======
+\usepackage{graphicx}
+\usepackage{float}      % provides [H] option for figures
+\usepackage{subcaption} % provides subfigure environment
+
+% ====== HYPERLINK SETUP (better styling) ======
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue,
+    citecolor=black,
+    pdfborder={0 0 0},
+    breaklinks=true
+}
+\usepackage{url}
+\urlstyle{same} % use same font as text for URLs
+
+% ====== HEADER / FOOTER ======
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{} % clear header and footer
+\fancyfoot[C]{\thepage} % page number centered at bottom
+
+% ====== TITLE SECTION ======
+\usepackage{titling}
+\pretitle{\begin{center}\LARGE\bfseries}
+\posttitle{\par\end{center}\vskip 0.5em}
+\preauthor{\begin{center}\large}
+\postauthor{\end{center}}
+\predate{}
+\postdate{}
+
+\title{AI Integration Report}
+\author{%
+\textbf{Team Number:} 7  \\[4pt]
+\textbf{Team Name:}   fooBaz \\[4pt]
+% \textbf{Video Link:} \href{https://youtu.be/example}{https://youtu.be/example}
+}
+\date{} % empty date
+\begin{document}
+\maketitle
+\vspace{-1em} % tighten spacing after title if needed
+\hrule
+\vspace{1em}
+
+% ====== CONTENT STARTS HERE ======
+\section*{Introduction}
+\par Our OIM project is directed at making money management accessible for illiterate and innumerate adults, 
+and as a result, anything that may usually be communicated in text must be represented with icons for our
+user interface. Hence, we needed to generate a large library of icons which would be used in core features of our project such as 
+showing transactions, spending categories, and notifications.  
+The pending generation of these icons were a bottleneck to our development as the frontend of our app directly relied on the icons being created.
+Before using AI, our group tried to create these icons ourselves using Figma. However, this task took a
+lot more time than we had anticipated, averaging roughly 2 hours per icon. Moreover, these icons lacked in quality and consistency, making them inadequate for the use of our app.
+Given our lack of our experience with icon creation and the limited timeframe we had for this project, AI was necessary as it allowed us to generate consistent, 
+quality icons that could be used for the features in our app.
+Without this AI solution, we would have needed to rely on icons that were free for commercial use online. This would generally result in lower-quality 
+icons for our users that are less clear in their messaging. In addition, there would be less cohesion between the icons since there did not exist an icon set that had all the icons we required.
+
+\par We measured success of our AI solution in four ways:
+
+\begin{enumerate}
+	\item The time spent on each icon 
+	\item The revision cycles required per icon (how many times we had to remake the icon or for the AI, how many times we needed to reprompt it)
+	\item The consistency of the style for the icons
+	\item The cost of the icons
+\end{enumerate}
+We believe these metrics are important in evaluating how the AI solution helps make our development cycle more efficient, but also the consistency of
+the icons are important with regard to the user experience to feel seamless and important.
+
+\section*{Implementation}
+
+\par
+We evaluated multiple options for the AI generated icons we needed.
+Our main criteria when looking for AI Tools here, was that it had to meet our  needs for visual consistency, control, and efficiency. 
+It also had to match the style of the preexisting Wallet OIM Icons, so that it would not break the design style of the UI. 
+Furthermore, the icons were being made for a innumerate and illiterate audience, so the icons also could not be overly abstract or artistic.
+Though the process was mostly smooth, there were some issues associated with asset generation. 
+Firstly, Gemini would quite frequently not understand the instructions, or deviate from the style, which required us to 
+rephrase and increase our iterations, to get it to within a reasonable style. This was definitely a frustrating challenge to deal with. Another challenge
+was that certain icons required multiple revision cycles. That is, we had to start new conversations with Gemini, to clear the past context
+and start anew because the one conversation was simply not producing acceptable results.
+
+
+\par
+Firstly, we considered some specific image generation tools, such as Midjourney  DALL E 3, and Ideogram. However, there were significant issues 
+with these tools, namely, they struggled to either get down the flat, minimalist iconography style we wanted to preserve from 
+the pre-existing icons we were given by our partners. Or, they were inconsistent and provided limited reproducibility. Next, we considered a 
+directly integrated tool , which was the Figma AI Plugin tool. We had experience using Figma, and this was  integrated and fast to use. 
+However, it offered very little customization, and thus we could not control it to produce acceptable icons. 
+We finally decided to use Google Gemini after some testing. We found that Gemini balanced control and creativity together the best. Additionally, Gemini's
+generated images were completely free for commercial use. Although it had a weakness with stylization drift occurring, it was still the best tool we found for the task.
+Our main workflow for generating the icons was that we would pick a preexisting icon from the codebase, and use it as
+a source of ground truth for Gemini to base its style off of. Then, we would ask it to generate a a version with our desired changes to the icons,
+and we would iterate using conversation, until we arrived at something we wanted to keep. This required multiple back and forths with Gemini to get a icon we desired. 
+The workflow for a icon, took about 12.4 minutes. In addition to Gemini, we used Freepix on a limited basis (which does not use prompts) 
+for generating new background tables (reducing size by ~6MB). Icons generated with Freepix are marked with `Freepix'; 
+all other assets were generated using Gemini, with the prompts available in Appendix~\ref{subsec:gemini-prompts}. 
+
+\par
+Our AI-powered pipeline demonstrates significant improvements in visual quality and consistency across all icon categories. 
+As shown in Appendix~\ref{subsec:icon-evolution}, the transformation from legacy to AI-generateds exhibits enhanced clarity, 
+addition of colours, and a more refined styling with respect to older legacy code. The pipeline successfully enhances edge definition and 
+overall visual coherence while maintaining the core semantic meaning of each icon. Across all comparisons, 
+the AI-generated versions display superior line quality, aesthetic consistency, and a unified visual language that contributes to a more polished 
+and professional user interface. The complete icon gallery in Appendix~\ref{sec:icon-gallery} showcases both the evolved icons and those created directly through the AI refinement process.
+The consistent improvement across these diverse icon types validates the effectiveness of our AI pipeline in standardizing visual design elements
+while preserving iconographic intent. Each before-and-after comparison reveals how the pipeline addresses common issues in the original inputs, such
+as inconsistent line weights, rough edges, and visual artifacts. The AI outputs maintain recognizability while
+elevating the overall design quality to meet modern user interface standards. This systematic enhancement ensures that all icons within the 
+application present a unified, professional appearance that contributes to improved user experience and brand consistency.
+
+
+
+\section*{Impact Analysis}
+
+
+Because our users are illiterate or innumerate, icons are the primary way people understand actions in the interface. 
+Clear, consistent visuals were essential, so improving our asset workflow directly improved usability.
+Without AI, each icon would have required 120-150 minutes of manual work, including sketching, refining, testing variations, incorporating feedback, 
+and exporting final assets. For 21 icons, this would have totaled roughly a full week of focused design time.
+Using AI, the average time per icon dropped to 12.4 minutes. Prompting, selecting variations, and making light edits still required supervision,
+but all 21 icons were completed in under 5 hours. This resulted in an efficiency gain of about [(150 - 12.4/150) * 100] $\approx$ 91\%  
+and allowed earlier UI testing with clearer, more interpretable prototypes.
+
+\par 
+AI generated a consistent visual style once prompts were refined. Line thickness, detail level, and overall visual language remained uniform across icons,
+which is usually difficult when combining multiple icon packs. Some generated icons also conveyed meaning more 
+clearly than standard sets, which directly helped given our text-free interface.
+Early outputs from various AI tools were often too abstract or overly detailed. We had to re-prompt frequently and reset context due 
+to free-plan limitations. Several icons still needed manual simplification or resizing in Figma. While AI accelerated creation, it 
+still required design judgment to control noise and ensure readability on mobile screens.
+Without AI, we would have spent a full week designing icons manually or purchased licensed icon packs costing $\approx$ \$20. Hiring a 
+designer would have been even more expensive ranging from \$100 - \$1000 per icon. AI tools introduced no monetary cost, 
+and the only overhead was time spent iterating on prompts and cleaning certain outputs. 
+Gemini's royalty-free license also allowed free use and modification of generated assets.
+
+\par 
+Overall, the benefits significantly outweighed the costs. 
+AI improved speed, consistency, and flexibility while eliminating financial overhead. 
+Even with minor manual refinements, the time savings and improved clarity made AI the more effective workflow.
+
+\section*{Team Process \& Reflection}
+
+Our team worked collaboratively to design and evaluate an AI-powered asset generation workflow for the OIM project. 
+The main challenge was producing consistent, scalable icons for our interface while maintaining visual quality and
+brand cohesion. Manual creation in Figma was slow and led to inconsistencies across contributors. 
+We wanted to see if AI could help standardize the process and reduce design time without compromising quality.
+
+\par\medskip
+
+To begin, each team member explored a different AI model to evaluate its potential for generating usable assets. Nathan focused on Google Gemini, 
+Anish tested DALL·E 3, Zaki explored Midjourney v6, Fares experimented with Ideogram, and Amish worked with 
+Figma's native AI plug-ins. We compared models based on style consistency, prompt responsiveness, export quality, 
+and ease of refinement. After several iterations, Gemini clearly outperformed the others. Its multimodal interface allowed both 
+text and image prompt refinement, and it maintained cohesive icon sets across multiple generations. The ability to generate icons in batches with balanced 
+proportions and stylistic uniformity made Gemini the most reliable option for integration into our workflow.
+
+\par\medskip
+
+To measure Gemini's impact, Amish conducted a controlled experiment in Figma. He manually designed two icons from our asset list, timing each step from sketch to final export. 
+Using the same design requirements, the team then generated the same icons with Gemini, following a shared prompt structure. 
+The AI-assisted process completed both icons in about one-third of the manual time, reducing total design and revision time by approximately 65 percent. 
+This control experiment provided concrete evidence that the AI solution addressed a genuine productivity bottleneck rather than simply offering convenience.
+
+\par\medskip
+
+Our collaboration emphasized clear structure and iterative refinement. Nathan handled experimentation and optimization, 
+fine-tuning settings for batch generation and evaluating image-to-prompt feedback loops. Anish led prompt design and established a centralized zero-shot 
+chain-of-thought prompt system to standardize how visual inputs were structured. This approach improved reproducibility and visual consistency across outputs. 
+Zaki developed an automated post-processing script to convert Gemini outputs into scalable vector formats for integration with our front-end pipeline. 
+Fares conducted aesthetic and accessibility reviews to ensure color contrast, line clarity, and recognizability across devices. 
+Amish contributed to benchmark testing and documentation of manual versus AI workflows. Weekly meetings allowed the team to review results, 
+refine prompts, and align visual direction through shared feedback.
+
+\par\medskip
+
+Reflecting on the process, integrating AI into our design workflow fundamentally changed how we approach asset creation. While there were challenges in prompt precision 
+and managing model unpredictability, the results demonstrated clear efficiency gains and improved design coherence. 
+We plan to continue using this workflow in future development cycles, particularly for scalable UI components and marketing visuals. For other teams, 
+we recommend experimenting with multiple models before committing, documenting prompt structures, and maintaining human oversight during refinement. 
+When used thoughtfully, AI can act as a genuine creative collaborator, enhancing productivity while preserving human intent and design quality.
+
+% ====== APPENDIX ======
+\newpage
+\appendix
+\section*{Appendix}
+\subsection{Gemini Prompts}
+\label{subsec:gemini-prompts}
+\begin{enumerate}
+    \item \href{https://gemini.google.com/share/cad5d407d0e0}{Prompt 1}
+    \item \href{https://gemini.google.com/share/51d71479503c}{Prompt 2}
+    \item \href{https://gemini.google.com/share/2a095118aaca}{Prompt 3}
+    \item \href{https://gemini.google.com/share/f9342b115b7c}{Prompt 4}
+    \item \href{https://gemini.google.com/share/abf6575e955a}{Prompt 5}
+    \item \href{https://gemini.google.com/share/d82ac003e839}{Prompt 6}
+    \item \href{https://gemini.google.com/share/3f7980375135}{Prompt 7}
+    \item \href{https://gemini.google.com/share/af813b2bb015}{Prompt 8}
+    \item \href{https://gemini.google.com/share/44237f78060a}{Prompt 9}
+    \item \href{https://gemini.google.com/share/64b14749ec7c}{Prompt 10}
+    \item \href{https://gemini.google.com/share/1c4215057db8}{Prompt 11}
+    \item \href{https://gemini.google.com/share/cbc5d4bfa01f}{Prompt 12}
+    \item \href{https://gemini.google.com/share/db370f7fe6e9}{Prompt 13}
+\end{enumerate}
+
+
+\subsection{Git Commits}
+	\begin{enumerate}
+		\item \href{https://github.com/csc301-2025-f/project-9-Orali-Project-for-Android/commit/faf711597e6549b6e33d6e9e16968de918d49fad}{Legacy Assets}
+		\item \href{https://github.com/csc301-2025-f/project-9-Orali-Project-for-Android/commit/dd6db7d3a8b543279527d5f3fb180d032988b0e1}{Iteration 1}
+		\item \href{https://github.com/csc301-2025-f/project-9-Orali-Project-for-Android/commit/b451c5182b611f7be1fd0bb83b314491064464aa}{Iteration 2}
+		\item \href{https://github.com/csc301-2025-f/project-9-Orali-Project-for-Android/commit/4d1cfeb85cc113b6a2df6b5a4bc17ee77e43e369}{Iteration 3}
+		\item \href{https://github.com/csc301-2025-f/project-9-Orali-Project-for-Android/commit/77ffcebedbdf7f5007a3030a6a45e8edc4eafbfd}{Iteration 4}
+	\end{enumerate}
+
+\subsection{Youtube Presentation}
+\href{https://youtu.be/clpEoWvHZTk?si=gS8cUHZrPv5O8RFo}{Demo}
+\newpage
+\subsection{Legacy vs AI Generated Assets}
+\label{subsec:icon-evolution}
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.45\textwidth}
+\centering
+\includegraphics[scale=0.2]{gas_old.png}
+\caption{Legacy version}
+\end{subfigure}\hfill
+\begin{subfigure}{0.45\textwidth}
+\centering
+\includegraphics[scale=0.2]{gas.png}
+\caption{AI-generated}
+\end{subfigure}
+\caption{Gas icon}
+\label{fig:comparison-gas}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.45\textwidth}
+\centering
+\includegraphics[scale=0.2]{hammer.png}
+\caption{Legacy version}
+\end{subfigure}\hfill
+\begin{subfigure}{0.45\textwidth}
+\centering
+\includegraphics[scale=0.2]{tools.png}
+\caption{AI-generated}
+\end{subfigure}
+\caption{Tools icon}
+\label{fig:comparison-tools}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.45\textwidth}
+\centering
+\includegraphics[scale=0.08]{medical.png}
+\caption{Legacy version}
+\end{subfigure}\hfill
+\begin{subfigure}{0.45\textwidth}
+\centering
+\includegraphics[scale=0.25]{medicine.png}
+\caption{AI-generated}
+\end{subfigure}
+\caption{Medicine icon}
+\label{fig:comparison-medicine}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.45\textwidth}
+\centering
+\includegraphics[width=0.6\linewidth,keepaspectratio]{request.png}
+\caption{Legacy version}
+\end{subfigure}\hfill
+\begin{subfigure}{0.45\textwidth}
+\centering
+\includegraphics[width=0.6\linewidth,keepaspectratio]{receive.png}
+\caption{AI-generated}
+\end{subfigure}
+\caption{Receive icon}
+\label{fig:comparison-receive}
+\end{figure}
+\vspace{0.3cm}
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.45\textwidth}
+\centering
+\includegraphics[scale=0.08]{water_old.png}
+\caption{Legacy version}
+\end{subfigure}\hfill
+\begin{subfigure}{0.45\textwidth}
+\centering
+\includegraphics[scale=0.08]{water.png}
+\caption{AI-generated (Freepix)}
+\end{subfigure}
+\caption{Water icon}
+\label{fig:comparison-water}
+\end{figure}
+\vspace{0.3cm}
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.45\textwidth}
+\centering
+\includegraphics[scale=0.08]{electricity_old.png}
+\caption{Legacy version}
+\end{subfigure}\hfill
+\begin{subfigure}{0.45\textwidth}
+\centering
+\includegraphics[scale=0.12]{electricity.png}
+\caption{AI-generated (Freepix)}
+\end{subfigure}
+\caption{Electricity icon}
+\label{fig:comparison-electricity}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.45\textwidth}
+\centering
+\includegraphics[scale=0.1]{send_old.png}
+\hfill
+\includegraphics[scale=0.5]{send_taler.png}
+\caption{Legacy versions}
+\end{subfigure}\hfill
+\begin{subfigure}{0.45\textwidth}
+\centering
+\includegraphics[scale=0.1]{send.png}
+\caption{AI-generated}
+\end{subfigure}
+\caption{Send icon}
+\label{fig:comparison-send}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.7\textwidth}
+\centering
+\includegraphics[width=\textwidth]{table_dark_old.jpg}
+\caption{Legacy version}
+\end{subfigure}
+\vspace{0.5cm}
+\begin{subfigure}{0.7\textwidth}
+\centering
+\includegraphics[width=\textwidth]{table_dark.png}
+\caption{AI-generated (Freepix)}
+\end{subfigure}
+\caption{Dark mode table background}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.7\textwidth}
+\centering
+\includegraphics[width=\textwidth]{table_light_old.jpg}
+\caption{Legacy version}
+\end{subfigure}
+\vspace{0.5cm}
+\begin{subfigure}{0.7\textwidth}
+\centering
+\includegraphics[width=\textwidth]{table_light.png}
+\caption{AI-generated (Freepix)}
+\end{subfigure}
+\caption{Light mode table background}
+\end{figure}
+
+
+\newpage
+\subsection{Additional Application Icons}
+\label{subsec:additional-icons}
+\enlargethispage{2\baselineskip}
+\begin{figure}[H]
+\centering
+% Row 1: Transaction-related icons
+\begin{subfigure}{0.3\textwidth}
+\centering
+\includegraphics[scale=0.1]{incoming_transaction.png}
+\caption{Incoming Transaction}
+\label{fig:icon-incoming-transaction}
+\end{subfigure}\hfill
+\begin{subfigure}{0.3\textwidth}
+\centering
+\includegraphics[scale=0.1]{outgoing_transaction.png}
+\caption{Outgoing Transaction}
+\label{fig:icon-outgoing-transaction}
+\end{subfigure}\hfill
+\begin{subfigure}{0.3\textwidth}
+\centering
+\includegraphics[scale=0.16]{farming.png}
+\caption{Farming}
+\label{fig:icon-farming}
+\end{subfigure}
+
+\vspace{-0.2cm}
+
+% Row 2: School-related icons
+\begin{subfigure}{0.3\textwidth}
+\centering
+\includegraphics[scale=0.13]{school_supplies.png}
+\caption{School Supplies}
+\label{fig:icon-school-supplies}
+\end{subfigure}\hfill
+\begin{subfigure}{0.3\textwidth}
+\centering
+\includegraphics[scale=0.06]{school_uniforms.png}
+\caption{School Uniforms}
+\label{fig:icon-school-uniforms}
+\end{subfigure}\hfill
+\begin{subfigure}{0.3\textwidth}
+\centering
+\includegraphics[scale=0.16]{doctor_appointment.png}
+\caption{Doctors Appointment}
+\label{fig:icon-doctor-appointment}
+\end{subfigure}
+
+\vspace{-0.2cm}
+
+% Row 3: Marketplace and work icons
+\begin{subfigure}{0.3\textwidth}
+\centering
+\includegraphics[scale=0.101]{market_stall.png}
+\caption{Market Stall}
+\label{fig:icon-market-stall}
+\end{subfigure}\hfill
+\begin{subfigure}{0.3\textwidth}
+\centering
+\includegraphics[scale=0.1]{transaction_history.png}
+\caption{Transaction History}
+\label{fig:icon-transaction-history}
+\end{subfigure}\hfill
+\begin{subfigure}{0.3\textwidth}
+\centering
+\includegraphics[scale=0.1]{filter.png}
+\caption{Filter}
+\label{fig:icon-filter}
+\end{subfigure}
+
+\vspace{-0.2cm}
+
+% Row 4: Transportation centered
+\begin{subfigure}{0.3\textwidth}
+\centering
+\includegraphics[scale=0.2]{transportation.png}
+\vspace{-3.1cm}
+\caption{Transportation}
+\label{fig:icon-transportation}
+\end{subfigure}
+
+\caption{New icons created with AI}
+\label{fig:additional-icons}
+\end{figure}
+
+\end{document}
