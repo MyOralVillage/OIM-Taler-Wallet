@@ -119,6 +119,7 @@ android {
 dependencies {
     api project(":transaction-database")
     api project(":taler-kotlin-android")
+    implementation 'androidx.compose.runtime:runtime-saveable:1.9.4'
 
     // Desugar
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'

@@ -230,7 +230,8 @@ fun OimSendApp(
             },
             onChoosePurpose = { screen = Screen.Purpose },
             onSend = { screen = Screen.Purpose },
-            onHome = ::resetAndGoHome
+            onChest = ::resetAndGoHome
+
         )
 
         Screen.Purpose -> PurposeScreen(

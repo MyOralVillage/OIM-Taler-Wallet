@@ -232,14 +232,21 @@ import net.taler.wallet.compose.collectAsStateLifecycleAware
                             }
                         }
                         OimScreen.SEND -> {
-                            // Back from Send returns to OIM chest
                             BackHandler(true) { oimScreen = OimScreen.CHEST }
-                            net.taler.wallet.oim.send.app.OimSendApp(model = model)
+
+                            net.taler.wallet.oim.send.app.OimSendApp(
+                                model = model,
+                                onHome = {
+                                    oimScreen = OimScreen.HOME
+                                }
+                            )
                         }
+
                         OimScreen.HISTORY -> {
                             // Handle back from OIM history: return to OIM chest instead of closing overlay
                             BackHandler(true) { oimScreen = OimScreen.CHEST }
-                            net.taler.wallet.oim.history.components.TransactionsListView()
+                            net.taler.wallet.oim.history.components.TransactionHistoryView(
+                                onHome = { oimScreen = OimScreen.CHEST })
                         }
                         null -> { }
                     }

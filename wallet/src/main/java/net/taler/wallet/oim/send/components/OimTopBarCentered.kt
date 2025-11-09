@@ -41,7 +41,8 @@ import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 @Composable
 fun OimTopBarCentered(
     balance: Amount,
-    onSendClick: () -> Unit
+    onSendClick: () -> Unit,
+    onChestClick: () -> Unit = {}
 ) {
     val sendBitmap = Buttons("send").resourceMapper()
     val chestBitmap = Buttons("chest_open").resourceMapper()
@@ -53,7 +54,7 @@ fun OimTopBarCentered(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // Left side: Chest + Balance
+        // LEFT: chest + balance
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
@@ -61,7 +62,9 @@ fun OimTopBarCentered(
             Image(
                 painter = painterResource(chestBitmap),
                 contentDescription = "Chest",
-                modifier = Modifier.size(60.dp),
+                modifier = Modifier
+                    .size(60.dp)
+                    .clickable { onChestClick() },   // <-- make it do something
                 contentScale = ContentScale.Fit
             )
             Spacer(Modifier.width(18.dp))
@@ -84,7 +87,7 @@ fun OimTopBarCentered(
             }
         }
 
-        // Right side: Send button
+        // RIGHT: send button
         Box(
             modifier = Modifier
                 .size(75.dp)

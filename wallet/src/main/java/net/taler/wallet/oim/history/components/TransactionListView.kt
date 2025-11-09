@@ -61,7 +61,7 @@ fun TransactionsListView() {
             },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(10.dp)
+                .padding(end = 16.dp, bottom = 72.dp)
                 .size(100.dp),
         ) {
             Icon(
