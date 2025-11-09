@@ -33,9 +33,10 @@ import androidx.compose.ui.graphics.Color
  * @param amount The currently selected sending amount.
  * @param onAdd Callback when a note is added to the pile.
  * @param onRemoveLast Callback when the last note is removed.
- * @param onChoosePurpose Callback to choose a purpose (currently placeholder).
- * @param onSend Callback when the Send button is pressed.
- * @param onHome Callback for home button press.
+ * @param onChoosePurpose Callback to choose a purpose (kept for flow compat).
+ * @param onSend Callback when the (red) send area is pressed.
+ * @param onHome NOT used right now, kept for API compat.
+ * @param onChest Called when the open-chest icon in the top bar is tapped.
  */
 @Composable
 fun SendScreen(
@@ -45,7 +46,8 @@ fun SendScreen(
     onRemoveLast: (Amount) -> Unit,
     onChoosePurpose: () -> Unit,
     onSend: () -> Unit,
-    onHome: () -> Unit = {}
+    onHome: () -> Unit = {},
+    onChest: () -> Unit = {}
 ) {
     var displayAmount by remember { mutableStateOf(amount) }
     LaunchedEffect(amount) { displayAmount = amount }
@@ -63,14 +65,20 @@ fun SendScreen(
         return Amount.fromString(cur, diff.stripTrailingZeros().toPlainString())
     }
 
-    BoxWithConstraints(Modifier
-        .fillMaxSize()
-        .statusBarsPadding()
+    BoxWithConstraints(
+        Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
     ) {
-        WoodTableBackground(modifier = Modifier.fillMaxSize().statusBarsPadding(), light = false)
+        // wood background
+        WoodTableBackground(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding(),
+            light = false
+        )
 
-
-        // Flying note state
+        // flying-note state
         data class Pending(val value: Amount, val bmp: Int, val start: Offset)
         var pending by remember { mutableStateOf<Pending?>(null) }
 
@@ -85,64 +93,28 @@ fun SendScreen(
             )
         }
 
+        // the stack of landed notes in the middle
         val pileWidthPx = with(density) { 160.dp.toPx() }
         NotesPile(
             landedNotes = pile.map { ImageBitmap.imageResource(it) },
             noteWidthPx = pileWidthPx
         )
 
-        // After the Home button in SendScreen
-//        IconButton(
-//            onClick = onHome,
-//            modifier = Modifier
-//                .align(Alignment.TopStart)
-//                .padding(8.dp)
-//                .size(60.dp)
-//        ) {
-//            Icon(
-//                Icons.Filled.House,
-//                contentDescription = "Home",
-//                tint = Color.White,
-//                modifier = Modifier.size(120.dp),
-//                )
-//        }
-
-// Add Undo button in top-right
-//        Button(
-//            onClick = {
-//                if (pileAmounts.isNotEmpty()) {
-//                    val popped = pileAmounts.removeAt(pileAmounts.lastIndex)
-//                    if (pile.isNotEmpty()) pile.removeAt(pile.lastIndex)
-//                    displayAmount = minus(displayAmount, popped)
-//                    onRemoveLast(popped)
-//                }
-//            },
-//            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
-//            contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
-//            modifier = Modifier
-//                .align(Alignment.CenterEnd)
-//                .padding(8.dp)
-//                .size(100.dp)
-//                .alpha(0.6f)
-//        ) {
-//            Icon(
-//                imageVector = Icons.Default.MoneyOff,
-//                contentDescription = "Undo",
-//                tint = Color.White,
-//                modifier = Modifier.size(100.dp)
-//            )
-//            Spacer(Modifier.width(8.dp))
-//        }
-
         Column(
             Modifier
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            OimTopBarCentered(balance = balance, onSendClick = onSend)
+            // TOP BAR — now has clickable chest
+            OimTopBarCentered(
+                balance = balance,
+                onSendClick = onSend,
+                onChestClick = onChest
+            )
+
             Spacer(Modifier.weight(1f))
 
-            // Display total amount + send
+            // total amount + undo
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -154,16 +126,18 @@ fun SendScreen(
                     Text(
                         text = displayAmount.amountStr,
                         color = Color.White,
-                        fontWeight = FontWeight.ExtraBold,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold,
                         fontSize = 60.sp
                     )
                     Text(
                         text = displayAmount.spec?.name ?: displayAmount.currency,
                         color = Color.White,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                         fontSize = 18.sp
                     )
                 }
+
+                // simple undo button
                 Button(
                     onClick = {
                         if (pileAmounts.isNotEmpty()) {
@@ -182,27 +156,12 @@ fun SendScreen(
                     Icon(
                         imageVector = Icons.Default.MoneyOff,
                         contentDescription = "Undo",
-                        tint = Color.White,
-                        modifier = Modifier.size(100.dp)
+                        tint = Color.White
                     )
                 }
-
-//                FloatingActionButton(
-//                    onClick = onSend,
-//                    containerColor = Color(0xFFC32909),
-//                    modifier = Modifier.alpha(0.8f)
-//                ) {
-//                    Icon(
-//                        painter = painterResource(Buttons("send").resourceMapper()),
-//                        contentDescription = "Send",
-//                        tint = Color.Unspecified,
-//                        modifier = Modifier.size(100.dp)
-//                    )
-//                }
             }
 
-
-            // Get available denominations based on currency
+            // figure out currency and denominations
             val currency = displayAmount.spec?.name ?: displayAmount.currency
             val availableDenominations = when (currency) {
                 "CHF" -> CHF_BILLS
@@ -212,17 +171,16 @@ fun SendScreen(
                 else -> emptyList()
             }
 
-            // Calculate remaining balance
+            // remaining balance
             val remainingBalance = minus(balance, displayAmount)
 
-            // Create note thumbnails with all denominations
-            val noteThumbnails: List<Pair<Int, Amount>> = availableDenominations.map {
-                (denomValue, resId) ->
+            // build thumbnails (resId, Amount)
+            val noteThumbnails: List<Pair<Int, Amount>> = availableDenominations.map { (denomValue, resId) ->
                 val amountStr = when (currency) {
                     "CHF" -> {
                         val francs = denomValue / 2
-                        val halfFrancs = denomValue % 2
-                        if (halfFrancs == 0) "$francs.00" else "$francs.50"
+                        val half = denomValue % 2
+                        if (half == 0) "$francs.00" else "$francs.50"
                     }
                     "XOF" -> denomValue.toString()
                     "EUR", "SLE", "KUDOS", "KUD" -> {
@@ -232,17 +190,17 @@ fun SendScreen(
                     }
                     else -> "0"
                 }
-                val noteAmount = Amount.fromString(currency, amountStr)
-                resId to noteAmount
+                resId to Amount.fromString(currency, amountStr)
             }
 
-            // Check which notes are affordable
-            val affordableNotes = noteThumbnails.map { (resId, noteAmount) ->
+            // which are affordable
+            val affordableNotes = noteThumbnails.map { (_, noteAmount) ->
                 val noteValue = BigDecimal(noteAmount.amountStr)
                 val remainingValue = BigDecimal(remainingBalance.amountStr)
                 noteValue <= remainingValue
             }
 
+            // strip of notes at the bottom
             NotesStrip(
                 noteThumbWidth = 120.dp,
                 notes = noteThumbnails,
@@ -252,7 +210,7 @@ fun SendScreen(
                     pending = Pending(billAmount, bmp, startCenter)
                 },
                 onRemoveLast = {
-                    if (pileAmounts.isNotEmpty( )) {
+                    if (pileAmounts.isNotEmpty()) {
                         val popped = pileAmounts.removeAt(pileAmounts.lastIndex)
                         if (pile.isNotEmpty()) pile.removeAt(pile.lastIndex)
                         displayAmount = minus(displayAmount, popped)
@@ -262,7 +220,7 @@ fun SendScreen(
             )
         }
 
-        // Flying note animation
+        // actual flying note
         pending?.let { p ->
             val widthPx = with(density) { 160.dp.toPx() }
             NoteFlyer(
@@ -282,18 +240,22 @@ fun SendScreen(
     }
 }
 
-@Preview(showBackground = true, device = "spec:width=411dp,height=891dp,orientation=landscape")
+@Preview(
+    showBackground = true,
+    device = "spec:width=411dp,height=891dp,orientation=landscape"
+)
 @Composable
 private fun SendScreenPreview() {
     MaterialTheme {
         SendScreen(
-            balance = Amount.fromString("KUDOS", "100"),  // Wallet has 100
-            amount = Amount.fromString("KUDOS", "0"),     // Starting with 0 selected
+            balance = Amount.fromString("KUDOS", "100"),
+            amount = Amount.fromString("KUDOS", "0"),
             onAdd = {},
             onRemoveLast = {},
             onChoosePurpose = {},
             onSend = {},
-            onHome = {}
+            onHome = {},
+            onChest = {}
         )
     }
 }
