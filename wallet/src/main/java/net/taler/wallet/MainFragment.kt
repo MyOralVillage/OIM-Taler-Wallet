@@ -21,14 +21,14 @@
  import android.view.LayoutInflater
  import android.view.View
  import android.view.ViewGroup
- import android.widget.Toast
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
- import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.Animatable
- import androidx.compose.foundation.gestures.Orientation
- import androidx.compose.foundation.gestures.draggable
- import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -68,27 +68,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
- import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
- import androidx.compose.ui.res.painterResource
- import androidx.compose.ui.res.stringResource
- import androidx.compose.ui.unit.IntOffset
- import androidx.compose.ui.unit.dp
- import androidx.fragment.app.Fragment
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import androidx.fragment.app.Fragment
  import androidx.fragment.app.activityViewModels
  import androidx.fragment.compose.AndroidFragment
  import androidx.fragment.compose.FragmentState
- import androidx.fragment.compose.rememberFragmentState
+import androidx.fragment.compose.rememberFragmentState
 import androidx.navigation.fragment.findNavController
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanOptions
-import com.journeyapps.barcodescanner.ScanOptions.QR_CODE
-import com.google.zxing.client.android.Intents.Scan.MIXED_SCAN
-import com.google.zxing.client.android.Intents.Scan.SCAN_TYPE
- import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
- import com.google.android.material.snackbar.Snackbar
- import kotlinx.coroutines.flow.first
- import kotlinx.coroutines.runBlocking
+import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
  import net.taler.wallet.balances.BalanceState
  import net.taler.wallet.balances.BalancesComposable
  import net.taler.wallet.balances.ScopeInfo
@@ -97,9 +94,10 @@ import net.taler.wallet.compose.GridMenu
 import net.taler.wallet.compose.GridMenuItem
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.compose.collectAsStateLifecycleAware
- import net.taler.wallet.oim.main.OIMChestScreen
- import net.taler.wallet.oim.main.OIMHomeScreen
-//import net.taler.wallet.oim.receive.ui_compose.OIMPaymentDialog
+import net.taler.wallet.oim.main.OIMChestScreen
+import net.taler.wallet.oim.main.OIMHomeScreen
+import net.taler.wallet.oim.main.OIMPaymentDialog
+import net.taler.wallet.oim.main.rememberOimReceiveFlowState
  import net.taler.wallet.settings.SettingsFragment
  import net.taler.wallet.transactions.Transaction
  import net.taler.wallet.transactions.TransactionMajorState
@@ -148,7 +146,14 @@ import net.taler.wallet.compose.collectAsStateLifecycleAware
                          oimScreen = null
                          activity.supportActionBar?.show()
                      }
- 
+                    val reviewTos: (String) -> Unit = { exchangeBaseUrl ->
+                        val bundle = bundleOf("exchangeBaseUrl" to exchangeBaseUrl)
+                        findNavController().navigate(
+                            R.id.action_global_reviewExchangeTos,
+                            bundle
+                        )
+                    }
+
                     when (oimScreen) {
                         OimScreen.HOME -> OIMHomeScreen(
                             model = model,
@@ -157,78 +162,39 @@ import net.taler.wallet.compose.collectAsStateLifecycleAware
                                 oimScreen = null
                                 activity.supportActionBar?.show()
                             },
-                            onReviewTos = { exchangeBaseUrl ->
-                                val bundle = bundleOf("exchangeBaseUrl" to exchangeBaseUrl)
-                                findNavController().navigate(
-                                    R.id.action_global_reviewExchangeTos,
-                                    bundle
-                                )
-                            },
+                            onReviewTos = reviewTos,
                         )
                         OimScreen.CHEST -> run {
-                            val context = LocalContext.current
-                            val peerManager = model.peerManager
-
-                            val barcodeLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
-                                if (result != null && result.contents != null) {
-                                    peerManager.preparePeerPushCredit(result.contents)
-                                }
-                            }
-
-                            val paymentState by peerManager.incomingPushState.collectAsStateLifecycleAware()
-                            var termsToShow by remember { mutableStateOf<net.taler.wallet.peer.IncomingTerms?>(null) }
-
-                            LaunchedEffect(paymentState) {
-                                when (val s = paymentState) {
-                                    is net.taler.wallet.peer.IncomingTerms -> {
-                                        if (s !is net.taler.wallet.peer.IncomingAccepting) termsToShow = s
-                                    }
-                                    else -> termsToShow = null
-                                }
-                            }
+                            val receiveFlow = rememberOimReceiveFlowState(
+                                model = model,
+                                onReviewTos = reviewTos,
+                            )
 
                             Box(modifier = Modifier.fillMaxSize()) {
                                 OIMChestScreen(
                                     model = model,
                                     onBackClick = { oimScreen = OimScreen.HOME },
                                     onSendClick = { oimScreen = OimScreen.SEND },
-                                    onRequestClick = {
-                                        val scanOptions = ScanOptions().apply {
-                                            setPrompt("")
-                                            setBeepEnabled(true)
-                                            setOrientationLocked(false)
-                                            setDesiredBarcodeFormats(QR_CODE)
-                                            addExtra(SCAN_TYPE, MIXED_SCAN)
-                                        }
-                                        barcodeLauncher.launch(scanOptions)
-                                    },
+                                    onRequestClick = receiveFlow.launchReceiveScan,
                                     onTransactionHistoryClick = { oimScreen = OimScreen.HISTORY },
                                     onWithdrawTestKudosClick = { model.withdrawManager.withdrawTestBalance() },
                                 )
 
-//                                val state = termsToShow
-//                                if (state != null) {
-//                                    Box(
-//                                        modifier = Modifier
-//                                            .fillMaxSize()
-//                                            .background(Color.Black.copy(alpha = 0.5f)),
-//                                        contentAlignment = Alignment.Center,
-//                                    ) {
-//                                        OIMPaymentDialog(
-//                                            terms = state,
-//                                            onAccept = {
-//                                                if (state is net.taler.wallet.peer.IncomingTosReview) {
-//                                                    val bundle = bundleOf("exchangeBaseUrl" to state.exchangeBaseUrl)
-//                                                    findNavController().navigate(R.id.action_global_reviewExchangeTos, bundle)
-//                                                } else {
-//                                                    peerManager.confirmPeerPushCredit(state)
-//                                                }
-//                                                // stay on chest; overlay will close on state change
-//                                            },
-//                                            onReject = { termsToShow = null },
-//                                        )
-//                                    }
-//                                }
+                                val terms = receiveFlow.dialogTerms
+                                if (terms != null) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(Color.Black.copy(alpha = 0.5f)),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        OIMPaymentDialog(
+                                            terms = terms,
+                                            onAccept = { receiveFlow.confirmTerms(terms) },
+                                            onReject = { receiveFlow.rejectTerms(terms) },
+                                        )
+                                    }
+                                }
                             }
                         }
                         OimScreen.SEND -> {
