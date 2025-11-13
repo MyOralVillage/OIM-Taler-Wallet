@@ -14,238 +14,396 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.taler.wallet.oim.main
+ package net.taler.wallet.oim.main
 
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import net.taler.wallet.R
-import net.taler.wallet.balances.BalanceState
-import net.taler.wallet.compose.TalerSurface
-import net.taler.wallet.oim.res_mapping_extensions.Background
-import net.taler.wallet.systemBarsPaddingBottom
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.only
-import androidx.compose.ui.unit.Dp
-import kotlinx.coroutines.launch
-
-/** Reusable button composable with toggle + delay */
-@Composable
-private fun ButtonBox(
-    @DrawableRes drawableId: Int,
-    bgColor: Color,
-    onClick: () -> Unit,
-    size: Dp = 110.dp,
-    iconSize: Dp = 100.dp
-) {
-    val coroutineScope = rememberCoroutineScope()
-    var isActive by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier
-            .size(size)
-            .clip(RoundedCornerShape(8.dp))
-            .background(bgColor.copy(alpha = if (isActive) 0.9f else 0.6f))
-            .clickable {
-                coroutineScope.launch {
-                    isActive = true
-                    delay(250)
-                    onClick()
-                }
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        Image(
-            painter = painterResource(drawableId),
-            contentDescription = null,
-            modifier = Modifier.size(iconSize)
-        )
-    }
-}
-
-/**
- * Displays the OIM chest screen with balance, quick actions, and the visual banknote summary
- * for the currently selected currency.
- *
- * @param modifier external modifier for sizing and padding.
- * @param onBackClick invoked when the center chest button is pressed.
- * @param onSendClick invoked when the send shortcut is tapped.
- * @param onRequestClick invoked when the receive shortcut is tapped.
- * @param onTransactionHistoryClick opens the transaction history view.
- * @param onWithdrawTestKudosClick triggers the test faucet action for development builds.
- * @param balanceState reactive balance payload used to populate the UI.
- */
-@Composable
-fun OIMChestScreenContent(
-    modifier: Modifier = Modifier,
-    onBackClick: () -> Unit,
-    onSendClick: () -> Unit,
-    onRequestClick: () -> Unit,
-    onTransactionHistoryClick: () -> Unit,
-    onWithdrawTestKudosClick: () -> Unit,
-    balanceState: BalanceState = BalanceState.None,
-) {
-    /** Main composable surface for the OIM Chest Screen. */
-    TalerSurface {
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .systemBarsPaddingBottom()
-        ) {
-            /** Wooden background — this should be the ONLY background layer. */
-            Image(
-                painter = painterResource(Background(LocalContext.current).resourceMapper()),
-                contentDescription = "Wooden background",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
-            ) {
-                /** Top row: Send (left), Chest (center), Receive (right) */
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    ButtonBox(R.drawable.send, Color(0xFFC32909), onSendClick)
-                    ButtonBox(R.drawable.chest_open, Color.White, onBackClick, iconSize = 70.dp)
-                    ButtonBox(R.drawable.receive, Color(0xFF4CAF50), onRequestClick)
-                }
-
-                /** Center area — shows balance and "Withdraw Test KUDOS" button. */
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val selectedBalance = when (balanceState) {
-                        is BalanceState.Success -> {
-                            balanceState.balances.firstOrNull { it.currency == "KUDOS" }
-                                ?: balanceState.balances.firstOrNull { it.currency == "TESTKUDOS" }
-                                ?: balanceState.balances.firstOrNull()
-                        }
-                        else -> null
-                    }
-
-                    val balanceText = when (balanceState) {
-                        is BalanceState.Success -> selectedBalance?.available?.toString(showSymbol = false) ?: "0"
-                        is BalanceState.Loading -> "Loading..."
-                        is BalanceState.Error -> "Error"
-                        else -> "0"
-                    }
-                    val currencyText = selectedBalance?.currency ?: "KUDOS"
-
-                    Text(balanceText, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 48.sp)
-                    Text(currencyText, color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 24.sp)
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    /** Withdraw Test KUDOS button */
-                    val coroutineScope = rememberCoroutineScope()
-                    var isWithdrawActive by remember { mutableStateOf(false) }
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color.White.copy(alpha = if (isWithdrawActive) 0.9f else 0.6f))
-                            .clickable {
-                                coroutineScope.launch {
-                                    isWithdrawActive = true
-                                    delay(250)
-                                    onWithdrawTestKudosClick()
-                                }
-                            }
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            "Withdraw Test KUDOS",
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-
-                /** Bottom row: Transaction History button (ledger icon) */
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    val coroutineScope = rememberCoroutineScope()
-                    var isHistActive by remember { mutableStateOf(false) }
-
-                    Box(
-                        modifier = Modifier
-                            .size(110.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0x6600838F).copy(alpha = if (isHistActive) 0.9f else 0.6f))
-                            .clickable {
-                                coroutineScope.launch {
-                                    isHistActive = true
-                                    delay(250)
-                                    onTransactionHistoryClick()
-                                }
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.transaction_history),
-                            contentDescription = "Transaction History",
-                            modifier = Modifier.size(100.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-// ----------------- Banknote stack code and functions unchanged -----------------
-
-@Preview
-@Composable
-fun OIMChestScreenPreview() {
-    MaterialTheme {
-        OIMChestScreenContent(
-            onBackClick = {},
-            onSendClick = {},
-            onRequestClick = {},
-            onTransactionHistoryClick = {},
-            onWithdrawTestKudosClick = {},
-            balanceState = BalanceState.Success(emptyList())
-        )
-    }
-}
+ import androidx.annotation.DrawableRes
+ import androidx.compose.foundation.Image
+ import androidx.compose.foundation.background
+ import androidx.compose.foundation.clickable
+ import androidx.compose.foundation.layout.Arrangement
+ import androidx.compose.foundation.layout.Box
+ import androidx.compose.foundation.layout.BoxWithConstraints
+ import androidx.compose.foundation.layout.Column
+ import androidx.compose.foundation.layout.Row
+ import androidx.compose.foundation.layout.Spacer
+ import androidx.compose.foundation.layout.WindowInsets
+ import androidx.compose.foundation.layout.WindowInsetsSides
+ import androidx.compose.foundation.layout.systemBars
+ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.height
+ import androidx.compose.foundation.layout.offset
+ import androidx.compose.foundation.layout.padding
+ import androidx.compose.foundation.layout.size
+ import androidx.compose.foundation.layout.width
+ import androidx.compose.foundation.layout.windowInsetsPadding
+ import androidx.compose.foundation.layout.only
+ import androidx.compose.foundation.shape.RoundedCornerShape
+ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
+ import androidx.compose.runtime.getValue
+ import androidx.compose.runtime.mutableStateOf
+ import androidx.compose.runtime.remember
+ import androidx.compose.runtime.rememberCoroutineScope
+ import androidx.compose.runtime.setValue
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.draw.clip
+ import androidx.compose.ui.graphics.Color
+ import androidx.compose.ui.layout.ContentScale
+ import androidx.compose.ui.platform.LocalContext
+ import androidx.compose.ui.res.painterResource
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.tooling.preview.Preview
+ import androidx.compose.ui.unit.dp
+ import androidx.compose.ui.unit.sp
+ import kotlinx.coroutines.delay
+ import net.taler.wallet.R
+ import net.taler.wallet.balances.BalanceState
+ import net.taler.wallet.compose.TalerSurface
+ import net.taler.wallet.oim.res_mapping_extensions.Background
+ import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+ import net.taler.wallet.systemBarsPaddingBottom
+ import androidx.compose.ui.unit.Dp
+ import androidx.compose.ui.unit.coerceAtLeast
+ import androidx.compose.ui.unit.coerceIn
+ import kotlinx.coroutines.launch
+ import androidx.compose.ui.unit.times
+ 
+ /** Reusable button composable with toggle + delay */
+ @Composable
+ private fun ButtonBox(
+     @DrawableRes drawableId: Int,
+     bgColor: Color,
+     onClick: () -> Unit,
+     size: Dp = 110.dp,
+     iconSize: Dp = 100.dp
+ ) {
+     val coroutineScope = rememberCoroutineScope()
+     var isActive by remember { mutableStateOf(false) }
+ 
+     Box(
+         modifier = Modifier
+             .size(size)
+             .clip(RoundedCornerShape(8.dp))
+             .background(bgColor.copy(alpha = if (isActive) 0.9f else 0.6f))
+             .clickable {
+                 coroutineScope.launch {
+                     isActive = true
+                     delay(250)
+                     onClick()
+                 }
+             },
+         contentAlignment = Alignment.Center
+     ) {
+         Image(
+             painter = painterResource(drawableId),
+             contentDescription = null,
+             modifier = Modifier.size(iconSize)
+         )
+     }
+ }
+ 
+ /**
+  * Displays the OIM chest screen with balance, quick actions, and the visual banknote summary
+  * for the currently selected currency.
+  *
+  * @param modifier external modifier for sizing and padding.
+  * @param onBackClick invoked when the center chest button is pressed.
+  * @param onSendClick invoked when the send shortcut is tapped.
+  * @param onRequestClick invoked when the receive shortcut is tapped.
+  * @param onTransactionHistoryClick opens the transaction history view.
+  * @param onWithdrawTestKudosClick triggers the test faucet action for development builds.
+  * @param balanceState reactive balance payload used to populate the UI.
+  */
+ @Composable
+ fun OIMChestScreenContent(
+     modifier: Modifier = Modifier,
+     onBackClick: () -> Unit,
+     onSendClick: () -> Unit,
+     onRequestClick: () -> Unit,
+     onTransactionHistoryClick: () -> Unit,
+     onWithdrawTestKudosClick: () -> Unit,
+     balanceState: BalanceState = BalanceState.None,
+ ) {
+     /** Main composable surface for the OIM Chest Screen. */
+     TalerSurface {
+         BoxWithConstraints(
+             modifier = modifier
+                 .fillMaxSize()
+                 .systemBarsPaddingBottom()
+         ) {
+             val topButtonSize = remember(maxWidth) {
+                 (maxWidth / 4).coerceIn(72.dp, 128.dp)
+             }
+             val topIconSize = topButtonSize * 0.8f
+             val centerButtonSize = (maxWidth / 6).coerceIn(56.dp, 96.dp)
+             val centerIconSize = centerButtonSize * 0.75f
+             val historyButtonSize = (maxWidth / 5).coerceIn(68.dp, 128.dp)
+             val historyIconSize = historyButtonSize * 0.9f
+             val centerContentTopPadding = topButtonSize * 0.8f
+             val centerContentBottomPadding = historyButtonSize * 0.25f
+ 
+             /** Wooden background — this should be the ONLY background layer. */
+             Image(
+                 painter = painterResource(Background(LocalContext.current).resourceMapper()),
+                 contentDescription = "Wooden background",
+                 modifier = Modifier.fillMaxSize(),
+                 contentScale = ContentScale.Crop
+             )
+ 
+             Box(
+                 modifier = Modifier
+                     .fillMaxSize()
+                     .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
+             ) {
+                 /** Top row: Send (left), Chest (center), Receive (right) */
+                 Row(
+                     modifier = Modifier
+                         .align(Alignment.TopCenter)
+                         .padding(16.dp)
+                         .fillMaxWidth(),
+                     horizontalArrangement = Arrangement.SpaceBetween,
+                     verticalAlignment = Alignment.CenterVertically
+                 ) {
+                     ButtonBox(
+                         R.drawable.send,
+                         Color(0xFFC32909),
+                         onSendClick,
+                         size = topButtonSize,
+                         iconSize = topIconSize,
+                     )
+                     ButtonBox(
+                         R.drawable.chest_open,
+                         Color.White,
+                         onBackClick,
+                         size = centerButtonSize,
+                         iconSize = centerIconSize,
+                     )
+                     ButtonBox(
+                         R.drawable.receive,
+                         Color(0xFF4CAF50),
+                         onRequestClick,
+                         size = topButtonSize,
+                         iconSize = topIconSize,
+                     )
+                 }
+ 
+                 /** Center area — shows balance and "Withdraw Test KUDOS" button. */
+                 Column(
+                     modifier = Modifier
+                         .align(Alignment.Center)
+                         .padding(
+                             start = 16.dp,
+                             end = 16.dp,
+                             top = centerContentTopPadding,
+                             bottom = centerContentBottomPadding,
+                         ),
+                     horizontalAlignment = Alignment.CenterHorizontally
+                 ) {
+                     val selectedBalance = when (balanceState) {
+                         is BalanceState.Success -> {
+                             balanceState.balances.firstOrNull { it.currency == "KUDOS" }
+                                 ?: balanceState.balances.firstOrNull { it.currency == "TESTKUDOS" }
+                                 ?: balanceState.balances.firstOrNull()
+                         }
+                         else -> null
+                     }
+ 
+                     // Show banknotes/coins for the current balance using ResourceMapper.
+                     // Treat KUDOS/TESTKUDOS as SLE for visuals.
+                     val amountForNotes = remember(selectedBalance) {
+                         val a = selectedBalance?.available
+                         if (a != null) {
+                             when (selectedBalance.currency) {
+                                 "KUDOS", "TESTKUDOS", "KUD" -> a.withCurrency("SLE")
+                                 else -> a
+                             }
+                         } else null
+                     }
+ 
+                     if (amountForNotes != null) {
+                         // Only notes/coins visuals; no numbers above/below.
+                         Spacer(modifier = Modifier.height(12.dp))
+                         NotesOnTable(amountForNotes)
+                     } else {
+                         Spacer(modifier = Modifier.height(16.dp))
+                     }
+ 
+                 }
+ 
+                 /** Withdraw Test button anchored bottom end for better spacing */
+                 WithdrawTestButton(
+                     modifier = Modifier
+                         .align(Alignment.BottomEnd)
+                         .padding(16.dp),
+                     onClick = onWithdrawTestKudosClick,
+                 )
+ 
+                 /** Bottom row: Transaction History button (ledger icon) */
+                 Row(
+                     modifier = Modifier
+                         .align(Alignment.BottomStart)
+                         .padding(16.dp),
+                     horizontalArrangement = Arrangement.Start,
+                     verticalAlignment = Alignment.Bottom
+                 ) {
+                     val coroutineScope = rememberCoroutineScope()
+                     var isHistActive by remember { mutableStateOf(false) }
+ 
+                     Box(
+                         modifier = Modifier
+                             .size(historyButtonSize)
+                             .clip(RoundedCornerShape(8.dp))
+                             .background(Color(0x6600838F).copy(alpha = if (isHistActive) 0.9f else 0.6f))
+                             .clickable {
+                                 coroutineScope.launch {
+                                     isHistActive = true
+                                     delay(250)
+                                     onTransactionHistoryClick()
+                                 }
+                             },
+                         contentAlignment = Alignment.Center
+                     ) {
+                         Image(
+                             painter = painterResource(id = R.drawable.transaction_history),
+                             contentDescription = "Transaction History",
+                             modifier = Modifier.size(historyIconSize)
+                         )
+                     }
+                 }
+             }
+         }
+     }
+ }
+ 
+ @Composable
+ private fun WithdrawTestButton(
+     modifier: Modifier = Modifier,
+     onClick: () -> Unit,
+ ) {
+     val coroutineScope = rememberCoroutineScope()
+     var isActive by remember { mutableStateOf(false) }
+ 
+     Box(
+         modifier = modifier
+             .clip(RoundedCornerShape(8.dp))
+             .background(Color.White.copy(alpha = if (isActive) 0.9f else 0.6f))
+             .clickable {
+                 coroutineScope.launch {
+                     isActive = true
+                     delay(250)
+                     onClick()
+                 }
+             }
+             .padding(horizontal = 16.dp, vertical = 8.dp),
+         contentAlignment = Alignment.Center
+     ) {
+         Text(
+             "Withdraw Test KUDOS",
+             color = Color.Black,
+             fontSize = 16.sp,
+             fontWeight = FontWeight.Medium
+         )
+     }
+ }
+ 
+ // ----------------- Banknote stack code and functions unchanged -----------------
+ 
+ @Composable
+ private fun NotesOnTable(
+     amount: net.taler.common.Amount,
+     maxPerRow: Int = 4,
+     billWidth: Dp = 160.dp,
+     billHeight: Dp = 96.dp,
+     coinSize: Dp = 72.dp,
+     horizontalGap: Dp = 8.dp,
+     verticalGap: Dp = 8.dp,
+ ) {
+     // Build a flat list of drawable IDs using greedy mapping (non-stacked by design)
+     val drawables = remember(amount) { amount.resourceMapper() }
+ 
+     // Simple grid: chunk items into rows of up to maxPerRow
+     val rows = remember(drawables, maxPerRow) { drawables.chunked(maxPerRow) }
+ 
+     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+         rows.forEach { row ->
+             Row(
+                 verticalAlignment = Alignment.CenterVertically,
+                 horizontalArrangement = Arrangement.spacedBy(horizontalGap)
+             ) {
+                 row.forEach { resId ->
+                     val isCoin = isCoinRes(resId)
+                     if (isCoin) {
+                         Image(
+                             painter = painterResource(id = resId),
+                             contentDescription = null,
+                             modifier = Modifier
+                                 .size(coinSize)
+                         )
+                     } else {
+                         Image(
+                             painter = painterResource(id = resId),
+                             contentDescription = null,
+                             modifier = Modifier
+                                 .width(billWidth)
+                                 .height(billHeight)
+                         )
+                     }
+                 }
+             }
+             Spacer(modifier = Modifier.height(verticalGap))
+         }
+     }
+ }
+ 
+ private fun isCoinRes(@DrawableRes drawableResId: Int): Boolean {
+     return when (drawableResId) {
+         // CHF coins
+         net.taler.common.R.drawable.chf_five_hundred,
+         net.taler.common.R.drawable.chf_two_hundred,
+         net.taler.common.R.drawable.chf_one_hundred,
+         net.taler.common.R.drawable.chf_one,
+         net.taler.common.R.drawable.chf_zero_point_five,
+         // EUR coins
+         net.taler.common.R.drawable.eur_one,
+         net.taler.common.R.drawable.eur_two,
+         net.taler.common.R.drawable.eur_zero_point_five,
+         net.taler.common.R.drawable.eur_zero_point_two,
+         net.taler.common.R.drawable.eur_zero_point_one,
+         net.taler.common.R.drawable.eur_zero_point_zero_five,
+         net.taler.common.R.drawable.eur_zero_point_zero_two,
+         net.taler.common.R.drawable.eur_zero_point_zero_one,
+         // SLE coins
+         net.taler.common.R.drawable.sle_zero_point_five,
+         net.taler.common.R.drawable.sle_zero_point_twenty_five,
+         net.taler.common.R.drawable.sle_zero_point_one,
+         net.taler.common.R.drawable.sle_zero_point_zero_five,
+         net.taler.common.R.drawable.sle_zero_point_zero_one,
+         // XOF coins
+         net.taler.common.R.drawable.xof_two_hundred,
+         net.taler.common.R.drawable.xof_one_hundred,
+         net.taler.common.R.drawable.xof_twenty_five,
+         net.taler.common.R.drawable.xof_ten,
+         net.taler.common.R.drawable.xof_five,
+         net.taler.common.R.drawable.xof_one -> true
+         else -> false
+     }
+ }
+ 
+ @Preview
+ @Composable
+ fun OIMChestScreenPreview() {
+     MaterialTheme {
+         OIMChestScreenContent(
+             onBackClick = {},
+             onSendClick = {},
+             onRequestClick = {},
+             onTransactionHistoryClick = {},
+             onWithdrawTestKudosClick = {},
+             balanceState = BalanceState.Success(emptyList())
+         )
+     }
+ }
+ 
