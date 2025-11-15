@@ -6,26 +6,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.taler.database.data_models.Amount
-import net.taler.wallet.oim.history.components.TransactionsListView
-import net.taler.wallet.oim.res_mapping_extensions.Buttons
-import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.MainViewModel
+import net.taler.wallet.oim.res_mapping_extensions.UIIcons
 
 /**
  * ## OimTopBarCentered
@@ -33,7 +25,7 @@ import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
  * Center-aligned top bar displaying the user's wallet balance and a *Send* button
  * at the top-right corner. Shows a chest icon for visual anchoring of the balance.
  *
- * The Send and Chest images are resolved via [Buttons] resource mapping.
+ * The Send and Chest images are resolved via [UIICons] resource mapping.
  *
  * @param balance Current wallet [Amount] displayed in the top-center.
  * @param onSendClick Callback invoked when the Send button is pressed.
@@ -44,8 +36,6 @@ fun OimTopBarCentered(
     onSendClick: () -> Unit,
     onChestClick: () -> Unit = {}
 ) {
-    val sendBitmap = Buttons("send").resourceMapper()
-    val chestBitmap = Buttons("chest_open").resourceMapper()
 
     Row(
         modifier = Modifier
@@ -60,7 +50,7 @@ fun OimTopBarCentered(
             horizontalArrangement = Arrangement.Start
         ) {
             Image(
-                painter = painterResource(chestBitmap),
+                bitmap = UIIcons("chest_open").resourceMapper(),
                 contentDescription = "Chest",
                 modifier = Modifier
                     .size(60.dp)
@@ -99,7 +89,7 @@ fun OimTopBarCentered(
             contentAlignment = Alignment.Center
         ) {
             Image(
-                bitmap = ImageBitmap.imageResource(sendBitmap),
+                bitmap = UIIcons("send").resourceMapper(),
                 contentDescription = "Send",
                 modifier = Modifier.size(65.dp),
                 contentScale = ContentScale.Fit

@@ -3,21 +3,46 @@ syntax = "proto3";
 option java_package = "net.taler.wallet";
 option java_multiple_files = true;
 
+/** Indicates the scope of the current wallet view.  */
 enum ScopeInfoType {
   GLOBAL = 0;
   EXCHANGE = 1;
   AUDITOR = 2;
 }
 
+
+/**
+ * Basic information for scoping preferences such as selected currency
+ * and optional backend URL.
+ */
 message PrefsScopeInfo {
   ScopeInfoType type = 1;
   string currency = 2;
   optional string url = 3;
 }
 
+/**
+ * Persistent user preference state stored in the wallet.
+ * This file is intended for Android DataStore (Proto) usage.
+ */
 message UserPreferences {
+
+  // ----------------------------------------------------------------------
+  // General Preferences
+  // ----------------------------------------------------------------------
+
+  /**
+   * Which scope the wallet UI is currently using (GLOBAL, EXCHANGE, AUDITOR).
+   * May be empty (unset) if no scope was chosen yet.
+   */
   optional PrefsScopeInfo selectedScope = 1;
+
+  /** Tracks whether the user has ever pressed the floating action button. */
   optional bool actionButtonUsed = 2;
+
+  /** Developer mode toggle. */
   optional bool devModeEnabled = 3;
+
+  /** Controls whether biometric locking is used.  */
   optional bool biometricLockEnabled = 4;
 }

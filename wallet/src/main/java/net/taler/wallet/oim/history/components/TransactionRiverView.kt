@@ -11,11 +11,9 @@
 package net.taler.wallet.oim.history.components
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Water
 import androidx.compose.material3.*
@@ -30,14 +28,13 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import net.taler.database.TranxHistory
 import net.taler.database.data_models.Tranx
 import net.taler.wallet.BuildConfig
-import net.taler.wallet.oim.res_mapping_extensions.Buttons
+import net.taler.wallet.oim.res_mapping_extensions.UIIcons
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import kotlin.math.max
@@ -74,7 +71,7 @@ fun TransactionHistoryView(
                 shape = MaterialTheme.shapes.large
             ) {
                 Icon(
-                    painter = painterResource(Buttons("chest_open").resourceMapper()),
+                    bitmap = UIIcons("chest_open").resourceMapper(),
                     contentDescription = "Back to OIM home",
                     tint = Color.Unspecified,
                     modifier = Modifier.size(40.dp)

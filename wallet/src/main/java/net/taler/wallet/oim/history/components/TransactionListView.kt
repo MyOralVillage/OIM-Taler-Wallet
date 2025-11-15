@@ -41,7 +41,7 @@ import net.taler.database.filter.PurposeFilter
 import net.taler.wallet.BuildConfig
 import net.taler.wallet.oim.history.filter.PurposeGrid
 import net.taler.wallet.oim.res_mapping_extensions.Background
-import net.taler.wallet.oim.res_mapping_extensions.Buttons
+import net.taler.wallet.oim.res_mapping_extensions.UIIcons
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -65,7 +65,7 @@ fun TransactionsListView() {
                 .size(100.dp),
         ) {
             Icon(
-                painter = painterResource(Buttons("filter").resourceMapper()),
+                bitmap = UIIcons("filter").resourceMapper(),
                 contentDescription = "null",
                 modifier = Modifier
                     .fillMaxSize()
@@ -237,30 +237,6 @@ private fun RowScope.MainContent() {
                 displayAmount = transaction.amount
             )
         }
-//        TransactionCard(
-//            amount = "24.5",
-//            currency ="SLE",
-//            date = "2025-10-28",
-//            purpose = tranxPurpLookup["EXPN_GRCR"],
-//            dir = FilterableDirection.OUTGOING,
-//            displayAmount = Amount(
-//                currency = "SLE",
-//                value = 24L,
-//                fraction = 50_000_000
-//            )
-//        )
-//        TransactionCard(
-//            amount = "28.5",
-//            currency ="SLE",
-//            date = "2025-10-28",
-//            purpose = tranxPurpLookup["EXPN_GRCR"],
-//            dir = FilterableDirection.OUTGOING,
-//            displayAmount = Amount(
-//                currency = "SLE",
-//                value = 0L,
-//                fraction = 50_000_000
-//            )
-//        )
     }
 }
 

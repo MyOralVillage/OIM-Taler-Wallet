@@ -2,7 +2,6 @@ package net.taler.wallet.oim.send.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -11,9 +10,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.taler.database.data_models.Amount
@@ -47,7 +43,7 @@ fun SendScreen(
     onChoosePurpose: () -> Unit,
     onSend: () -> Unit,
     onHome: () -> Unit = {},
-    onChest: () -> Unit = {}
+    onChest: () -> Unit = {},
 ) {
     var displayAmount by remember { mutableStateOf(amount) }
     LaunchedEffect(amount) { displayAmount = amount }
@@ -61,7 +57,9 @@ fun SendScreen(
 
     fun minus(a: Amount, b: Amount): Amount {
         val cur = a.spec?.name ?: a.currency
-        val diff = (BigDecimal(a.amountStr) - BigDecimal(b.amountStr)).coerceAtLeast(BigDecimal.ZERO)
+        val diff = (
+                BigDecimal(a.amountStr) - BigDecimal(b.amountStr)
+        ).coerceAtLeast(BigDecimal.ZERO)
         return Amount.fromString(cur, diff.stripTrailingZeros().toPlainString())
     }
 
@@ -175,21 +173,22 @@ fun SendScreen(
             val remainingBalance = minus(balance, displayAmount)
 
             // build thumbnails (resId, Amount)
-            val noteThumbnails: List<Pair<Int, Amount>> = availableDenominations.map { (denomValue, resId) ->
-                val amountStr = when (currency) {
-                    "CHF" -> {
-                        val francs = denomValue / 2
-                        val half = denomValue % 2
-                        if (half == 0) "$francs.00" else "$francs.50"
+            val noteThumbnails: List<Pair<Int, Amount>> =
+                availableDenominations.map { (denomValue, resId) ->
+                    val amountStr = when (currency) {
+                        "CHF" -> {
+                            val francs = denomValue / 2
+                            val half = denomValue % 2
+                            if (half == 0) "$francs.00" else "$francs.50"
+                        }
+                        "XOF" -> denomValue.toString()
+                        "EUR", "SLE", "KUDOS", "KUD" -> {
+                            val whole = denomValue / 100
+                            val cents = denomValue % 100
+                            "$whole.${cents.toString().padStart(2, '0')}"
+                        }
+                        else -> "0"
                     }
-                    "XOF" -> denomValue.toString()
-                    "EUR", "SLE", "KUDOS", "KUD" -> {
-                        val whole = denomValue / 100
-                        val cents = denomValue % 100
-                        "$whole.${cents.toString().padStart(2, '0')}"
-                    }
-                    else -> "0"
-                }
                 resId to Amount.fromString(currency, amountStr)
             }
 
@@ -237,25 +236,5 @@ fun SendScreen(
                 },
             )
         }
-    }
-}
-
-@Preview(
-    showBackground = true,
-    device = "spec:width=411dp,height=891dp,orientation=landscape"
-)
-@Composable
-private fun SendScreenPreview() {
-    MaterialTheme {
-        SendScreen(
-            balance = Amount.fromString("KUDOS", "100"),
-            amount = Amount.fromString("KUDOS", "0"),
-            onAdd = {},
-            onRemoveLast = {},
-            onChoosePurpose = {},
-            onSend = {},
-            onHome = {},
-            onChest = {}
-        )
     }
 }
