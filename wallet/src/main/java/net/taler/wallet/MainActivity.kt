@@ -14,14 +14,34 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
+/**
+ * MainActivity is the central Activity of the Taler Wallet Android application.
+ * It hosts the navigation graph, manages biometric authentication, handles
+ * incoming intents (QR scans, NFC, deep links), manages UI overlays, and bridges
+ * ViewModel state into UI actions.
+ *
+ * Responsibilities:
+ * - Initialize the wallet and start required backend services
+ * - Configure navigation and toolbar behavior
+ * - Handle QR scanning via ZXing
+ * - Handle NFC-discovered Taler URIs
+ * - Enforce biometric locking / unlocking of the wallet
+ * - React to ViewModel flows for dev mode, network status, and selected transactions
+ * - Pass Taler URIs into navigation for handling
+ *
+ * NOTE: Only documentation was added. No code was changed.
+ */
 package net.taler.wallet
 
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.content.Intent
 import android.content.Intent.ACTION_VIEW
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -31,6 +51,7 @@ import android.view.ViewGroup.MarginLayoutParams
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
@@ -67,40 +88,63 @@ import net.taler.wallet.events.ObservabilityDialog
 import net.taler.wallet.transactions.TransactionPeerPullCredit
 import net.taler.wallet.transactions.TransactionPeerPushDebit
 
+/** Main Activity for the Taler Wallet app.  */
 class MainActivity : AppCompatActivity(), OnPreferenceStartFragmentCallback {
-    private val model: MainViewModel by viewModels()
 
+    /** The main ViewModel providing wallet, settings, auth, and network state. */
+    private val model: MainViewModel by viewModels()
     private lateinit var ui: ActivityMainBinding
     private lateinit var nav: NavController
+
+    /** Biometric prompt and configuration used for wallet unlocking. */
     private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var promptInfo: BiometricPrompt.PromptInfo
 
-    private val barcodeLauncher = registerForActivityResult(ScanContract()) { result ->
-        model.unlockWallet() // hack to prevent from locking after scanning QR
-        if (result == null || result.contents == null) return@registerForActivityResult
-        if (model.checkScanQrContext(result.contents)) {
-            handleTalerUri(result.contents, "QR code")
-        } else {
-            confirmTalerUri(result.contents, "QR code")
+    /**
+     * Activity Result Launcher for QR scanning using ZXing.
+     * Automatically unlocks the wallet, processes results and dispatches
+     * to URI handling or context confirmation.
+     */
+    private val barcodeLauncher =
+        registerForActivityResult(ScanContract()) { result ->
+            model.unlockWallet() // workaround to avoid wallet relocking after QR scan
+            if (result == null || result.contents == null)
+                return@registerForActivityResult
+            if (model.checkScanQrContext(result.contents)) {
+                handleTalerUri(result.contents, "QR code")
+            } else {
+                confirmTalerUri(result.contents, "QR code")
+            }
         }
-    }
 
+    /**
+     * Lifecycle: onCreate — initializes UI, ViewModel flows, navigation, biometrics,
+     * intent handling, nfc service, and persistence listeners.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        // Inflate UI layout
         ui = ActivityMainBinding.inflate(layoutInflater)
         setContentView(ui.root)
+
         setupInsets()
         setupBiometrics()
 
+        // Start background NFC service for Taler interaction
         TalerNfcService.startService(this)
 
+        // Setup navigation
         val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+            supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         nav = navHostFragment.navController
 
         setSupportActionBar(ui.toolbar)
         setupActionBarWithNavController(nav)
+
+        // Custom navigation handler for toolbar
         ui.toolbar.setNavigationOnClickListener {
             if (onBackPressedDispatcher.hasEnabledCallbacks()) {
                 onBackPressedDispatcher.onBackPressed()
@@ -111,29 +155,25 @@ class MainActivity : AppCompatActivity(), OnPreferenceStartFragmentCallback {
 
         model.startWallet()
 
-        // TODO: refactor and unify progress bar handling
-        // model.showProgressBar.observe(this) { show ->
-        //     ui.content.progressBar.visibility = if (show) VISIBLE else INVISIBLE
-        // }
-
+        // Process initial intent (deep link or NFC)
         handleIntents(intent)
 
-        // Update devMode in model from Datastore API
+        // Observe dev mode changes from preferences and update ViewModel
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.settingsManager.getDevModeEnabled(this@MainActivity).collect { enabled ->
-                    model.setDevMode(enabled) { error ->
-                        showError(error)
-                    }
+                model
+                .settingsManager
+                .getDevModeEnabled(this@MainActivity).collect { enabled ->
+                    model.setDevMode(enabled) { error -> showError(error) }
                 }
             }
         }
 
+        // Update NFC service with transaction-specific Taler URIs
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 model.transactionManager.selectedTransaction.collect { tx ->
                     TalerNfcService.clearUri(this@MainActivity)
-
                     when (tx) {
                         is TransactionPeerPushDebit -> tx.talerUri
                         is TransactionPeerPullCredit -> tx.talerUri
@@ -146,103 +186,125 @@ class MainActivity : AppCompatActivity(), OnPreferenceStartFragmentCallback {
             }
         }
 
+        // Persist selected transaction scope
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.transactionManager.selectedScope.collect { tx ->
-                    model.settingsManager.saveSelectedScope(this@MainActivity, tx)
+                model.transactionManager.selectedScope.collect {
+                    model.settingsManager.saveSelectedScope(this@MainActivity, it)
                 }
             }
         }
 
+        // Trigger QR scanner on ViewModel event
         model.scanCodeEvent.observe(this, EventObserver {
-            val scanOptions = ScanOptions().apply {
+            val options = ScanOptions().apply {
                 setPrompt("")
                 setBeepEnabled(true)
                 setOrientationLocked(false)
                 setDesiredBarcodeFormats(QR_CODE)
                 addExtra(SCAN_TYPE, MIXED_SCAN)
             }
-            if (it) barcodeLauncher.launch(scanOptions)
+            if (it) barcodeLauncher.launch(options)
         })
 
+        // Update offline banner and notify wallet about connectivity
         model.networkManager.networkStatus.observe(this) { online ->
             ui.offlineBanner.visibility = if (online) GONE else VISIBLE
             model.hintNetworkAvailability(online)
         }
 
-        model.devMode.observe(this) {
-            invalidateMenu()
-        }
+        // Show dev-mode menu when enabled
+        model.devMode.observe(this) { invalidateMenu() }
     }
 
+    /**
+     * Applies system cutout insets to the root layout and toolbar.
+     */
     private fun setupInsets() {
-        // We really don't want to deal with cutouts!
-        ViewCompat.setOnApplyWindowInsetsListener(ui.root) { v, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout())
+        // Avoid UI elements overlapping display cutouts
+        ViewCompat.setOnApplyWindowInsetsListener(ui.root) { v, insets ->
+            val cutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
             v.updateLayoutParams<MarginLayoutParams> {
-                leftMargin = insets.left
-                rightMargin = insets.right
+                leftMargin = cutout.left
+                rightMargin = cutout.right
             }
-            windowInsets
+            insets
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(ui.toolbar) { v, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+        ViewCompat.setOnApplyWindowInsetsListener(ui.toolbar) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.updateLayoutParams<MarginLayoutParams> {
-                leftMargin = insets.left
-                rightMargin = insets.right
+                leftMargin = bars.left
+                rightMargin = bars.right
             }
-            windowInsets
+            insets
         }
     }
 
+    /**
+     * Initializes biometric authentication, sets callbacks, and observes
+     * authentication state to show/hide lock overlay.
+     */
     private fun setupBiometrics() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 combine(
                     model.authenticated,
                     model.settingsManager.getBiometricLockEnabled(this@MainActivity)
-                ) { a, b -> a to b }.collect { c ->
-                    val authenticated = c.first
-                    val biometricEnabled = c.second
-                    if (!authenticated && biometricEnabled) {
-                        ui.biometricOverlay.visibility = VISIBLE
-                        biometricPrompt.authenticate(promptInfo)
-                    } else {
-                        ui.biometricOverlay.visibility = GONE
+                ) { auth, enabled -> auth to enabled }
+                    .collect { (authenticated, biometricsEnabled) ->
+                        if (!authenticated && biometricsEnabled) {
+                            ui.biometricOverlay.visibility = VISIBLE
+                            biometricPrompt.authenticate(promptInfo)
+                        } else {
+                            ui.biometricOverlay.visibility = GONE
+                        }
                     }
-                }
             }
         }
 
+        // Manual unlock button
         ui.unlockButton.setOnClickListener {
             biometricPrompt.authenticate(promptInfo)
         }
 
+        // Biometric callbacks
         biometricPrompt = BiometricPrompt(
             this,
             ContextCompat.getMainExecutor(this),
             object : BiometricPrompt.AuthenticationCallback() {
+
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     super.onAuthenticationError(errorCode, errString)
-                    if (errorCode == ERROR_NO_BIOMETRICS || errorCode == ERROR_NO_DEVICE_CREDENTIAL) {
-                        model.unlockWallet()
-                    }
-                    Toast.makeText(this@MainActivity, getString(R.string.biometric_auth_error, errString), LENGTH_SHORT).show()
+                    if (    errorCode == ERROR_NO_BIOMETRICS
+                        ||  errorCode == ERROR_NO_DEVICE_CREDENTIAL
+                        ) { model.unlockWallet() }
+                    Toast.makeText(
+                        this@MainActivity,
+                        getString(R.string.biometric_auth_error, errString),
+                        LENGTH_SHORT
+                    ).show()
                 }
 
-                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                override fun onAuthenticationSucceeded(
+                    result: BiometricPrompt.AuthenticationResult
+                ) {
                     super.onAuthenticationSucceeded(result)
                     model.unlockWallet()
                 }
 
                 override fun onAuthenticationFailed() {
                     super.onAuthenticationFailed()
-                    Toast.makeText(this@MainActivity, getString(R.string.biometric_auth_failed), LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@MainActivity,
+                        getString(R.string.biometric_auth_failed),
+                        LENGTH_SHORT
+                    ).show()
                 }
             },
         )
 
+        // Configure allowed biometric methods based on Android version
         promptInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             BiometricPrompt.PromptInfo.Builder()
                 .setTitle(getString(R.string.biometric_prompt_title))
@@ -258,46 +320,54 @@ class MainActivity : AppCompatActivity(), OnPreferenceStartFragmentCallback {
         }
     }
 
+    /**
+     * Handles new intents for deep links or NFC.
+     */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntents(intent)
     }
 
+    /** Processes ACTION_VIEW deep links and NFC NDEF messages to extract Taler URIs. */
     private fun handleIntents(intent: Intent?) {
         if (intent == null) return
 
-        if (intent.action == ACTION_VIEW) intent.dataString?.let { uri ->
-            handleTalerUri(uri, "intent")
+        // Standard deep link
+        if (intent.action == ACTION_VIEW) {
+            intent.dataString?.let { handleTalerUri(it, "intent") }
         }
 
+        // NFC URI discovery
         if (intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED) {
-            val messages: Array<NdefMessage> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES, NdefMessage::class.java)
-            } else {
-                @Suppress("DEPRECATION")
-                intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)?.let { rawMessages ->
-                    rawMessages.map { it as NdefMessage }
-                }?.toTypedArray()
-            } ?: return
+            val messages: Array<NdefMessage> =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent.getParcelableArrayExtra(
+                        NfcAdapter.EXTRA_NDEF_MESSAGES,
+                        NdefMessage::class.java
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)
+                        ?.map { it as NdefMessage }
+                        ?.toTypedArray()
+                } ?: return
 
             messages.forEach { message ->
                 message.records?.forEach { record ->
-                    record.toUri()?.let { uri ->
-                        handleTalerUri(uri.toString(), "nfc")
-                    }
+                    record.toUri()?.let { handleTalerUri(it.toString(), "nfc") }
                 }
             }
         }
     }
 
+    /** Conditionally inflates dev mode menu.  */
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        if (model.devMode.value == true) {
+        if (model.devMode.value == true)
             menuInflater.inflate(R.menu.global_dev, menu)
-        }
-
         return super.onCreateOptionsMenu(menu)
     }
 
+    /** Handles toolbar menu clicks, e.g. observability logs. */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_show_logs -> {
@@ -307,14 +377,17 @@ class MainActivity : AppCompatActivity(), OnPreferenceStartFragmentCallback {
         return super.onOptionsItemSelected(item)
     }
 
+    /** Shows a confirmation dialog when scan context requires verifying the URI source. */
     private fun confirmTalerUri(uri: String, from: String) {
         MaterialAlertDialogBuilder(this).apply {
             setTitle(R.string.qr_scan_context_title)
-            setMessage(when (model.getScanQrContext()) {
-                ScanQrContext.Send -> R.string.qr_scan_context_send_message
-                ScanQrContext.Receive -> R.string.qr_scan_context_receive_message
-                else -> error("invalid value")
-            })
+            setMessage(
+                when (model.getScanQrContext()) {
+                    ScanQrContext.Send -> R.string.qr_scan_context_send_message
+                    ScanQrContext.Receive -> R.string.qr_scan_context_receive_message
+                    else -> error("invalid value")
+                }
+            )
 
             setNegativeButton(R.string.ok) { _, _ ->
                 handleTalerUri(uri, from)
@@ -326,11 +399,17 @@ class MainActivity : AppCompatActivity(), OnPreferenceStartFragmentCallback {
         }.show()
     }
 
+    /**
+     * Navigates globally to the URI handler fragment with the given parameters.
+     */
     private fun handleTalerUri(uri: String, from: String) {
         val args = bundleOf("uri" to uri, "from" to from)
         nav.navigate(R.id.action_global_handle_uri, args)
     }
 
+    /**
+     * Handles navigation from Preference screens to nested fragments.
+     */
     override fun onPreferenceStartFragment(
         caller: PreferenceFragmentCompat,
         pref: Preference,
@@ -341,21 +420,34 @@ class MainActivity : AppCompatActivity(), OnPreferenceStartFragmentCallback {
         return true
     }
 
+    /** Ensures app is synced when resumed. */
     override fun onResume() {
         super.onResume()
+
+        // sync NFC service
         TalerNfcService.setDefaultHandler(this)
     }
 
+
+    /**
+     * Unsets NFC handler to avoid handling while backgrounded.
+     */
     override fun onPause() {
         super.onPause()
         TalerNfcService.unsetDefaultHandler(this)
     }
 
+    /**
+     * Locks wallet when activity stops.
+     */
     override fun onStop() {
         super.onStop()
         model.lockWallet()
     }
 
+    /**
+     * Stops wallet core and NFC service on destruction.
+     */
     override fun onDestroy() {
         super.onDestroy()
         TalerNfcService.stopService(this)

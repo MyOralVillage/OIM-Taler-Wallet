@@ -191,7 +191,7 @@ import net.taler.wallet.oim.main.rememberOimReceiveFlowState
                                         OIMPaymentDialog(
                                             terms = terms,
                                             onAccept = { receiveFlow.confirmTerms(terms) },
-                                            onReject = { receiveFlow.rejectTerms(terms) },
+                                            onReject = { receiveFlow.rejectTerms(terms) }
                                         )
                                     }
                                 }

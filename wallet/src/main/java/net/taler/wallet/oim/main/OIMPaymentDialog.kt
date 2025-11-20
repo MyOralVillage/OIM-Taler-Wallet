@@ -45,20 +45,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
-import net.taler.database.data_models.Amount
-import net.taler.wallet.R
+import net.taler.wallet.oim.res_mapping_extensions.UIIcons
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 import net.taler.wallet.peer.IncomingTerms
  
  private const val TAG = "OIMPaymentDialog"
  
- // =================================================================================
- // 1. THE "SMART" COMPONENT (for your app)
- // =================================================================================
 /**
  * High-level payment dialog that wires network-facing [IncomingTerms] data to the stateless UI.
  *
@@ -72,7 +67,7 @@ fun OIMPaymentDialog(
     terms: IncomingTerms,
     onAccept: () -> Unit,
     onReject: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val amount = terms.amountEffective
 
@@ -100,14 +95,10 @@ fun OIMPaymentDialog(
         onReject = {
             Log.d(TAG, "Payment rejected: ${terms.id}")
             onReject()
-        },
-        modifier = modifier
+        }
     )
 }
  
- // =================================================================================
- // 2. THE "DUMB" COMPONENT (for rendering UI and for previews)
- // =================================================================================
 /**
  * Stateless payment dialog body used both at runtime and during Compose previews.
  *
@@ -127,7 +118,7 @@ private fun OIMPaymentDialogContent(
     banknoteDrawableIds: List<Int>,
     onAccept: () -> Unit,
     onReject: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
      val currencyDisplayName = currencyDisplayName(currencyCode)
      val isKudosCurrency = isKudosCurrency(currencyCode)
@@ -236,16 +227,14 @@ private fun OIMPaymentDialogContent(
                      }
  
                      Image(
-                         painter = painterResource(id = R.drawable.greenarrowright),
+                         bitmap = UIIcons("greenarrowright").resourceMapper(),
                          contentDescription = "Payment transfer arrow",
                          modifier = Modifier.size(40.dp)
                      )
                  }
  
                  Image(
-                     painter = painterResource(
-                         id = if (isKudosCurrency) R.drawable.chest_open else R.drawable.chest_sl_open
-                     ),
+                     bitmap  = UIIcons("chest_open").resourceMapper(),
                      contentDescription = "Treasure chest",
                      modifier = Modifier.size(80.dp),
                      contentScale = ContentScale.Fit
@@ -275,7 +264,7 @@ private fun OIMPaymentDialogContent(
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.greencheck),
+                        bitmap  = UIIcons("greencheckmark").resourceMapper(),
                         contentDescription = "Accept payment",
                         modifier = Modifier.size(40.dp)
                     )
@@ -288,7 +277,7 @@ private fun OIMPaymentDialogContent(
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.redcross),
+                        bitmap = UIIcons("redcross").resourceMapper(),
                         contentDescription = "Reject payment",
                         modifier = Modifier.size(40.dp)
                     )
@@ -317,35 +306,3 @@ private fun isKudosCurrency(currencyCode: String): Boolean =
          currencyCode.equals("TESTKUDOS", ignoreCase = true)
  
  
- // =================================================================================
- // PREVIEWS
- // =================================================================================
- 
- @Preview(showBackground = true)
- @Composable
-private fun OIMPaymentDialogPreviewSLE() {
-    OIMPaymentDialogContent(
-        amountText = "100",
-        currencyCode = "SLE",
-        summary = "Payment for services",
-        banknoteDrawableIds = listOf(
-            R.drawable.sle_one_thousand,
-            R.drawable.sle_forty
-        ),
-        onAccept = {},
-        onReject = {}
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun OIMPaymentDialogPreviewKUDOS() {
-    OIMPaymentDialogContent(
-        amountText = "50",
-        currencyCode = "KUDOS",
-        summary = "Test payment in KUDOS",
-        banknoteDrawableIds = emptyList(),
-        onAccept = {},
-        onReject = {}
-    )
-}

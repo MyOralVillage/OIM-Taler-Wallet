@@ -16,7 +16,6 @@
 
  package net.taler.wallet.oim.main
 
- import androidx.annotation.DrawableRes
  import androidx.compose.foundation.Image
  import androidx.compose.foundation.background
  import androidx.compose.foundation.clickable
@@ -32,14 +31,12 @@
  import androidx.compose.foundation.layout.fillMaxSize
  import androidx.compose.foundation.layout.fillMaxWidth
  import androidx.compose.foundation.layout.height
- import androidx.compose.foundation.layout.offset
  import androidx.compose.foundation.layout.padding
  import androidx.compose.foundation.layout.size
  import androidx.compose.foundation.layout.width
  import androidx.compose.foundation.layout.windowInsetsPadding
  import androidx.compose.foundation.layout.only
  import androidx.compose.foundation.shape.RoundedCornerShape
- import androidx.compose.material3.MaterialTheme
  import androidx.compose.material3.Text
  import androidx.compose.runtime.Composable
  import androidx.compose.runtime.getValue
@@ -51,34 +48,32 @@
  import androidx.compose.ui.Modifier
  import androidx.compose.ui.draw.clip
  import androidx.compose.ui.graphics.Color
+ import androidx.compose.ui.graphics.ImageBitmap
  import androidx.compose.ui.layout.ContentScale
  import androidx.compose.ui.platform.LocalContext
  import androidx.compose.ui.res.painterResource
  import androidx.compose.ui.text.font.FontWeight
- import androidx.compose.ui.tooling.preview.Preview
  import androidx.compose.ui.unit.dp
  import androidx.compose.ui.unit.sp
  import kotlinx.coroutines.delay
- import net.taler.wallet.R
  import net.taler.wallet.balances.BalanceState
  import net.taler.wallet.compose.TalerSurface
  import net.taler.wallet.oim.res_mapping_extensions.Background
  import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
  import net.taler.wallet.systemBarsPaddingBottom
  import androidx.compose.ui.unit.Dp
- import androidx.compose.ui.unit.coerceAtLeast
  import androidx.compose.ui.unit.coerceIn
  import kotlinx.coroutines.launch
- import androidx.compose.ui.unit.times
- 
- /** Reusable button composable with toggle + delay */
+ import net.taler.wallet.oim.res_mapping_extensions.UIIcons
+
+/** Reusable button composable with toggle + delay */
  @Composable
  private fun ButtonBox(
-     @DrawableRes drawableId: Int,
+     bitmap: ImageBitmap,
      bgColor: Color,
      onClick: () -> Unit,
-     size: Dp = 110.dp,
-     iconSize: Dp = 100.dp
+     size: Dp,
+     iconSize: Dp
  ) {
      val coroutineScope = rememberCoroutineScope()
      var isActive by remember { mutableStateOf(false) }
@@ -98,7 +93,7 @@
          contentAlignment = Alignment.Center
      ) {
          Image(
-             painter = painterResource(drawableId),
+             bitmap = bitmap,
              contentDescription = null,
              modifier = Modifier.size(iconSize)
          )
@@ -138,8 +133,8 @@
                  (maxWidth / 4).coerceIn(72.dp, 128.dp)
              }
              val topIconSize = topButtonSize * 0.8f
-             val centerButtonSize = (maxWidth / 6).coerceIn(56.dp, 96.dp)
-             val centerIconSize = centerButtonSize * 0.75f
+             val centerButtonSize = (maxWidth / 3).coerceIn(56.dp, 96.dp)
+             val centerIconSize = centerButtonSize * 1.2f
              val historyButtonSize = (maxWidth / 5).coerceIn(68.dp, 128.dp)
              val historyIconSize = historyButtonSize * 0.9f
              val centerContentTopPadding = topButtonSize * 0.8f
@@ -167,29 +162,37 @@
                      horizontalArrangement = Arrangement.SpaceBetween,
                      verticalAlignment = Alignment.CenterVertically
                  ) {
+
+                     // top right "send" button; shaded red
                      ButtonBox(
-                         R.drawable.send,
+                         UIIcons("send").resourceMapper(),
                          Color(0xFFC32909),
                          onSendClick,
-                         size = topButtonSize,
-                         iconSize = topIconSize,
+                         topButtonSize,
+                         topIconSize
                      )
+
+                     // top center "chest open" button; no shade
                      ButtonBox(
-                         R.drawable.chest_open,
-                         Color.White,
+                         UIIcons("chest_open").resourceMapper(),
+                         Color.Unspecified,
                          onBackClick,
-                         size = centerButtonSize,
-                         iconSize = centerIconSize,
+                         centerButtonSize,
+                         centerIconSize
                      )
+
+                     // top right "receive" button; green shade
                      ButtonBox(
-                         R.drawable.receive,
-                         Color(0xFF4CAF50),
+                         UIIcons("receive").resourceMapper(),
+                         Color(0xff4caf50),
                          onRequestClick,
-                         size = topButtonSize,
-                         iconSize = topIconSize,
+                         topButtonSize,
+                         topIconSize
                      )
+
                  }
- 
+
+
                  /** Center area — shows balance and "Withdraw Test KUDOS" button. */
                  Column(
                      modifier = Modifier
@@ -256,7 +259,9 @@
                          modifier = Modifier
                              .size(historyButtonSize)
                              .clip(RoundedCornerShape(8.dp))
-                             .background(Color(0x6600838F).copy(alpha = if (isHistActive) 0.9f else 0.6f))
+                             .background(Color(0x6600838F).copy(
+                                 alpha = if (isHistActive) 0.9f else 0.6f
+                             ))
                              .clickable {
                                  coroutineScope.launch {
                                      isHistActive = true
@@ -267,7 +272,7 @@
                          contentAlignment = Alignment.Center
                      ) {
                          Image(
-                             painter = painterResource(id = R.drawable.transaction_history),
+                             bitmap = UIIcons("tranx_hist").resourceMapper(),
                              contentDescription = "Transaction History",
                              modifier = Modifier.size(historyIconSize)
                          )
@@ -315,9 +320,7 @@
  private fun NotesOnTable(
      amount: net.taler.common.Amount,
      maxPerRow: Int = 4,
-     billWidth: Dp = 160.dp,
-     billHeight: Dp = 96.dp,
-     coinSize: Dp = 72.dp,
+     dpi : Dp = 72.dp,
      horizontalGap: Dp = 8.dp,
      verticalGap: Dp = 8.dp,
  ) {
@@ -334,21 +337,12 @@
                  horizontalArrangement = Arrangement.spacedBy(horizontalGap)
              ) {
                  row.forEach { resId ->
-                     val isCoin = isCoinRes(resId)
-                     if (isCoin) {
                          Image(
                              painter = painterResource(id = resId),
                              contentDescription = null,
                              modifier = Modifier
-                                 .size(coinSize)
-                         )
-                     } else {
-                         Image(
-                             painter = painterResource(id = resId),
-                             contentDescription = null,
-                             modifier = Modifier
-                                 .width(billWidth)
-                                 .height(billHeight)
+                                 .width(dpi)
+                                 .height(dpi)
                          )
                      }
                  }
@@ -356,54 +350,3 @@
              Spacer(modifier = Modifier.height(verticalGap))
          }
      }
- }
- 
- private fun isCoinRes(@DrawableRes drawableResId: Int): Boolean {
-     return when (drawableResId) {
-         // CHF coins
-         net.taler.common.R.drawable.chf_five_hundred,
-         net.taler.common.R.drawable.chf_two_hundred,
-         net.taler.common.R.drawable.chf_one_hundred,
-         net.taler.common.R.drawable.chf_one,
-         net.taler.common.R.drawable.chf_zero_point_five,
-         // EUR coins
-         net.taler.common.R.drawable.eur_one,
-         net.taler.common.R.drawable.eur_two,
-         net.taler.common.R.drawable.eur_zero_point_five,
-         net.taler.common.R.drawable.eur_zero_point_two,
-         net.taler.common.R.drawable.eur_zero_point_one,
-         net.taler.common.R.drawable.eur_zero_point_zero_five,
-         net.taler.common.R.drawable.eur_zero_point_zero_two,
-         net.taler.common.R.drawable.eur_zero_point_zero_one,
-         // SLE coins
-         net.taler.common.R.drawable.sle_zero_point_five,
-         net.taler.common.R.drawable.sle_zero_point_twenty_five,
-         net.taler.common.R.drawable.sle_zero_point_one,
-         net.taler.common.R.drawable.sle_zero_point_zero_five,
-         net.taler.common.R.drawable.sle_zero_point_zero_one,
-         // XOF coins
-         net.taler.common.R.drawable.xof_two_hundred,
-         net.taler.common.R.drawable.xof_one_hundred,
-         net.taler.common.R.drawable.xof_twenty_five,
-         net.taler.common.R.drawable.xof_ten,
-         net.taler.common.R.drawable.xof_five,
-         net.taler.common.R.drawable.xof_one -> true
-         else -> false
-     }
- }
- 
- @Preview
- @Composable
- fun OIMChestScreenPreview() {
-     MaterialTheme {
-         OIMChestScreenContent(
-             onBackClick = {},
-             onSendClick = {},
-             onRequestClick = {},
-             onTransactionHistoryClick = {},
-             onWithdrawTestKudosClick = {},
-             balanceState = BalanceState.Success(emptyList())
-         )
-     }
- }
- 

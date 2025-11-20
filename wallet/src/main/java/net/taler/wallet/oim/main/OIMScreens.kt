@@ -93,18 +93,26 @@
              is IncomingTerms -> if (state !is IncomingAccepting) {
                  lastTerms = state
                  if (showDevToasts) {
-                     Toast.makeText(context, "Terms ready: ${state.amountEffective}", Toast.LENGTH_SHORT).show()
+                     Toast.makeText(
+                         context, "Terms ready: ${state.amountEffective}",
+                         Toast.LENGTH_SHORT).show()
                  }
              }
              is IncomingTosReview -> {
                  Toast.makeText(context, "Exchange ToS need review", Toast.LENGTH_SHORT).show()
              }
              is IncomingAccepted -> {
-                 Toast.makeText(context, "Payment received successfully!", Toast.LENGTH_LONG).show()
+                 Toast.makeText(
+                     context,
+                     "Payment received successfully!",
+                     Toast.LENGTH_LONG
+                 ).show()
                  lastTerms?.let { terms ->
                      val appCtx = context.applicationContext
                      runCatching {
-                         if (BuildConfig.DEBUG) TranxHistory.initTest(appCtx) else TranxHistory.initTest(appCtx)
+                         if (BuildConfig.DEBUG)
+                             TranxHistory.initTest(appCtx)
+                         else TranxHistory.initTest(appCtx)
                      }
  
                      runCatching {
@@ -118,7 +126,9 @@
                      }.onFailure { e ->
                          Log.e(TAG, "Local DB log failed (will retry after init): ${e.message}")
                          runCatching {
-                             if (BuildConfig.DEBUG) TranxHistory.initTest(appCtx) else TranxHistory.initTest(appCtx)
+                             if (BuildConfig.DEBUG)
+                                 TranxHistory.initTest(appCtx)
+                             else TranxHistory.initTest(appCtx)
                              TranxHistory.newTransaction(
                                  tid = "RECEIVED_${System.currentTimeMillis()}",
                                  purp = null,
@@ -230,7 +240,7 @@
                  OIMPaymentDialog(
                      terms = terms,
                      onAccept = { receiveFlow.confirmTerms(terms) },
-                     onReject = { receiveFlow.rejectTerms(terms) },
+                     onReject = { receiveFlow.rejectTerms(terms) }
                  )
              }
          }
@@ -268,7 +278,7 @@
              onRequestClick = onRequestClick,
              onTransactionHistoryClick = onTransactionHistoryClick,
              onWithdrawTestKudosClick = onWithdrawTestKudosClick,
-             balanceState = balanceState,
+             balanceState = balanceState
          )
      }
  }

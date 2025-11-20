@@ -3,9 +3,6 @@ package net.taler.wallet.oim.send.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -17,12 +14,11 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.taler.database.data_models.Amount
 import net.taler.database.data_models.TranxPurp
-import net.taler.wallet.oim.res_mapping_extensions.Buttons
+import net.taler.wallet.oim.res_mapping_extensions.UIIcons
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 import net.taler.wallet.oim.send.components.WoodTableBackground
 import net.taler.wallet.oim.send.components.generateQrBitmap
@@ -70,7 +66,7 @@ fun QrScreen(
                 .padding(top = 12.dp)
         ) {
             Image(
-                painter = painterResource(Buttons("chest_open").resourceMapper()),
+                bitmap = UIIcons("chest_open").resourceMapper(),
                 contentDescription = "Done / back to chest",
                 modifier = Modifier.size(70.dp),
                 contentScale = ContentScale.Fit
@@ -166,23 +162,6 @@ fun QrScreen(
     }
 }
 
-@Preview(
-    showBackground = true,
-    showSystemUi = false,
-    device = "spec:width=411dp,height=891dp,orientation=landscape"
-)
-@Composable
-private fun QrScreenPreview() {
-    MaterialTheme {
-        QrScreen(
-            talerUri = "ext+taler://pay-push/exchange.demo.taler.net/EXAMPLEPURSEID",
-            amount = Amount.fromString("KUDOS", "2"),
-            purpose = null,
-            onBack = {},
-            onHome = {}
-        )
-    }
-}
 
 
 
