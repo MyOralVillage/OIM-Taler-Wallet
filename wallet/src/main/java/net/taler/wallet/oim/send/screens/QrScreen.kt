@@ -1,6 +1,7 @@
 package net.taler.wallet.oim.send.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -58,104 +59,112 @@ fun QrScreen(
         // background
         WoodTableBackground(modifier = Modifier.fillMaxSize(), light = false)
 
-        // TOP-CENTER chest button
-        IconButton(
-            onClick = onHome,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 12.dp)
+
+        // main row: QR left, info right
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+//            IconButton(
+//                onClick = onHome
+//            ) {
+//                Image(
+//                    bitmap = UIIcons("chest_open").resourceMapper(),
+//                    contentDescription = "Done / back to chest",
+//                    modifier = Modifier.size(70.dp),
+//                    contentScale = ContentScale.Fit
+//                )
+//            }
             Image(
                 bitmap = UIIcons("chest_open").resourceMapper(),
                 contentDescription = "Done / back to chest",
-                modifier = Modifier.size(70.dp),
+                modifier = Modifier
+                    .size(60.dp)
+                    .clickable { onHome() },
                 contentScale = ContentScale.Fit
             )
-        }
-
-        // main row: QR left, info right
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // LEFT: QR
-            Surface(
-                color = Color.White,
-                shape = RoundedCornerShape(12.dp),
-                shadowElevation = 8.dp,
-                modifier = Modifier.size(300.dp)
-            ) {
-                if (talerUri == null) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(10.dp),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        CircularProgressIndicator()
-                        Spacer(Modifier.height(12.dp))
-                        Text("Preparing payment…", color = Color.Black)
-                    }
-                } else {
-                    val qrBitmap = remember(talerUri) { generateQrBitmap(talerUri, 2048) }
-                    Image(
-                        bitmap = qrBitmap.asImageBitmap(),
-                        contentDescription = "Taler QR",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .aspectRatio(1f),
-                        contentScale = ContentScale.Fit
-                    )
-                }
-            }
-
-            // RIGHT: centered amount + purpose
-            Column(
+            Row(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(start = 24.dp)
-                    .weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = amount.amountStr,
+                // LEFT: QR
+                Surface(
                     color = Color.White,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 56.sp
-                )
-                Text(
-                    text = amount.spec?.name ?: amount.currency,
-                    color = Color.White.copy(alpha = 0.9f),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 26.sp
-                )
-
-                Spacer(Modifier.height(24.dp))
-
-                if (purpose != null) {
-                    Surface(
-                        color = Color(0x33000000),
-                        shape = RoundedCornerShape(16.dp),
-                        shadowElevation = 4.dp
-                    ) {
+                    shape = RoundedCornerShape(12.dp),
+                    shadowElevation = 8.dp,
+                    modifier = Modifier.size(300.dp)
+                ) {
+                    if (talerUri == null) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(10.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator()
+                            Spacer(Modifier.height(12.dp))
+                            Text("Preparing payment…", color = Color.Black)
+                        }
+                    } else {
+                        val qrBitmap = remember(talerUri) { generateQrBitmap(talerUri, 2048) }
                         Image(
-                            painter = painterResource(purpose.resourceMapper()),
-                            contentDescription = null,
-                            modifier = Modifier.size(150.dp),
+                            bitmap = qrBitmap.asImageBitmap(),
+                            contentDescription = "Taler QR",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .aspectRatio(1f),
                             contentScale = ContentScale.Fit
                         )
                     }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(150.dp)
-                            .alpha(0f)
+                }
+
+                // RIGHT: centered amount + purpose
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(start = 24.dp)
+                        .weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = amount.amountStr,
+                        color = Color.White,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 56.sp
                     )
+                    Text(
+                        text = amount.spec?.name ?: amount.currency,
+                        color = Color.White.copy(alpha = 0.9f),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 26.sp
+                    )
+
+                    Spacer(Modifier.height(24.dp))
+
+                    if (purpose != null) {
+                        Surface(
+                            color = Color.White,
+                            shape = RoundedCornerShape(16.dp),
+                            shadowElevation = 4.dp
+                        ) {
+                            Image(
+                                painter = painterResource(purpose.resourceMapper()),
+                                contentDescription = null,
+                                modifier = Modifier.size(150.dp),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(150.dp)
+                                .alpha(0f)
+                        )
+                    }
                 }
             }
         }

@@ -161,7 +161,6 @@ fun NotesPile(
                     .width(wDp) // Only constrain width, height is natural
                     .graphicsLayer {
                         rotationZ = rot
-                        shadowElevation = 10f
                     },
                 contentScale = ContentScale.FillWidth // Fill width, maintain aspect ratio
             )
