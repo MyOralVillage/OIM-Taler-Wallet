@@ -39,7 +39,7 @@ internal fun Amount.resourceMapper(): List<Int> {
             result.addAll(mapToBills(totalCents, EUR_BILLS_CENTS))
         }
 
-         "SLE", "KUDOS", "KUD" -> {
+         "SLE", "KUDOS", "KUD", "TESTKUDOS" -> {
             val totalCents = value * 100 + (fraction * 100L / Amount.FRACTIONAL_BASE)
             result.addAll(mapToBills(totalCents, SLE_BILLS_CENTS))
         }
