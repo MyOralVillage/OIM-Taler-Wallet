@@ -26,6 +26,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,6 +45,7 @@ import net.taler.database.data_models.TranxPurp
 import net.taler.wallet.oim.components.Bills
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper // Amount
+import java.time.LocalDate
 
 @Composable
 fun TransactionCard(
@@ -55,7 +57,6 @@ fun TransactionCard(
     dir: FilterableDirection,
     displayAmount: Amount
 ) {
-    // Define variables that differ based on type
     val badgeColor =
         if (dir.getValue()) Color(0xFFE8F5E9)
         else Color(0xFFFFB3B3)
@@ -63,33 +64,49 @@ fun TransactionCard(
         if (dir.getValue()) Color(0xFF4CAF50)
         else Color(0xFFC32909)
 
+    // Parse date "yyyy-MM-dd" -> year / month / day
+    val parsedDate = remember(date) {
+        runCatching { LocalDate.parse(date) }.getOrNull()
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Date
-            Text(
-                text = date,
-                fontSize = 18.sp,
-                color = Color.Gray
-            )
+            if (parsedDate != null) {
+                val day = parsedDate.dayOfMonth.toString().padStart(2, '0')
+                val month = parsedDate.monthValue.toString().padStart(2, '0')
+                val year = parsedDate.year.toString()
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    DatePill(icon = "☀️", value = day)
+                    DatePill(icon = "🌙", value = month)
+                    DatePill(icon = "⭐", value = year)
+                }
+            } else {
+                // fallback if parsing fails
+                Text(
+                    text = date,
+                    fontSize = 18.sp,
+                    color = Color.Gray
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Icons and Amount
+            // Icons and Amount (unchanged)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -102,7 +119,6 @@ fun TransactionCard(
                     tint = Color.Unspecified
                 )
 
-
                 if (purpose != null) {
                     Icon(
                         painter = painterResource(purpose.resourceMapper()),
@@ -114,16 +130,15 @@ fun TransactionCard(
 
                 Bills(
                     amount = displayAmount,
-                    billWidth = 100,      // 120 × 0.833
-                    billHeight = 64,      // 77 × 0.833 ≈ 64
-                    coinSize = 33,        // 40 × 0.833 ≈ 33
-                    billOffsetX = 7,      // 8 × 0.833 ≈ 7
-                    billOffsetY = 12,     // 15 × 0.833 ≈ 12
-                    coinOffsetX = 15,     // 15 × 0.833 ≈ 12
-                    coinOffsetY = 24      // 25 × 0.833 ≈ 21
+                    billWidth = 100,
+                    billHeight = 64,
+                    coinSize = 33,
+                    billOffsetX = 7,
+                    billOffsetY = 12,
+                    coinOffsetX = 15,
+                    coinOffsetY = 24
                 )
 
-                // Amount Badge
                 Box(
                     modifier = Modifier
                         .background(
@@ -150,6 +165,27 @@ fun TransactionCard(
                     }
                 }
             }
+        }
+    }
+}
+
+
+@Composable
+private fun DatePill(icon: String, value: String) {
+    Box(
+        modifier = Modifier
+            .background(
+                color = Color(0xFFF5F5F5),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(text = icon, fontSize = 14.sp)
+            Text(text = value, fontSize = 14.sp, color = Color.DarkGray)
         }
     }
 }

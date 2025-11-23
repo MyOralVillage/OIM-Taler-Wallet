@@ -209,11 +209,66 @@ import net.taler.wallet.oim.main.rememberOimReceiveFlowState
                         }
 
                         OimScreen.HISTORY -> {
-                            // Handle back from OIM history: return to OIM chest instead of closing overlay
+                            // Back from history goes to chest
                             BackHandler(true) { oimScreen = OimScreen.CHEST }
-                            net.taler.wallet.oim.history.components.TransactionHistoryView(
-                                onHome = { oimScreen = OimScreen.CHEST })
+
+                            // Same receive flow as in the chest, so the receive button & ToS work here too
+                            val receiveFlow = rememberOimReceiveFlowState(
+                                model = model,
+                                onReviewTos = reviewTos,
+                            )
+
+                            // Same balance → notes logic as in OIMChestScreenContent
+// Copy to a non-delegated local first
+                            val bs = balanceState
+
+                            val selectedBalance = when (bs) {
+                                is BalanceState.Success -> {
+                                    bs.balances.firstOrNull { it.currency == "KUDOS" }
+                                        ?: bs.balances.firstOrNull { it.currency == "TESTKUDOS" }
+                                        ?: bs.balances.firstOrNull()
+                                }
+                                else -> null
+                            }
+
+                            val amountForNotes = remember(selectedBalance) {
+                                val a = selectedBalance?.available
+                                if (a != null) {
+                                    when (selectedBalance.currency) {
+                                        "KUDOS", "TESTKUDOS", "KUD" -> a.withCurrency("SLE")
+                                        else -> a
+                                    }
+                                } else null
+                            }
+
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                // <<< THIS is your new call >>>
+                                net.taler.wallet.oim.history.components.TransactionHistoryView(
+                                    onHome = { oimScreen = OimScreen.CHEST },
+                                    balanceAmount = amountForNotes,
+                                    onSendClick = { oimScreen = OimScreen.SEND },
+                                    onReceiveClick = receiveFlow.launchReceiveScan,
+                                )
+
+                                // Terms dialog overlay, same as chest
+                                val terms = receiveFlow.dialogTerms
+                                if (terms != null) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(Color.Black.copy(alpha = 0.5f)),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        OIMPaymentDialog(
+                                            terms = terms,
+                                            onAccept = { receiveFlow.confirmTerms(terms) },
+                                            onReject = { receiveFlow.rejectTerms(terms) }
+                                        )
+                                    }
+                                }
+                            }
                         }
+
                         null -> { }
                     }
                  } else {
