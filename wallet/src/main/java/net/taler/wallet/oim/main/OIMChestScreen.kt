@@ -129,16 +129,14 @@
                  .fillMaxSize()
                  .systemBarsPaddingBottom()
          ) {
-             val topButtonSize = remember(maxWidth) {
-                 (maxWidth / 4).coerceIn(72.dp, 128.dp)
-             }
-             val topIconSize = topButtonSize * 0.8f
-             val centerButtonSize = (maxWidth / 3).coerceIn(56.dp, 96.dp)
-             val centerIconSize = centerButtonSize * 1.2f
-             val historyButtonSize = (maxWidth / 5).coerceIn(68.dp, 128.dp)
-             val historyIconSize = historyButtonSize * 0.9f
-             val centerContentTopPadding = topButtonSize * 0.8f
-             val centerContentBottomPadding = historyButtonSize * 0.25f
+             val topButtonSize = 75.dp
+             val topIconSize = 65.dp
+             val centerButtonSize = 60.dp
+             val centerIconSize = 60.dp
+             val historyButtonSize = 70.dp
+             val historyIconSize = 60.dp
+             val centerContentTopPadding = 60.dp
+             val centerContentBottomPadding = 20.dp
  
              /** Wooden background — this should be the ONLY background layer. */
              Image(

@@ -74,11 +74,9 @@ fun OIMPaymentDialog(
     val amountText = amount.amountStr
 
     val banknoteDrawableIds = when (amount.currency.uppercase(Locale.ROOT)) {
-         "CHF", "XOF", "EUR", "SLE" -> amount.resourceMapper()
+         "CHF", "XOF", "EUR", "SLE", "KUDOS", "TESTKUDOS" -> amount.resourceMapper()
          else -> {
-             if (!isKudosCurrency(amount.currency)) {
-                 Log.w(TAG, "No banknote mapper defined for ${amount.currency}")
-             }
+             Log.w(TAG, "No banknote mapper defined for ${amount.currency}")
              emptyList()
          }
      }
@@ -149,97 +147,62 @@ private fun OIMPaymentDialogContent(
              )
  
              Row(
-                 modifier = Modifier.fillMaxWidth(),
-                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                 verticalAlignment = Alignment.CenterVertically
-             ) {
-                 when {
-                     isKudosCurrency -> {
-                         Box(
-                             modifier = Modifier
-                                 .weight(1f)
-                                 .height(80.dp)
-                                 .background(Color(0xFFF0F8FF), shape = RoundedCornerShape(8.dp)),
-                             contentAlignment = Alignment.Center
-                         ) {
-                             Text(
-                                 text = "KUDOS\n$amountText",
-                                 fontSize = 16.sp,
-                                 fontWeight = FontWeight.Bold,
-                                 textAlign = TextAlign.Center,
-                                 color = Color(0xFF1E90FF)
-                             )
-                         }
-                     }
-                     banknoteDrawableIds.isEmpty() -> {
-                         Box(
-                             modifier = Modifier
-                                 .weight(1f)
-                                 .height(80.dp)
-                                 .background(Color(0xFFECECEC), shape = RoundedCornerShape(8.dp)),
-                             contentAlignment = Alignment.Center
-                         ) {
-                             Text(
-                                 text = "Artwork unavailable",
-                                 fontSize = 13.sp,
-                                 textAlign = TextAlign.Center,
-                                 color = Color.DarkGray
-                             )
-                         }
-                     }
-                     else -> {
-                         LazyRow(
-                             modifier = Modifier
-                                 .weight(1f)
-                                 .height(80.dp),
-                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                             verticalAlignment = Alignment.CenterVertically
-                         ) {
-                             items(banknoteDrawableIds) { drawableId ->
-                                 Image(
-                                     painter = painterResource(id = drawableId),
-                                     contentDescription = "Currency banknote",
-                                     modifier = Modifier
-                                         .width(120.dp)
-                                         .height(80.dp),
-                                     contentScale = ContentScale.Fit
-                                 )
-                             }
-                         }
-                     }
-                 }
- 
-                 Column(
-                     horizontalAlignment = Alignment.CenterHorizontally,
-                     verticalArrangement = Arrangement.spacedBy(4.dp)
-                 ) {
-                     Box(
-                         modifier = Modifier
-                             .background(Color.White, shape = RoundedCornerShape(8.dp))
-                             .padding(horizontal = 12.dp, vertical = 6.dp)
-                     ) {
-                         Text(
-                             text = amountText,
-                             fontSize = 18.sp,
-                             fontWeight = FontWeight.Bold,
-                             color = Color.Black
-                         )
-                     }
- 
-                     Image(
-                         bitmap = UIIcons("greenarrowright").resourceMapper(),
-                         contentDescription = "Payment transfer arrow",
-                         modifier = Modifier.size(40.dp)
-                     )
-                 }
- 
-                 Image(
-                     bitmap  = UIIcons("chest_open").resourceMapper(),
-                     contentDescription = "Treasure chest",
-                     modifier = Modifier.size(80.dp),
-                     contentScale = ContentScale.Fit
-                 )
-             }
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                when {
+                    banknoteDrawableIds.isEmpty() -> {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f, fill = false)
+                                .height(80.dp)
+                                .background(Color(0xFFECECEC), shape = RoundedCornerShape(8.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Artwork unavailable",
+                                fontSize = 13.sp,
+                                textAlign = TextAlign.Center,
+                                color = Color.DarkGray
+                            )
+                        }
+                    }
+                    else -> {
+                        LazyRow(
+                            modifier = Modifier
+                                .weight(1f, fill = false)
+                                .height(80.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            items(banknoteDrawableIds) { drawableId ->
+                                Image(
+                                    painter = painterResource(id = drawableId),
+                                    contentDescription = "Currency banknote",
+                                    modifier = Modifier
+                                        .width(120.dp)
+                                        .height(80.dp),
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Image(
+                    bitmap = UIIcons("greenarrowright").resourceMapper(),
+                    contentDescription = "Payment transfer arrow",
+                    modifier = Modifier.size(40.dp)
+                )
+
+                Image(
+                    bitmap  = UIIcons("incoming_transaction").resourceMapper(),
+                    contentDescription = "Incoming transaction",
+                    modifier = Modifier.size(80.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
  
              if (summary.isNotBlank()) {
                  Text(

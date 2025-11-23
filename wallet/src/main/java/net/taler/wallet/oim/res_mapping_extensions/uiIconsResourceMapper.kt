@@ -58,6 +58,7 @@ internal class UIIcons(val buttonName: String, val iso: String? = null) {
      * - `"country_flag"`       → Result of [`countryFlag`](iso)
      * - `"chest_open"`         → `chest_open`
      * - `"chest_closed"`       → `chest_closed`
+     * - `"incoming_transaction"` -> `incoming_transaction`
      *
      * @return The corresponding [ImageBitmap] for the given button name.
      * @throws IllegalArgumentException if the button name does not match any of the supported types.
@@ -77,6 +78,7 @@ internal class UIIcons(val buttonName: String, val iso: String? = null) {
             "country_flag"      -> countryFlag(iso)
             "chest_open"        -> ImageBitmap.imageResource(chest_open)
             "chest_closed"      -> ImageBitmap.imageResource(chest_closed)
+            "incoming_transaction" -> ImageBitmap.imageResource(incoming_transaction)
             else ->
                 throw IllegalArgumentException("Invalid button: $buttonName")
         }
