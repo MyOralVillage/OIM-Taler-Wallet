@@ -33,10 +33,8 @@
  */
 package net.taler.wallet
 
-import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.content.Intent
 import android.content.Intent.ACTION_VIEW
-import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
 import android.os.Build

@@ -2,7 +2,7 @@ package net.taler.wallet.oim.res_mapping_extensions
 
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
-import net.taler.wallet.R.drawable
+import net.taler.wallet.R.drawable.*
 /** @param tile the case insensitive name of the tile */
 internal class Tile(val tile: String) {
 
