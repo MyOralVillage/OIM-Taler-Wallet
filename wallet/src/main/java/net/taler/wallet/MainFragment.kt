@@ -15,11 +15,13 @@
  */
 
 package net.taler.wallet
-
+import android.view.Menu
 import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import android.view.LayoutInflater
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -44,28 +46,21 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.TopAppBar
+import net.taler.wallet.R.drawable.*
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
@@ -118,6 +113,7 @@ import net.taler.wallet.transactions.TransactionState
 import net.taler.wallet.transactions.TransactionStateFilter.Nonfinal
 import kotlin.math.roundToInt
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.core.view.MenuProvider
 
 /**
  * Main fragment of the Taler wallet application.
@@ -130,6 +126,8 @@ import androidx.compose.ui.platform.LocalConfiguration
  * - Handling QR code scanning and payment actions
  */
 class MainFragment: Fragment() {
+    private var switchToSettings: (() -> Unit)? = null
+
 
     /** Represents the main navigation tabs in the standard wallet view */
     enum class Tab { BALANCES, SETTINGS }
@@ -151,13 +149,28 @@ class MainFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val composeView = ComposeView(requireContext()).apply { id = R.id.main_compose_view }
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.main_menu, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_settings -> {
+                        switchToSettings?.invoke()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner)
         composeView.setContent {
             TalerSurface {
                 var tab by rememberSaveable { mutableStateOf(Tab.BALANCES) }
                 var oimScreen by rememberSaveable { mutableStateOf<OimScreen?>(null) }
                 var showSheet by remember { mutableStateOf(false) }
                 val sheetState = rememberModalBottomSheetState()
-
+                switchToSettings = { tab = Tab.SETTINGS }
                 val settingsFragmentState = rememberFragmentState()
 
                 val context = LocalContext.current
@@ -353,7 +366,51 @@ class MainFragment: Fragment() {
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
 
-                                    // Left "Action buttons"
+                                    // button sizes/scales
+                                    val density = LocalDensity.current
+                                    val iconSize = with(density) { (40.sp).toDp() }
+                                    val buttonSize = with(density) { (48.sp).toDp() }
+
+//                                    // Left ->  Balance view
+                                    IconButton(
+                                        modifier = Modifier
+                                            .size(buttonSize)
+                                            .background(
+                                                MaterialTheme
+                                                .colorScheme
+                                                .surfaceVariant.copy(alpha = 0.9f),
+                                                CircleShape
+                                            ),
+                                        onClick = {
+                                            tab = Tab.BALANCES
+                                            if (selectedScope != null)
+                                                model.transactionManager.selectScope(null)
+                                        }
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(accounting_book),
+                                            contentDescription = "Switch to balance view",
+                                            modifier = Modifier.size(iconSize),
+                                            tint = if (tab == Tab.BALANCES) {
+                                                MaterialTheme.colorScheme.primary  // Selected color
+                                            } else {
+                                                MaterialTheme.colorScheme.onSurfaceVariant  // Unselected color
+                                            }
+                                        )
+                                    }
+//                                    NavigationBarItem(
+//                                        icon = {
+//                                            Icon(Icons.Default.BarChart, contentDescription = null)
+//                                        },
+//                                        selected = tab == Tab.BALANCES,
+//                                        onClick = {
+//                                            tab = Tab.BALANCES
+//                                            if (selectedScope != null)
+//                                                model.transactionManager.selectScope(null)
+//                                        }
+//                                    )
+
+                                    // Center -> "Action buttons"
                                     TalerActionButton(
                                         demandAttention = !actionButtonUsed,
                                         onShowSheet = {
@@ -366,24 +423,8 @@ class MainFragment: Fragment() {
                                         },
                                     )
 
-                                    // Center Left Navigation Item
-                                    NavigationBarItem(
-                                        icon = {
-                                            Icon(Icons.Default.BarChart, contentDescription = null)
-                                        },
-                                        label = { Text(stringResource(R.string.balances_title)) },
-                                        selected = tab == Tab.BALANCES,
-                                        onClick = {
-                                            tab = Tab.BALANCES
-                                            if (selectedScope != null)
-                                                model.transactionManager.selectScope(null)
-                                        }
-                                    )
 
-                                    // Center Right OIM Mode Button
-                                    val density = LocalDensity.current
-                                    val iconSize = with(density) { (40.sp).toDp() }
-                                    val buttonSize = with(density) { (48.sp).toDp() }
+                                    // Right -> OIM Mode Button
                                     var enterOimAfterLandscape by remember { mutableStateOf(false)}
                                     IconButton(
                                         modifier = Modifier
@@ -429,18 +470,6 @@ class MainFragment: Fragment() {
                                         )
                                     }
 
-                                    // Right Navigation Item
-                                    NavigationBarItem(
-                                        icon = {
-                                            Icon(
-                                                Icons.Default.Settings,
-                                                contentDescription = null
-                                            )
-                                        },
-                                        label = { Text(stringResource(R.string.menu_settings)) },
-                                        selected = tab == Tab.SETTINGS,
-                                        onClick = { tab = Tab.SETTINGS }
-                                    )
                                 }
                             },
                             contentWindowInsets = WindowInsets.systemBars.only(
