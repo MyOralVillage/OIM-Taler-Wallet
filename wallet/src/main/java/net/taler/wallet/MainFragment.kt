@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -116,6 +117,7 @@ import net.taler.wallet.transactions.TransactionPayment
 import net.taler.wallet.transactions.TransactionState
 import net.taler.wallet.transactions.TransactionStateFilter.Nonfinal
 import kotlin.math.roundToInt
+import androidx.compose.ui.platform.LocalConfiguration
 
 /**
  * Main fragment of the Taler wallet application.
@@ -129,14 +131,10 @@ import kotlin.math.roundToInt
  */
 class MainFragment: Fragment() {
 
-    /**
-     * Represents the main navigation tabs in the standard wallet view
-     */
+    /** Represents the main navigation tabs in the standard wallet view */
     enum class Tab { BALANCES, SETTINGS }
 
-    /**
-     * Represents the different screens available in OIM (Online Interactive Mode)
-     */
+    /** Represents the different screens available in OIM (Online Interactive Mode) */
     private enum class OimScreen { HOME, CHEST, HISTORY, SEND }
 
     private val model: MainViewModel by activityViewModels()
@@ -201,7 +199,7 @@ class MainFragment: Fragment() {
                     val activity = (requireActivity() as AppCompatActivity)
                     LaunchedEffect(Unit) {
                         activity.requestedOrientation =
-                            android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                            android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                         activity.supportActionBar?.hide()
                     }
                     BackHandler(true) {
@@ -347,24 +345,15 @@ class MainFragment: Fragment() {
                     Box(modifier = Modifier.fillMaxSize()) {
                         Scaffold(
                             bottomBar = {
-                                NavigationBar {
-                                    NavigationBarItem(
-                                        icon = {
-                                            Icon(
-                                                Icons.Default.BarChart,
-                                                contentDescription = null
-                                            )
-                                        },
-                                        label = { Text(stringResource(R.string.balances_title)) },
-                                        selected = tab == Tab.BALANCES,
-                                        onClick = {
-                                            tab = Tab.BALANCES
-                                            if (selectedScope != null) {
-                                                model.transactionManager.selectScope(null)
-                                            }
-                                        }
-                                    )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp, horizontal = 8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
 
+                                    // Left "Action buttons"
                                     TalerActionButton(
                                         demandAttention = !actionButtonUsed,
                                         onShowSheet = {
@@ -377,6 +366,70 @@ class MainFragment: Fragment() {
                                         },
                                     )
 
+                                    // Center Left Navigation Item
+                                    NavigationBarItem(
+                                        icon = {
+                                            Icon(Icons.Default.BarChart, contentDescription = null)
+                                        },
+                                        label = { Text(stringResource(R.string.balances_title)) },
+                                        selected = tab == Tab.BALANCES,
+                                        onClick = {
+                                            tab = Tab.BALANCES
+                                            if (selectedScope != null)
+                                                model.transactionManager.selectScope(null)
+                                        }
+                                    )
+
+                                    // Center Right OIM Mode Button
+                                    val density = LocalDensity.current
+                                    val iconSize = with(density) { (40.sp).toDp() }
+                                    val buttonSize = with(density) { (48.sp).toDp() }
+                                    var enterOimAfterLandscape by remember { mutableStateOf(false)}
+                                    IconButton(
+                                        modifier = Modifier
+                                            .size(buttonSize)
+                                            .background(
+                                                MaterialTheme
+                                                .colorScheme
+                                                .surfaceVariant.copy(alpha = 0.9f),
+                                                CircleShape
+                                            ),
+                                        onClick = {
+                                            val activity = requireActivity() as AppCompatActivity
+                                            if (
+                                                activity
+                                                .resources
+                                                .configuration
+                                                .orientation
+                                                !=
+                                                android
+                                                .content
+                                                .res
+                                                .Configuration
+                                                .ORIENTATION_LANDSCAPE
+                                                )
+                                            {
+                                                enterOimAfterLandscape = true
+                                                activity.requestedOrientation =
+                                                    android
+                                                    .content
+                                                    .pm
+                                                    .ActivityInfo
+                                                    .SCREEN_ORIENTATION_LANDSCAPE
+                                            } else {
+                                                oimScreen = OimScreen.HOME
+                                            }
+                                        }
+                                    ) {
+                                        Icon(
+                                            bitmap = UIIcons("filter").resourceMapper(),
+                                            contentDescription = "Switch to OIM Mode",
+                                            modifier = Modifier.size(iconSize),
+                                            tint = Color.Unspecified
+                                        )
+                                    }
+
+                                    // Right Navigation Item
                                     NavigationBarItem(
                                         icon = {
                                             Icon(
@@ -386,7 +439,7 @@ class MainFragment: Fragment() {
                                         },
                                         label = { Text(stringResource(R.string.menu_settings)) },
                                         selected = tab == Tab.SETTINGS,
-                                        onClick = { tab = Tab.SETTINGS },
+                                        onClick = { tab = Tab.SETTINGS }
                                     )
                                 }
                             },
@@ -436,7 +489,7 @@ class MainFragment: Fragment() {
                                         this@MainFragment.onTransactionClicked(tx)
                                     },
                                     onTransactionsDelete = { txIds ->
-                                        model.transactionManager.deleteTransactions(txIds) { error ->
+                                        model.transactionManager.deleteTransactions(txIds){ error ->
                                             Toast.makeText(
                                                 context,
                                                 error.userFacingMsg,
@@ -449,7 +502,6 @@ class MainFragment: Fragment() {
                                             model.transactionManager.selectScope(null)
                                         }
                                     },
-                                    onSwitchOim = { oimScreen = OimScreen.HOME },
                                 )
                                 Tab.SETTINGS -> SettingsView(
                                     innerPadding = innerPadding,
@@ -457,50 +509,7 @@ class MainFragment: Fragment() {
                                 )
                             }
                         }
-                        // OIM Mode Switch Button - centered at top as overlay
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .statusBarsPadding(),
-                            contentAlignment = Alignment.TopCenter
-                        ) {
-                            val density = LocalDensity.current
-                            val iconSize = with(density) {
-                                // Use relative sizing based on screen density
-                                (40.sp).toDp()
-                            }
-                            val buttonSize = with(density) {
-                                // Button container slightly larger than icon
-                                (48.sp).toDp()
-                            }
 
-                            IconButton(
-                                modifier = Modifier
-                                    .padding(top = 8.dp)
-                                    .size(buttonSize)
-                                    .background(
-                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
-                                        CircleShape
-                                    ),
-                                onClick = {
-                                    oimScreen = OimScreen.HOME
-                                    val activity = (requireActivity() as AppCompatActivity)
-                                    activity.requestedOrientation =
-                                        android
-                                            .content
-                                            .pm
-                                            .ActivityInfo
-                                            .SCREEN_ORIENTATION_LANDSCAPE
-                                }
-                            ) {
-                                Icon(
-                                    bitmap = UIIcons("filter").resourceMapper(),
-                                    contentDescription = "Switch to OIM Mode",
-                                    modifier = Modifier.size(iconSize),
-                                    tint = Color.Unspecified // Use original colors, no tinting
-                                )
-                            }
-                        }
                     }
                 }
 
