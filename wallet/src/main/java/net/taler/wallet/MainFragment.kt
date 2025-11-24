@@ -112,7 +112,7 @@ import net.taler.wallet.transactions.TransactionPayment
 import net.taler.wallet.transactions.TransactionState
 import net.taler.wallet.transactions.TransactionStateFilter.Nonfinal
 import kotlin.math.roundToInt
-import androidx.compose.ui.platform.LocalConfiguration
+import net.taler.wallet.R.id.*
 import androidx.core.view.MenuProvider
 
 /**
@@ -148,7 +148,7 @@ class MainFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val composeView = ComposeView(requireContext()).apply { id = R.id.main_compose_view }
+        val composeView = ComposeView(requireContext()).apply { id = main_compose_view }
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.main_menu, menu)
@@ -156,7 +156,7 @@ class MainFragment: Fragment() {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
-                    R.id.action_settings -> {
+                    action_settings -> {
                         switchToSettings?.invoke()
                         true
                     }
@@ -228,7 +228,7 @@ class MainFragment: Fragment() {
                     val reviewTos: (String) -> Unit = { exchangeBaseUrl ->
                         val bundle = bundleOf("exchangeBaseUrl" to exchangeBaseUrl)
                         findNavController().navigate(
-                            R.id.action_global_reviewExchangeTos,
+                            action_global_reviewExchangeTos,
                             bundle
                         )
                     }
@@ -354,7 +354,6 @@ class MainFragment: Fragment() {
                         null -> { }
                     }
                 } else {
-                    // Standard wallet view - NO TopAppBar, using existing supportActionBar
                     Box(modifier = Modifier.fillMaxSize()) {
                         Scaffold(
                             bottomBar = {
@@ -362,7 +361,7 @@ class MainFragment: Fragment() {
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 4.dp, horizontal = 8.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
 
@@ -391,24 +390,9 @@ class MainFragment: Fragment() {
                                             painter = painterResource(accounting_book),
                                             contentDescription = "Switch to balance view",
                                             modifier = Modifier.size(iconSize),
-                                            tint = if (tab == Tab.BALANCES) {
-                                                MaterialTheme.colorScheme.primary  // Selected color
-                                            } else {
-                                                MaterialTheme.colorScheme.onSurfaceVariant  // Unselected color
-                                            }
+                                            tint = Color.Unspecified
                                         )
                                     }
-//                                    NavigationBarItem(
-//                                        icon = {
-//                                            Icon(Icons.Default.BarChart, contentDescription = null)
-//                                        },
-//                                        selected = tab == Tab.BALANCES,
-//                                        onClick = {
-//                                            tab = Tab.BALANCES
-//                                            if (selectedScope != null)
-//                                                model.transactionManager.selectScope(null)
-//                                        }
-//                                    )
 
                                     // Center -> "Action buttons"
                                     TalerActionButton(
@@ -601,7 +585,7 @@ class MainFragment: Fragment() {
             TransactionState(TransactionMajorState.Dialog) -> when (tx) {
                 is TransactionPayment -> {
                     model.paymentManager.preparePay(tx.transactionId) {
-                        findNavController().navigate(R.id.action_global_promptPayment)
+                        findNavController().navigate(action_global_promptPayment)
                     }
                 }
                 else -> showTxDetails()
@@ -628,25 +612,25 @@ class MainFragment: Fragment() {
     }
 
     /** Navigates to the send funds screen */
-    private fun onSend() { findNavController().navigate(R.id.nav_peer_push) }
+    private fun onSend() { findNavController().navigate(nav_peer_push) }
 
     /** Navigates to the receive funds screen */
-    private fun onReceive() { findNavController().navigate(R.id.nav_peer_pull) }
+    private fun onReceive() { findNavController().navigate(nav_peer_pull) }
 
     /** Navigates to the deposit screen */
-    private fun onDeposit() { findNavController().navigate(R.id.nav_deposit) }
+    private fun onDeposit() { findNavController().navigate(nav_deposit) }
 
     /** Initiates the withdrawal process */
     private fun onWithdraw() {
         model.withdrawManager.resetWithdrawal()
-        findNavController().navigate(R.id.promptWithdraw)
+        findNavController().navigate(promptWithdraw)
     }
 
     /** Launches QR code scanner */
     private fun onScanQr() {model.scanCode()}
 
     /** Navigates to manual URI input screen  */
-    private fun onEnterUri() {findNavController().navigate(R.id.nav_uri_input)}
+    private fun onEnterUri() {findNavController().navigate(nav_uri_input)}
 }
 
 /**
@@ -718,13 +702,13 @@ private fun TalerActionButton(
             ) {
                 if (offsetY.value == 0.0f) {
                     Icon(
-                        painterResource(R.drawable.ic_actions),
+                        painterResource(ic_actions),
                         modifier = Modifier.size(38.dp),
                         contentDescription = stringResource(R.string.actions),
                     )
                 } else {
                     Icon(
-                        painterResource(R.drawable.ic_scan_qr),
+                        painterResource(ic_scan_qr),
                         contentDescription = stringResource(R.string.actions),
                     )
                 }
@@ -784,40 +768,40 @@ fun TalerActionsModal(
                 ),
             ) {
                 GridMenuItem(
-                    icon = R.drawable.ic_link,
+                    icon = ic_link,
                     title = R.string.enter_uri_label,
                     onClick = { onEnterUri(); onDismiss() },
                 )
 
                 GridMenuItem(
-                    icon = R.drawable.transaction_deposit,
+                    icon = transaction_deposit,
                     title = R.string.send_deposit_button_label,
                     onClick = { onDeposit(); onDismiss() },
                     enabled = !disableActions
                 )
 
                 GridMenuItem(
-                    icon = R.drawable.ic_scan_qr,
+                    icon = ic_scan_qr,
                     title = R.string.button_scan_qr_code_label,
                     onClick = { onScanQr(); onDismiss() },
                 )
 
                 GridMenuItem(
-                    icon = R.drawable.transaction_p2p_incoming,
+                    icon = transaction_p2p_incoming,
                     title = R.string.transactions_receive_funds,
                     onClick = { onReceive(); onDismiss() },
                     enabled = !disableActions,
                 )
 
                 GridMenuItem(
-                    icon = R.drawable.transaction_withdrawal,
+                    icon = transaction_withdrawal,
                     title = R.string.withdraw_button_label,
                     onClick = { onWithdraw(); onDismiss() },
                     enabled = !disableActions,
                 )
 
                 GridMenuItem(
-                    icon = R.drawable.transaction_p2p_outgoing,
+                    icon = transaction_p2p_outgoing,
                     title = R.string.transactions_send_funds,
                     onClick = { onSend(); onDismiss() },
                     enabled = !disableActions,
