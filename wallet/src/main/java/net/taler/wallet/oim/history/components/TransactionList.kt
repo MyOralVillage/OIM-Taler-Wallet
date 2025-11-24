@@ -42,7 +42,7 @@ import net.taler.common.R.drawable.outgoing_transaction
 import net.taler.database.data_models.Amount
 import net.taler.database.data_models.FilterableDirection
 import net.taler.database.data_models.TranxPurp
-import net.taler.wallet.oim.components.Bills
+import net.taler.wallet.oim.history.components.Bills
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper // Amount
 import java.time.LocalDate

@@ -1,4 +1,4 @@
-package net.taler.wallet.oim.components
+package net.taler.wallet.oim.history.components
 
 /*
  * This file is part of GNU Taler
@@ -69,7 +69,7 @@ fun Bills(
             BillsResult.Error(e.message ?: "Unknown error")
         }
     }
-    
+
     val effectiveCoinSize = if (billsResult is BillsResult.Success && billsResult.bills.isEmpty()) {
         (coinSize * 1.5).toInt()
     } else {

@@ -71,8 +71,7 @@ fun SendScreen(
         // wood background
         WoodTableBackground(
             modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding(),
+                .fillMaxSize(),
             light = false
         )
 
@@ -92,11 +91,11 @@ fun SendScreen(
         }
 
         // the stack of landed notes in the middle
-        val pileWidthPx = with(density) { 160.dp.toPx() }
-        NotesPile(
-            landedNotes = pile.map { ImageBitmap.imageResource(it) },
-            noteWidthPx = pileWidthPx
-        )
+//        val pileWidthPx = with(density) { 160.dp.toPx() }
+//        NotesPile(
+//            landedNotes = pile.map { ImageBitmap.imageResource(it) },
+//            noteWidthPx = pileWidthPx
+//        )
 
         Column(
             Modifier
@@ -201,7 +200,7 @@ fun SendScreen(
 
             // strip of notes at the bottom
             NotesStrip(
-                noteThumbWidth = 120.dp,
+                noteThumbHeight = 100.dp,
                 notes = noteThumbnails,
                 enabledStates = affordableNotes,
                 onAddRequest = { billAmount, startCenter ->
@@ -221,7 +220,7 @@ fun SendScreen(
 
         // actual flying note
         pending?.let { p ->
-            val widthPx = with(density) { 160.dp.toPx() }
+            val widthPx = with(density) { 115.dp.toPx() }
             NoteFlyer(
                 noteRes = p.bmp,
                 startInRoot = p.start,
@@ -236,5 +235,12 @@ fun SendScreen(
                 },
             )
         }
+
+        val pileWidthPx = with(density) { 115.dp.toPx() }
+        NotesPile(
+            landedNotes = pile.map { ImageBitmap.imageResource(it) },
+            noteWidthPx = pileWidthPx
+        )
+
     }
 }

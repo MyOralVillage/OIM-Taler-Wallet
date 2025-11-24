@@ -13,11 +13,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -29,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
@@ -47,8 +49,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import net.taler.database.data_models.Amount
+import net.taler.wallet.oim.send.components.NotesGalleryOverlay
 import kotlin.math.roundToInt
 import kotlin.random.Random
+import kotlinx.coroutines.launch
 
 /**
  * ## NoteFlyer
@@ -83,15 +87,36 @@ fun NoteFlyer(
     LaunchedEffect(noteRes, startInRoot, endInRoot) {
         x.snapTo(startInRoot.x)
         y.snapTo(startInRoot.y)
-        // Fade in
-        alpha.animateTo(1f, tween(300))
-        // Scale up
-        scale.animateTo(1f, tween(250))
-        // Move to destination
-        x.animateTo(endInRoot.x, tween(500))
-        y.animateTo(endInRoot.y, tween(500))
-        // Fade out
-        alpha.animateTo(0f, tween(300))
+        scale.snapTo(0.5f)  // Start small
+        alpha.snapTo(0f)
+
+        // Fade in smoothly
+        launch {
+            alpha.animateTo(1f, tween(400, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+        }
+
+        // Scale up continuously during the entire flight
+        launch {
+            scale.animateTo(1.0f, tween(800, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+        }
+
+        // Create a curved path by adding a control point
+        val midX = (startInRoot.x + endInRoot.x) / 2f
+        val midY = startInRoot.y - 150f // Arc upward
+
+        // Move to mid point first (creates the curve)
+        launch {
+            x.animateTo(midX, tween(400, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+            x.animateTo(endInRoot.x, tween(400, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+        }
+
+        launch {
+            y.animateTo(midY, tween(400, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+            y.animateTo(endInRoot.y, tween(400, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+        }.join()
+
+        // Fade out smoothly
+        alpha.animateTo(0f, tween(300, easing = androidx.compose.animation.core.FastOutSlowInEasing))
         onArrive()
     }
 
@@ -101,7 +126,7 @@ fun NoteFlyer(
     Image(
         painter = painterResource(noteRes),
         contentDescription = null,
-        contentScale = ContentScale.FillWidth, // Fill width, height follows aspect ratio
+        contentScale = ContentScale.FillWidth,
         modifier = Modifier
             .scale(scale.value)
             .alpha(alpha.value)
@@ -111,7 +136,7 @@ fun NoteFlyer(
                     y.value.roundToInt()
                 )
             }
-            .width(widthDp) // Only constrain width, height is natural
+            .width(widthDp)
     )
 }
 
@@ -121,6 +146,9 @@ fun NoteFlyer(
  * Renders a visually scattered pile of banknotes centered on the screen.
  * Each note is slightly rotated and offset for a natural, layered effect.
  *
+ * When tapped, opens a [NotesGalleryOverlay] showing all notes in a
+ * horizontally scrollable view.
+ *
  * This is typically used alongside [NoteFlyer]. When a flyer animation
  * completes, its bitmap is added to [landedNotes] to appear in the pile.
  *
@@ -128,17 +156,19 @@ fun NoteFlyer(
  * appear at the bottom, later items appear on top.
  *
  * @param landedNotes List of bitmaps representing notes that have landed.
- *                     New notes should be appended to this list when
- *                     flyer animations finish.
- * @param noteWidthPx Width of each note in pixels. Height follows the image's natural aspect ratio.
+ * @param noteWidthPx Width of each note in pixels in pile view.
+ * @param expandedNoteWidth Width of each note in the gallery overlay.
  *
  * @see NoteFlyer for animated flying notes.
+ * @see NotesGalleryOverlay for the popup gallery component.
  */
 @Composable
 fun NotesPile(
     landedNotes: List<ImageBitmap>,
-    noteWidthPx: Float
+    noteWidthPx: Float,
+    expandedNoteWidth: Dp = 180.dp
 ) {
+    var showGallery by remember { mutableStateOf(false) }
     val density = LocalDensity.current
     val wDp = with(density) { noteWidthPx.toDp() }
 
@@ -146,25 +176,44 @@ fun NotesPile(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        // Draw notes bottom-to-top
-        landedNotes.forEachIndexed { i, bmp ->
-            // Stable pseudo-random rotation and offset per note
-            val rot = remember(i) { Random.nextFloat() * 18f - 9f }   // -9..+9 degrees
-            val dx = remember(i) { (Random.nextInt(-10, 10)).dp }     // slight horizontal shift
-            val dy = remember(i) { (Random.nextInt(-6, 6)).dp }       // slight vertical shift
-
-            Image(
-                bitmap = bmp,
-                contentDescription = null,
+        // Pile view - clickable to open gallery
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = BiasAlignment(0f, -0.25f)
+        ) {
+            // Clickable wrapper ONLY around the actual pile
+            Box(
                 modifier = Modifier
-                    .offset(dx, dy)
-                    .width(wDp) // Only constrain width, height is natural
-                    .graphicsLayer {
-                        rotationZ = rot
-                    },
-                contentScale = ContentScale.FillWidth // Fill width, maintain aspect ratio
-            )
+                    .wrapContentSize() // Only as big as the content
+                    .clickable { showGallery = true }
+            ) {
+                // Draw notes bottom-to-top
+                landedNotes.forEachIndexed { i, bmp ->
+                    val rot = remember(i) { Random.nextFloat() * 18f - 9f }
+                    val dx = remember(i) { (Random.nextInt(-10, 10)).dp }
+                    val dy = remember(i) { (Random.nextInt(-3, 9)).dp }
+
+                    Image(
+                        bitmap = bmp,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .offset(dx, dy)
+                            .width(wDp)
+                            .graphicsLayer {
+                                rotationZ = rot
+                            },
+                        contentScale = ContentScale.FillWidth
+                    )
+                }
+            }
         }
+
+        // Gallery overlay
+        NotesGalleryOverlay(
+            isVisible = showGallery,
+            onDismiss = { showGallery = false },
+            bitmaps = landedNotes
+        )
     }
 }
 
@@ -172,26 +221,20 @@ fun NotesPile(
  * ## NotesStrip
  *
  * Horizontally scrollable strip of note thumbnails representing available denominations.
- * Tapping a note triggers a flying animation (via [NoteFlyer]) and updates the total
- * amount. The Undo button removes the most recently added note from the total.
+ * Notes maintain their aspect ratio based on a fixed height.
  *
- * @param noteThumbWidth Width of each note thumbnail (typically 140–180 dp).
+ * @param noteThumbHeight Fixed height of each note thumbnail.
  * @param notes List of pairs of drawable resource IDs and their associated [Amount].
  * @param enabledStates List of booleans indicating whether each note is affordable.
- * @param onAddRequest Callback invoked when a note is tapped; supplies the [Amount]
- *                     and the center position of the thumbnail in root coordinates,
- *                     used to determine the animation start for [NoteFlyer].
- * @param onRemoveLast Callback invoked to remove the last added [Amount] (used by Undo).
- *
- * @see NoteFlyer
- * @see NotesPile
+ * @param onAddRequest Callback invoked when a note is tapped.
+ * @param onRemoveLast Callback invoked to remove the last added [Amount].
  */
 @Composable
 fun NotesStrip(
-    noteThumbWidth: Dp,
+    noteThumbHeight: Dp,
     notes: List<Pair<Int, Amount>>,
-    enabledStates: List<Boolean> = List(notes.size) { true }, // Default all enabled
-    onAddRequest:(Amount, Offset) -> Unit,
+    enabledStates: List<Boolean> = List(notes.size) { true },
+    onAddRequest: (Amount, Offset) -> Unit,
     onRemoveLast: (Amount) -> Unit
 ) {
     val scroll = rememberScrollState()
@@ -200,7 +243,7 @@ fun NotesStrip(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = (noteThumbWidth * 0.75f) + 36.dp)
+            .height(noteThumbHeight + 10.dp)
             .horizontalScroll(scroll)
             .background(
                 color = Color(0x55000000),
@@ -213,7 +256,7 @@ fun NotesStrip(
             val isEnabled = enabledStates.getOrElse(index) { true }
             NoteThumb(
                 res = res,
-                width = noteThumbWidth,
+                height = noteThumbHeight,
                 enabled = isEnabled
             ) { centerInRoot ->
                 if (isEnabled) {
@@ -230,33 +273,32 @@ fun NotesStrip(
  * ## NoteThumb
  *
  * Single note thumbnail displayed in [NotesStrip].
- * Captures its screen center for flying animation origin.
+ * Maintains aspect ratio based on fixed height.
  *
  * @param res Drawable resource ID of the note.
- * @param width Width of the thumbnail in dp.
+ * @param height Fixed height of the thumbnail in dp.
  * @param enabled Whether the note can be tapped (greys out if false).
- * @param onTapWithPos Callback invoked on tap, supplying the center position in root coordinates.
+ * @param onTapWithPos Callback invoked on tap.
  */
 @Composable
 private fun NoteThumb(
     @DrawableRes res: Int,
-    width: Dp,
+    height: Dp,
     enabled: Boolean = true,
     onTapWithPos: (centerInRoot: Offset) -> Unit
 ) {
     var center by remember { mutableStateOf(Offset.Zero) }
 
-    val corner = 16.dp
+    val corner = 8.dp
     val border = 3.dp
 
-    // Greyscale color matrix for disabled state
     val greyMatrix = ColorMatrix().apply {
         setToSaturation(0f)
     }
 
     Card(
         modifier = Modifier
-            .width(width) // Only constrain width
+            .height(height)
             .onGloballyPositioned { lc -> center = lc.boundsInRoot().center }
             .clickable(enabled = enabled) { onTapWithPos(center) }
             .border(
@@ -275,9 +317,9 @@ private fun NoteThumb(
             painter = painterResource(res),
             contentDescription = null,
             modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(), // Let height wrap to content
-            contentScale = ContentScale.FillWidth, // Fill width, maintain aspect ratio
+                .height(height)
+                .wrapContentWidth(),
+            contentScale = ContentScale.FillHeight,
             alpha = if (enabled) 1f else 0.4f,
             colorFilter = if (!enabled) ColorFilter.colorMatrix(greyMatrix) else null
         )

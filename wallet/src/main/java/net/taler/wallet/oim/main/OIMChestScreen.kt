@@ -66,6 +66,7 @@ import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.oim.res_mapping_extensions.Background
 import net.taler.wallet.oim.res_mapping_extensions.UIIcons
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.oim.send.components.StackedNotes
 import net.taler.wallet.systemBarsPaddingBottom
 
 /** Reusable button composable with toggle + delay */
@@ -126,7 +127,7 @@ fun OIMChestScreenContent(
 ) {
     /** Main composable surface for the OIM Chest Screen. */
     TalerSurface {
-        BoxWithConstraints(
+        Box(
             modifier = modifier
                 .fillMaxSize()
                 .systemBarsPaddingBottom()
@@ -235,9 +236,14 @@ fun OIMChestScreenContent(
                     if (amountForNotes != null) {
                         // Only notes/coins visuals; no numbers above/below.
                         Spacer(modifier = Modifier.height(12.dp))
-                        NotesOnTable(
-                            amount = amountForNotes,
-                            onNoteClick = { resId -> selectedNoteResId = resId }
+//                         NotesOnTable(
+//                            amount = amountForNotes,
+//                            onNoteClick = { resId -> selectedNoteResId = resId }
+//                         )
+                        StackedNotes(
+                            noteResIds = amountForNotes.resourceMapper(),
+                            noteHeight = 79.dp,
+                            noteWidth = 115.dp
                         )
                     } else {
                         Spacer(modifier = Modifier.height(16.dp))
