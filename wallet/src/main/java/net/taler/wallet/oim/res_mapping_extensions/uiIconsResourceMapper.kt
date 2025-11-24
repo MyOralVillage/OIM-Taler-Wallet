@@ -38,7 +38,6 @@ import org.apache.commons.text.StringEscapeUtils
  *
  * @property buttonName The name of the button (case-insensitive).
  * @property iso: iso country code
- * **Note:** if mvvm is not passed, chests will default to blank (ie no flag overlay)
  */
 internal class UIIcons(val buttonName: String, val iso: String? = null) {
 
@@ -65,7 +64,7 @@ internal class UIIcons(val buttonName: String, val iso: String? = null) {
      */
     @Composable
     fun resourceMapper(): ImageBitmap =
-        when (this.buttonName.lowercase()) {
+        when (this.buttonName.lowercase().trim()) {
             "send"              -> ImageBitmap.imageResource(send)
             "receive"           -> ImageBitmap.imageResource(receive)
             "tranx_hist"        -> ImageBitmap.imageResource(transaction_history)
@@ -107,6 +106,7 @@ internal class UIIcons(val buttonName: String, val iso: String? = null) {
             // get country code converted to utf8 two letter code
             val cnt =
                 iso
+                    .trim()
                     .uppercase()
                     .map { char -> Character.codePointAt("$char", 0) - 0x41 + 0x1F1E6 }
                     .map { cpnt -> Character.toChars(cpnt) }
