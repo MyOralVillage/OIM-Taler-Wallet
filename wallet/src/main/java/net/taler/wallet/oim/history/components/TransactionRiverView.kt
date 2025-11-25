@@ -64,7 +64,7 @@ fun TransactionHistoryView(
 ) {
     var showRiver by rememberSaveable { mutableStateOf(true) }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize().statusBarsPadding()) {
         if (showRiver) {
             OimRiverTransactionsView(
                 modifier = Modifier.fillMaxSize(),

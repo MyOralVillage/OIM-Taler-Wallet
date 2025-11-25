@@ -73,16 +73,15 @@ private fun mapToBills(amount: Long, bills: List<Pair<Int, Int>>): List<Int> {
 
 // === CHF denominations in half-franc units ===
 val CHF_BILLS = listOf(
-    200_000 to R.drawable.chf_hundred_thousand,
-    40_000  to R.drawable.chf_twenty_thousand,
-    20_000  to R.drawable.chf_ten_thousand,
-    10_000  to R.drawable.chf_five_thousand,
-    4_000   to R.drawable.chf_two_thousand,
-    2_000   to R.drawable.chf_one_thousand,
-    1_000   to R.drawable.chf_five_hundred,
-    400     to R.drawable.chf_two_hundred,
-    200     to R.drawable.chf_one_hundred,
-    2       to R.drawable.chf_one,
+    2_000 to R.drawable.chf_hundred_thousand,
+    400  to R.drawable.chf_twenty_thousand,
+    200  to R.drawable.chf_ten_thousand,
+    100  to R.drawable.chf_five_thousand,
+    40   to R.drawable.chf_two_thousand,
+    20   to R.drawable.chf_one_thousand,
+    10   to R.drawable.chf_five_hundred,
+    4     to R.drawable.chf_two_hundred,
+    2     to R.drawable.chf_one_hundred,
     1       to R.drawable.chf_zero_point_five
 )
 

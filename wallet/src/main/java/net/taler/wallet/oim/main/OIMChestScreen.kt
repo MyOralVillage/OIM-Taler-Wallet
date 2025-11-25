@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -130,7 +131,7 @@ fun OIMChestScreenContent(
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .systemBarsPaddingBottom()
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
         ) {
             val topButtonSize = 75.dp
             val topIconSize = 65.dp
@@ -139,7 +140,7 @@ fun OIMChestScreenContent(
             val historyButtonSize = 70.dp
             val historyIconSize = 60.dp
             val centerContentTopPadding = 60.dp
-            val centerContentBottomPadding = 20.dp
+            val centerContentBottomPadding =20.dp
 
             var selectedNoteResId by remember { mutableStateOf<Int?>(null) }
 
@@ -158,7 +159,6 @@ fun OIMChestScreenContent(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
             ) {
                 /** Top row: Send (left), Chest (center), Receive (right) */
                 Row(
@@ -182,7 +182,7 @@ fun OIMChestScreenContent(
                     // top center "chest open" button; no shade
                     ButtonBox(
                         UIIcons("chest_open").resourceMapper(),
-                        Color.Unspecified,
+                        Color.White,
                         onBackClick,
                         centerButtonSize,
                         centerIconSize

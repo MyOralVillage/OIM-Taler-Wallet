@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -60,11 +61,11 @@ fun OIMHomeScreenContent(
     // OIM mode only valid in portrait -> scale to 75% of width
     val configuration = LocalWindowInfo.current
     val width = configuration.containerSize.width
-    val chestSize = (width * 0.75f).dp
+    val chestSize = (width * 0.5f).dp
 
     TalerSurface {
         Box(
-            modifier = modifier.fillMaxSize()
+            modifier = modifier.fillMaxSize().statusBarsPadding()
         ) {
             // Background
             Image(
@@ -75,14 +76,14 @@ fun OIMHomeScreenContent(
             )
 
             // Top white bar
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp) // typical top bar height
-                    .background(Color.White)
-                    .align(Alignment.TopCenter)
-                    .windowInsetsPadding(WindowInsets.statusBars)
-            )
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(56.dp) // typical top bar height
+//                    .background(Color.White)
+//                    .align(Alignment.TopCenter)
+//                    .windowInsetsPadding(WindowInsets.statusBars)
+//            )
 
             // Content layer
             Box(

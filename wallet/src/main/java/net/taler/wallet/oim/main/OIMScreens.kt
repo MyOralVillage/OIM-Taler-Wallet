@@ -53,9 +53,9 @@
  import net.taler.wallet.peer.IncomingTerms
  import net.taler.wallet.peer.IncomingTosReview
  import net.taler.wallet.systemBarsPaddingBottom
- 
+
  private const val TAG = "OIMCompose"
- 
+
  @Stable
  data class OimReceiveFlowState(
      val launchReceiveScan: () -> Unit,
@@ -63,7 +63,7 @@
      val confirmTerms: (IncomingTerms) -> Unit,
      val rejectTerms: (IncomingTerms) -> Unit,
  )
- 
+
  @Composable
  internal fun rememberOimReceiveFlowState(
      model: MainViewModel,
@@ -72,22 +72,22 @@
  ): OimReceiveFlowState {
      val context = LocalContext.current
      val peerManager = model.peerManager
- 
+
      val barcodeLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
          if (result == null || result.contents == null) return@rememberLauncherForActivityResult
          val scannedUri = result.contents
          Log.d(TAG, "Scanned URI: $scannedUri")
          peerManager.preparePeerPushCredit(scannedUri)
      }
- 
+
      var lastTerms: IncomingTerms? by remember { mutableStateOf(null) }
      val paymentState by peerManager.incomingPushState.collectAsStateLifecycleAware()
- 
+
      val exchanges by model.exchangeManager.exchanges.observeAsState(emptyList())
      LaunchedEffect(exchanges) {
          model.peerManager.refreshPeerPushCreditTos(exchanges)
      }
- 
+
      LaunchedEffect(paymentState) {
          when (val state = paymentState) {
              is IncomingTerms -> if (state !is IncomingAccepting) {
@@ -114,7 +114,7 @@
                              TranxHistory.initTest(appCtx)
                          else TranxHistory.initTest(appCtx)
                      }
- 
+
                      runCatching {
                          TranxHistory.newTransaction(
                              tid = "RECEIVED_${System.currentTimeMillis()}",
@@ -149,12 +149,12 @@
              else -> Unit
          }
      }
- 
+
      val dialogTerms = when (val state = paymentState) {
          is IncomingTerms -> if (state is IncomingAccepting) null else state
          else -> null
      }
- 
+
      val launchReceiveScan = remember(barcodeLauncher) {
          {
              val scanOptions = ScanOptions().apply {
@@ -167,7 +167,7 @@
              barcodeLauncher.launch(scanOptions)
          }
      }
- 
+
      val confirmTerms = remember(onReviewTos, peerManager) {
          { terms: IncomingTerms ->
              if (terms is IncomingTosReview) {
@@ -177,14 +177,14 @@
              }
          }
      }
- 
+
      val rejectTerms = remember(peerManager, context) {
          { terms: IncomingTerms ->
              Toast.makeText(context, "Payment rejected", Toast.LENGTH_SHORT).show()
              peerManager.rejectPeerPushCredit(terms)
          }
      }
- 
+
      return OimReceiveFlowState(
          launchReceiveScan = launchReceiveScan,
          dialogTerms = dialogTerms,
@@ -192,7 +192,7 @@
          rejectTerms = rejectTerms,
      )
  }
- 
+
  /**
   * Entry point for rendering the OIM home experience inside the main Compose navigator.
   *
@@ -217,18 +217,17 @@
          onReviewTos = onReviewTos,
          showDevToasts = showDevToasts,
      )
- 
+
      // UI with dialog overlay when terms are available (not accepting)
      Box(modifier = modifier.fillMaxSize()) {
          OIMHomeScreenContent(
              modifier = Modifier
-                 .fillMaxSize()
-                 .systemBarsPaddingBottom(),
+                 .fillMaxSize(),
              onScanQrClick = receiveFlow.launchReceiveScan,
              onChestClick = onNavigateToChest,
              onBackToTalerClick = onBackToTaler,
          )
- 
+
          val terms = receiveFlow.dialogTerms
          if (terms != null) {
              Box(
@@ -246,7 +245,7 @@
          }
      }
  }
- 
+
  /**
   * Entry point for the OIM chest screen that wires the view model state to the
   * stateless [OIMChestScreenContent].
@@ -282,9 +281,9 @@
          )
      }
  }
- 
+
  // --- Helpers ---
- 
+
  /** Validates that the supplied URI represents an OIM peer push request. */
  private fun validateIncomingPushUri(uri: String): Boolean {
      return try {
@@ -302,4 +301,3 @@
          false
      }
  }
- 
