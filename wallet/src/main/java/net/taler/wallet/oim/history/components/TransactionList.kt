@@ -88,13 +88,29 @@ fun TransactionCard(
                 val year = parsedDate.year.toString()
 
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     DatePill(icon = "☀️", value = day)
+
+                    Text(
+                        text = " / ",
+                        fontSize = 16.sp,
+                        color = Color.DarkGray,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+
                     DatePill(icon = "🌙", value = month)
+
+                    Text(
+                        text = " / ",
+                        fontSize = 16.sp,
+                        color = Color.DarkGray,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+
                     DatePill(icon = "⭐", value = year)
                 }
+
             } else {
                 // fallback if parsing fails
                 Text(
