@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -37,7 +38,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,6 +57,7 @@ import java.util.Locale
 import net.taler.wallet.oim.res_mapping_extensions.UIIcons
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 import net.taler.wallet.peer.IncomingTerms
+import net.taler.database.data_models.tranxPurpLookup
  
  private const val TAG = "OIMPaymentDialog"
  
@@ -120,132 +127,141 @@ private fun OIMPaymentDialogContent(
 ) {
      val currencyDisplayName = currencyDisplayName(currencyCode)
      val isKudosCurrency = isKudosCurrency(currencyCode)
- 
-     Card(
-         modifier = modifier
-             .fillMaxWidth(0.95f)
-             .wrapContentHeight(),
-         shape = RoundedCornerShape(16.dp),
-         colors = CardDefaults.cardColors(
-             containerColor = Color.White
-         ),
-         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-     ) {
-         Column(
+     
+     // State for single note preview
+     var selectedNoteResId by remember { mutableStateOf<Int?>(null) }
+
+     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+         Card(
              modifier = Modifier
-                 .fillMaxWidth()
-                 .padding(24.dp),
-             horizontalAlignment = Alignment.CenterHorizontally,
-             verticalArrangement = Arrangement.spacedBy(16.dp)
+                 .fillMaxWidth(0.95f)
+                 .wrapContentHeight(),
+             shape = RoundedCornerShape(16.dp),
+             colors = CardDefaults.cardColors(
+                 containerColor = Color.White
+             ),
+             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
          ) {
-             Text(
-                 text = "You have received $amountText $currencyDisplayName",
-                 fontSize = 20.sp,
-                 fontWeight = FontWeight.Bold,
-                 textAlign = TextAlign.Center,
-                 color = Color.Black
-             )
- 
-             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                when {
-                    banknoteDrawableIds.isEmpty() -> {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f, fill = false)
-                                .height(80.dp)
-                                .background(Color(0xFFECECEC), shape = RoundedCornerShape(8.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Artwork unavailable",
-                                fontSize = 13.sp,
-                                textAlign = TextAlign.Center,
-                                color = Color.DarkGray
-                            )
-                        }
-                    }
-                    else -> {
-                        LazyRow(
-                            modifier = Modifier
-                                .weight(1f, fill = false)
-                                .height(80.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            items(banknoteDrawableIds) { drawableId ->
-                                Image(
-                                    painter = painterResource(id = drawableId),
-                                    contentDescription = "Currency banknote",
-                                    modifier = Modifier
-                                        .width(120.dp)
-                                        .height(80.dp),
-                                    contentScale = ContentScale.Fit
+             Column(
+                 modifier = Modifier
+                     .fillMaxWidth()
+                     .padding(24.dp),
+                 horizontalAlignment = Alignment.CenterHorizontally,
+                 verticalArrangement = Arrangement.spacedBy(16.dp)
+             ) {
+
+                 Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    when {
+                        banknoteDrawableIds.isEmpty() -> {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f, fill = false)
+                                    .height(80.dp)
+                                    .background(Color(0xFFECECEC), shape = RoundedCornerShape(8.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Artwork unavailable",
+                                    fontSize = 13.sp,
+                                    textAlign = TextAlign.Center,
+                                    color = Color.DarkGray
                                 )
                             }
                         }
+                        else -> {
+                            LazyRow(
+                                modifier = Modifier
+                                    .weight(1f, fill = false)
+                                    .height(80.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                items(banknoteDrawableIds) { drawableId ->
+                                    Image(
+                                        painter = painterResource(id = drawableId),
+                                        contentDescription = "Currency banknote",
+                                        modifier = Modifier
+                                            .width(120.dp)
+                                            .height(80.dp)
+                                            .clickable { selectedNoteResId = drawableId }, // Click to preview
+                                        contentScale = ContentScale.Fit
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Image(
+                        bitmap = UIIcons("greenarrowright").resourceMapper(),
+                        contentDescription = "Payment transfer arrow",
+                        modifier = Modifier.size(40.dp)
+                    )
+
+                    Image(
+                        bitmap  = UIIcons("incoming_transaction").resourceMapper(),
+                        contentDescription = "Incoming transaction",
+                        modifier = Modifier.size(80.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+ 
+                val purpose = tranxPurpLookup[summary]
+                if (purpose != null) {
+                    Image(
+                        painter = painterResource(id = purpose.resourceMapper()),
+                        contentDescription = summary,
+                        modifier = Modifier.size(64.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+ 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Spacer(modifier = Modifier.size(60.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clickable { onAccept() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            bitmap  = UIIcons("greencheckmark").resourceMapper(),
+                            contentDescription = "Accept payment",
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clickable { onReject() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            bitmap = UIIcons("redcross").resourceMapper(),
+                            contentDescription = "Reject payment",
+                            modifier = Modifier.size(40.dp)
+                        )
                     }
                 }
-
-                Image(
-                    bitmap = UIIcons("greenarrowright").resourceMapper(),
-                    contentDescription = "Payment transfer arrow",
-                    modifier = Modifier.size(40.dp)
-                )
-
-                Image(
-                    bitmap  = UIIcons("incoming_transaction").resourceMapper(),
-                    contentDescription = "Incoming transaction",
-                    modifier = Modifier.size(80.dp),
-                    contentScale = ContentScale.Fit
-                )
             }
- 
-             if (summary.isNotBlank()) {
-                 Text(
-                     text = summary,
-                     fontSize = 14.sp,
-                     textAlign = TextAlign.Center,
-                     color = Color.Gray
-                 )
-             }
- 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Spacer(modifier = Modifier.size(60.dp))
-
-                Box(
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clickable { onAccept() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        bitmap  = UIIcons("greencheckmark").resourceMapper(),
-                        contentDescription = "Accept payment",
-                        modifier = Modifier.size(40.dp)
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clickable { onReject() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        bitmap = UIIcons("redcross").resourceMapper(),
-                        contentDescription = "Reject payment",
-                        modifier = Modifier.size(40.dp)
-                    )
-                }
-            }
+        }
+        
+        // Single Note Preview Overlay
+        // Single Note Preview Overlay
+        if (selectedNoteResId != null) {
+            net.taler.wallet.oim.main.components.NotePreviewOverlay(
+                noteResId = selectedNoteResId!!,
+                onDismiss = { selectedNoteResId = null }
+            )
         }
     }
 }

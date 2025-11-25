@@ -36,11 +36,12 @@ fun StackedNotes(
     expandedGap: Dp = 2.dp,
     rowGap: Dp = 2.dp,
     notesPerRow: Int = 5,
-    animationDurationMs: Int = 400
+    animationDurationMs: Int = 400,
+    expanded: Boolean = false,
+    onClick: () -> Unit = {}
 ) {
     if (noteResIds.isEmpty()) return
 
-    var isExpanded by remember { mutableStateOf(false) }
     val density = LocalDensity.current
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -58,19 +59,19 @@ fun StackedNotes(
 
     // Animate container size
     val animatedWidth by animateDpAsState(
-        targetValue = if (isExpanded) expandedWidth else stackedWidth,
+        targetValue = if (expanded) expandedWidth else stackedWidth,
         animationSpec = tween(durationMillis = animationDurationMs),
         label = "containerWidth"
     )
     val animatedHeight by animateDpAsState(
-        targetValue = if (isExpanded) expandedHeight else stackedHeight,
+        targetValue = if (expanded) expandedHeight else stackedHeight,
         animationSpec = tween(durationMillis = animationDurationMs),
         label = "containerHeight"
     )
 
     // Single progress value for all notes
     val animationProgress by animateFloatAsState(
-        targetValue = if (isExpanded) 1f else 0f,
+        targetValue = if (expanded) 1f else 0f,
         animationSpec = tween(durationMillis = animationDurationMs),
         label = "expansionProgress"
     )
@@ -89,7 +90,7 @@ fun StackedNotes(
             .clickable(
                 indication = null,
                 interactionSource = interactionSource
-            ) { isExpanded = !isExpanded },
+            ) { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Box(
@@ -173,99 +174,6 @@ private fun StackedNotesPreview() {
             stackOffsetY = 8.dp,
             noteWidth = 120.dp,
             noteHeight = 60.dp
-        )
-    }
-}
-
-@Preview(
-    name = "Stacked Notes - 7 Notes (2 rows)",
-    showBackground = true,
-    backgroundColor = 0xFF8B7355,
-    widthDp = 500,
-    heightDp = 300
-)
-@Composable
-private fun StackedNotesTwoRowsPreview() {
-    val notes = listOf(
-        R.drawable.sle_one_hundred,
-        R.drawable.sle_forty,
-        R.drawable.sle_twenty,
-        R.drawable.sle_ten,
-        R.drawable.sle_five,
-        R.drawable.sle_two,
-        R.drawable.sle_one
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        StackedNotes(
-            noteResIds = notes,
-            stackOffsetX = 10.dp,
-            stackOffsetY = 6.dp,
-            noteWidth = 80.dp,
-            noteHeight = 40.dp,
-            expandedGap = 8.dp,
-            rowGap = 12.dp,
-            notesPerRow = 5
-        )
-    }
-}
-
-@Preview(
-    name = "Stacked Notes - 12 Notes (3 rows)",
-    showBackground = true,
-    backgroundColor = 0xFF8B7355,
-    widthDp = 500,
-    heightDp = 350
-)
-@Composable
-private fun StackedNotesThreeRowsPreview() {
-    val notes = listOf(
-        R.drawable.sle_one_hundred,
-        R.drawable.sle_forty,
-        R.drawable.sle_twenty,
-        R.drawable.sle_ten,
-        R.drawable.sle_five,
-        R.drawable.sle_two,
-        R.drawable.sle_one,
-        R.drawable.sle_zero_point_five,
-        R.drawable.sle_zero_point_twenty_five,
-        R.drawable.sle_zero_point_one,
-        R.drawable.sle_zero_point_zero_five,
-        R.drawable.sle_zero_point_zero_one
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        StackedNotes(
-            noteResIds = notes,
-            stackOffsetX = 6.dp,
-            stackOffsetY = 4.dp,
-            noteWidth = 70.dp,
-            noteHeight = 35.dp,
-            expandedGap = 6.dp,
-            rowGap = 10.dp,
-            notesPerRow = 5
-        )
-    }
-}
-
-@Preview(name = "Single Note", showBackground = true, backgroundColor = 0xFF8B7355)
-@Composable
-private fun SingleNotePreview() {
-    Box(modifier = Modifier.padding(16.dp)) {
-        StackedNotes(
-            noteResIds = listOf(R.drawable.sle_twenty),
-            noteWidth = 140.dp,
-            noteHeight = 70.dp
         )
     }
 }

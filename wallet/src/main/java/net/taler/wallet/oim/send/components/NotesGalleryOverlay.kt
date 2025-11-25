@@ -61,6 +61,7 @@ import androidx.compose.animation.core.tween
  * @param cardMaxWidth Maximum width of the popup card
  * @param noteSpacing Spacing between notes in the gallery
  * @param backgroundAlpha Alpha value for the semi-transparent background (0f-1f)
+ * @param useDynamicSizing Whether to adapt columns and height based on item count
  */
 @Composable
 fun NotesGalleryOverlay(
@@ -72,7 +73,8 @@ fun NotesGalleryOverlay(
     notesPerRow: Int = 4,
     cardMaxWidth: Dp = 700.dp,
     noteSpacing: Dp = 8.dp,
-    backgroundAlpha: Float = 0.5f
+    backgroundAlpha: Float = 0.5f,
+    useDynamicSizing: Boolean = true
 ) {
 
     val overlayAlpha by animateFloatAsState(
@@ -92,6 +94,21 @@ fun NotesGalleryOverlay(
         ),
         label = "cardScale"
     )
+
+    // Dynamic sizing logic
+    val itemCount = bitmaps.size + drawableResIds.size
+    val (dynamicColumns, dynamicHeight) = if (useDynamicSizing) {
+        when (itemCount) {
+            1 -> 1 to 250.dp
+            2 -> 2 to 180.dp
+            3 -> 3 to 140.dp
+            4 -> 2 to 140.dp // 2x2 grid
+            5, 6 -> 3 to 120.dp
+            else -> 4 to 100.dp // Default for 7+
+        }
+    } else {
+        notesPerRow to noteHeight
+    }
 
     // Only render when visible or animating out
     if (overlayAlpha > 0f) {
@@ -113,7 +130,8 @@ fun NotesGalleryOverlay(
                 modifier = Modifier
                     .widthIn(max = cardMaxWidth)
                     .fillMaxWidth(0.95f)
-                    .fillMaxHeight(0.8f)
+                    .wrapContentHeight() // Allow height to adapt
+                    .heightIn(max = 600.dp) // Cap max height
                     .alpha(overlayAlpha)
                     .graphicsLayer {
                         scaleX = cardScale
@@ -124,7 +142,7 @@ fun NotesGalleryOverlay(
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Column(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.wrapContentSize()
                 ) {
                     // Top row with close button
                     Row(
@@ -149,9 +167,10 @@ fun NotesGalleryOverlay(
 
                     // Content: vertical scrollable grid of notes
                     LazyVerticalGrid(
-                        columns = GridCells.Fixed(notesPerRow),
+                        columns = GridCells.Fixed(dynamicColumns),
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxWidth()
+                            .wrapContentHeight() // Adapt height to content
                             .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
                         horizontalArrangement = Arrangement.spacedBy(noteSpacing),
                         verticalArrangement = Arrangement.spacedBy(noteSpacing)
@@ -163,7 +182,7 @@ fun NotesGalleryOverlay(
                                     bitmap = bitmap,
                                     index = index,
                                     isVisible = isVisible,
-                                    noteHeight = noteHeight
+                                    noteHeight = dynamicHeight
                                 )
                             }
                         }
@@ -175,7 +194,7 @@ fun NotesGalleryOverlay(
                                     drawableResId = resId,
                                     index = index,
                                     isVisible = isVisible,
-                                    noteHeight = noteHeight
+                                    noteHeight = dynamicHeight
                                 )
                             }
                         }

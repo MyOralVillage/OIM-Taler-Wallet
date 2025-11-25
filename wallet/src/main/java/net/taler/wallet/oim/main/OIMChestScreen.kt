@@ -69,6 +69,8 @@ import net.taler.wallet.oim.res_mapping_extensions.UIIcons
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 import net.taler.wallet.oim.send.components.StackedNotes
 import net.taler.wallet.systemBarsPaddingBottom
+import net.taler.wallet.oim.main.components.NotePreviewOverlay
+import net.taler.wallet.oim.send.components.NotesGalleryOverlay
 
 /** Reusable button composable with toggle + delay */
 @Composable
@@ -143,9 +145,41 @@ fun OIMChestScreenContent(
             val centerContentBottomPadding =20.dp
 
             var selectedNoteResId by remember { mutableStateOf<Int?>(null) }
+            var isStackExpanded by remember { mutableStateOf(false) }
+            var showStackPreview by remember { mutableStateOf(false) }
+            val scope = rememberCoroutineScope()
 
-            BackHandler(enabled = selectedNoteResId != null) {
-                selectedNoteResId = null
+            val selectedBalance = when (balanceState) {
+                is BalanceState.Success -> {
+                    balanceState.balances.firstOrNull { it.currency == "KUDOS" }
+                        ?: balanceState.balances.firstOrNull { it.currency == "TESTKUDOS" }
+                        ?: balanceState.balances.firstOrNull()
+                }
+                else -> null
+            }
+
+            // Show banknotes/coins for the current balance using ResourceMapper.
+            // Treat KUDOS/TESTKUDOS as SLE for visuals.
+            val amountForNotes = remember(selectedBalance) {
+                val a = selectedBalance?.available
+                if (a != null) {
+                    when (selectedBalance.currency) {
+                        "KUDOS", "TESTKUDOS", "KUD" -> a.withCurrency("SLE")
+                        else -> a
+                    }
+                } else null
+            }
+
+            BackHandler(enabled = selectedNoteResId != null || showStackPreview) {
+                if (showStackPreview) {
+                    showStackPreview = false
+                    scope.launch {
+                        delay(200)
+                        isStackExpanded = false
+                    }
+                } else {
+                    selectedNoteResId = null
+                }
             }
 
             /** Wooden background — this should be the ONLY background layer. */
@@ -212,26 +246,7 @@ fun OIMChestScreenContent(
                         ),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val selectedBalance = when (balanceState) {
-                        is BalanceState.Success -> {
-                            balanceState.balances.firstOrNull { it.currency == "KUDOS" }
-                                ?: balanceState.balances.firstOrNull { it.currency == "TESTKUDOS" }
-                                ?: balanceState.balances.firstOrNull()
-                        }
-                        else -> null
-                    }
 
-                    // Show banknotes/coins for the current balance using ResourceMapper.
-                    // Treat KUDOS/TESTKUDOS as SLE for visuals.
-                    val amountForNotes = remember(selectedBalance) {
-                        val a = selectedBalance?.available
-                        if (a != null) {
-                            when (selectedBalance.currency) {
-                                "KUDOS", "TESTKUDOS", "KUD" -> a.withCurrency("SLE")
-                                else -> a
-                            }
-                        } else null
-                    }
 
                     if (amountForNotes != null) {
                         // Only notes/coins visuals; no numbers above/below.
@@ -243,7 +258,17 @@ fun OIMChestScreenContent(
                         StackedNotes(
                             noteResIds = amountForNotes.resourceMapper(),
                             noteHeight = 79.dp,
-                            noteWidth = 115.dp
+                            noteWidth = 115.dp,
+                            expanded = isStackExpanded,
+                            onClick = {
+                                if (!isStackExpanded) {
+                                    isStackExpanded = true
+                                    scope.launch {
+                                        delay(400) // Wait for unstack animation
+                                        showStackPreview = true
+                                    }
+                                }
+                            }
                         )
                     } else {
                         Spacer(modifier = Modifier.height(16.dp))
@@ -296,41 +321,59 @@ fun OIMChestScreenContent(
             }
 
             // Full-screen preview overlay
+            // Full-screen preview overlay
             if (selectedNoteResId != null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.7f))
-                        .clickable { selectedNoteResId = null },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = selectedNoteResId!!),
-                        contentDescription = "Expanded banknote",
-                        modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .wrapContentHeight(),
-                        contentScale = ContentScale.Fit
-                    )
-
-                    // Close button
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(32.dp)
-                            .size(48.dp)
-                            .background(Color.White.copy(alpha = 0.3f), CircleShape)
-                            .clickable { selectedNoteResId = null },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            bitmap = UIIcons("redcross").resourceMapper(),
-                            contentDescription = "Close",
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
+                NotePreviewOverlay(
+                    noteResId = selectedNoteResId!!,
+                    onDismiss = { selectedNoteResId = null }
+                )
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .background(Color.Black.copy(alpha = 0.7f))
+//                        .clickable { selectedNoteResId = null },
+//                    contentAlignment = Alignment.Center
+//                ) {
+//                    Image(
+//                        painter = painterResource(id = selectedNoteResId!!),
+//                        contentDescription = "Expanded banknote",
+//                        modifier = Modifier
+//                            .fillMaxWidth(0.8f)
+//                            .wrapContentHeight(),
+//                        contentScale = ContentScale.Fit
+//                    )
+//
+//                    // Close button
+//                    Box(
+//                        modifier = Modifier
+//                            .align(Alignment.TopEnd)
+//                            .padding(32.dp)
+//                            .size(48.dp)
+//                            .background(Color.White.copy(alpha = 0.3f), CircleShape)
+//                            .clickable { selectedNoteResId = null },
+//                        contentAlignment = Alignment.Center
+//                    ) {
+//                        Image(
+//                            bitmap = UIIcons("redcross").resourceMapper(),
+//                            contentDescription = "Close",
+//                            modifier = Modifier.size(24.dp)
+//                        )
+//                    }
+//                }
             }
+
+            NotesGalleryOverlay(
+                isVisible = showStackPreview,
+                onDismiss = {
+                    showStackPreview = false
+                    scope.launch {
+                        delay(200)
+                        isStackExpanded = false
+                    }
+                },
+                drawableResIds = amountForNotes?.resourceMapper() ?: emptyList(),
+                noteHeight = 115.dp
+            )
         }
     }
 }
