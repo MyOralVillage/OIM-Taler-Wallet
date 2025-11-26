@@ -26,6 +26,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,13 +35,20 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.taler.common.R.drawable.incoming_transaction
 import net.taler.common.R.drawable.outgoing_transaction
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.EDUC_CLTH
 import net.taler.database.data_models.FilterableDirection
 import net.taler.database.data_models.TranxPurp
+import net.taler.wallet.oim.history.components.Bills
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.oim.res_mapping_extensions.resourceMapper // Amount
+import net.taler.wallet.oim.send.components.ColumnNotes
+import java.time.LocalDate
 
 @Composable
 fun TransactionCard(
@@ -49,9 +57,9 @@ fun TransactionCard(
     date: String,
     purpose: TranxPurp?,
     modifier: Modifier = Modifier,
-    dir: FilterableDirection
+    dir: FilterableDirection,
+    displayAmount: Amount
 ) {
-    // Define variables that differ based on type
     val badgeColor =
         if (dir.getValue()) Color(0xFFE8F5E9)
         else Color(0xFFFFB3B3)
@@ -59,33 +67,65 @@ fun TransactionCard(
         if (dir.getValue()) Color(0xFF4CAF50)
         else Color(0xFFC32909)
 
+    // Parse date "yyyy-MM-dd" -> year / month / day
+    val parsedDate = remember(date) {
+        runCatching { LocalDate.parse(date) }.getOrNull()
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Date
-            Text(
-                text = date,
-                fontSize = 18.sp,
-                color = Color.Gray
-            )
+            if (parsedDate != null) {
+                val day = parsedDate.dayOfMonth.toString().padStart(2, '0')
+                val month = parsedDate.monthValue.toString().padStart(2, '0')
+                val year = parsedDate.year.toString()
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    DatePill(icon = "☀️", value = day)
+
+                    Text(
+                        text = " / ",
+                        fontSize = 16.sp,
+                        color = Color.DarkGray,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+
+                    DatePill(icon = "🌙", value = month)
+
+                    Text(
+                        text = " / ",
+                        fontSize = 16.sp,
+                        color = Color.DarkGray,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+
+                    DatePill(icon = "⭐", value = year)
+                }
+
+            } else {
+                // fallback if parsing fails
+                Text(
+                    text = date,
+                    fontSize = 18.sp,
+                    color = Color.Gray
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Icons and Amount
+            // Icons and Amount (unchanged)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -98,7 +138,6 @@ fun TransactionCard(
                     tint = Color.Unspecified
                 )
 
-
                 if (purpose != null) {
                     Icon(
                         painter = painterResource(purpose.resourceMapper()),
@@ -108,7 +147,6 @@ fun TransactionCard(
                     )
                 }
 
-                // Amount Badge
                 Box(
                     modifier = Modifier
                         .background(
@@ -135,6 +173,64 @@ fun TransactionCard(
                     }
                 }
             }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 20.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                    ColumnNotes(
+                        amount = displayAmount,
+                        stackOffsetX = 8.dp,
+                        stackOffsetY = 8.dp,
+                        stackGap = 2.dp,
+                        noteWidth = 115.dp,
+                        noteHeight = 80.dp,
+                        rowGap = 4.dp,
+                        stacksPerRow = 4
+                    )
+            }
         }
     }
+}
+
+
+@Composable
+private fun DatePill(icon: String, value: String) {
+    Box(
+        modifier = Modifier
+            .background(
+                color = Color(0xFFF5F5F5),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(text = icon, fontSize = 14.sp)
+            Text(text = value, fontSize = 14.sp, color = Color.DarkGray)
+        }
+    }
+}
+
+@Preview(
+    showBackground = true,
+    showSystemUi = false,
+    name = "Transaction List View Preview",
+    device = "spec:width=411dp,height=891dp,orientation=landscape"
+)
+@Composable
+fun TransactionCardPreview(){
+    TransactionCard(
+        amount = "35",
+        currency = "SLE",
+        date = "2025-11-25",
+        purpose = EDUC_CLTH,
+        dir = FilterableDirection.INCOMING,
+        displayAmount = Amount(
+            currency = "SLE",
+            value = 20,
+            fraction = 0
+        )
+    )
 }

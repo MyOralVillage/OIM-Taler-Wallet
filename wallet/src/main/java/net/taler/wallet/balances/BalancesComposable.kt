@@ -82,7 +82,6 @@
      onTransactionClicked: (tx: Transaction) -> Unit,
      onTransactionsDelete: (txIds: List<String>) -> Unit,
      onShowBalancesClicked: () -> Unit,
-     onSwitchOim: (() -> Unit)? = null,
  ) {
      when (state) {
          is BalanceState.None -> {}
@@ -96,21 +95,6 @@
                          .fillMaxSize(),
                      contentPadding = innerPadding,
                  ) {
-                     if (onSwitchOim != null) {
-                         item {
-                             Text(
-                                 text = "Switch OIM",
-                                 modifier = Modifier
-                                     .fillMaxWidth()
-                                     .clickable { onSwitchOim() }
-                                     .padding(16.dp)
-                                     .background(Color.Blue.copy(alpha = 0.1f))
-                                     .padding(8.dp),
-                                 color = Color.Blue,
-                                 textAlign = TextAlign.Center,
-                             )
-                         }
-                     }
                      items(state.balances, key = { it.scopeInfo.hashCode() }) { balance ->
                          BalanceRow(balance,
                              onClick = { onBalanceClicked(balance) },

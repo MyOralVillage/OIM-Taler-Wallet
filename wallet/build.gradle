@@ -1,20 +1,11 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-<<<<<<< HEAD
     id("com.android.application")
     id("kotlin-android")
     id("kotlinx-serialization")
     id("com.google.protobuf") version "0.9.4"
     id("org.jetbrains.kotlin.plugin.compose") version "$kotlin_version"
-=======
-    // Core Android + Kotlin plugins
-    id "com.android.application"
-    id "org.jetbrains.kotlin.android"                           // replaces old 'kotlin-android'
-    id 'org.jetbrains.kotlin.plugin.compose' version '2.2.20'   // required for Compose + Kotlin 2.0+
-    id "org.jetbrains.kotlin.plugin.serialization"              // replaces 'kotlinx-serialization'
-    id "com.google.protobuf" version "0.9.5"                    // for DataStore / proto serialization
->>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
 }
 
 def qtart_version = "1.0.34"
@@ -39,25 +30,17 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId "net.taler.wallet"
-<<<<<<< HEAD
+        applicationId "net.taler.wallet.oim"
         minSdkVersion 26
         targetSdkVersion 35
-        versionCode 68
+        versionCode 1
         versionName "OIM-v0.1.0-tʋɩɩse"
-=======
-        minSdk = 24
-        targetSdk = 36
-        versionCode 49
-        versionName "0.14.0"
->>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
 
     buildTypes {
         release {
-<<<<<<< HEAD
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -69,27 +52,6 @@ android {
     }
 
     flavorDimensions = ["distributionChannel"]
-=======
-            // Enable R8 optimization only for release builds
-            minifyEnabled = true
-            proguardFiles(
-                    getDefaultProguardFile('proguard-android-optimize.txt'),
-                    'proguard-rules.pro'
-            )
-        }
-        debug {
-            // Disable minification for debug; avoids pointless obfuscation warnings
-            minifyEnabled = false
-            proguardFiles(
-                    getDefaultProguardFile('proguard-android-optimize.txt'),
-                    'proguard-rules.pro'
-            )
-        }
-    }
-
-    // Distinguishes multiple release channels (Play, F-Droid, Nightly)
-    flavorDimensions += "distributionChannel"
->>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
     productFlavors {
         fdroid {
             dimension "distributionChannel"
@@ -102,17 +64,12 @@ android {
             dimension "distributionChannel"
             applicationIdSuffix ".nightly"
             versionCode versionCodeEpoch()
-<<<<<<< HEAD
             versionNameSuffix " (${gitCommit()})"
-=======
-            versionNameSuffix " (${gitCommit})"
->>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
         }
     }
 
     // Use Java 17 bytecode and enable desugaring for new APIs
     compileOptions {
-<<<<<<< HEAD
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
         coreLibraryDesugaringEnabled true
@@ -128,26 +85,6 @@ android {
     }
 
     packagingOptions {
-=======
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-        coreLibraryDesugaringEnabled = true
-    }
-
-    // Modern Kotlin DSL for toolchain setup
-    kotlin {
-        jvmToolchain(17)
-    }
-
-    buildFeatures {
-        buildConfig = true
-        viewBinding = true
-        compose = true       // Jetpack Compose enabled
-    }
-
-    // Handle native libs and resource exclusions
-    packaging {
->>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
         jniLibs {
             useLegacyPackaging = false
         }
@@ -162,181 +99,91 @@ android {
         }
     }
 
-<<<<<<< HEAD
     splits {
         abi {
             enable true
             reset()
-<<<<<<< HEAD
             include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"  // All architectures
-=======
-    // Optional: split per-ABI when 'splitApk' property is set
-    splits {
-        abi {
-            enable project.hasProperty('splitApk')
-            reset()
-            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
->>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
-=======
-            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
->>>>>>> 3c73fbf (update gradle builds, proguard, readme)
             universalApk false
         }
     }
 
     // Enforce lint as blocking to keep CI clean
     lint {
-<<<<<<< HEAD
         abortOnError true
         ignoreWarnings false
-<<<<<<< HEAD
         checkGeneratedSources false  // ADDED: Ignore lint in generated code
-=======
-        abortOnError = true
-        ignoreWarnings = false
->>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
-=======
-        checkGeneratedSources false
->>>>>>> 3c73fbf (update gradle builds, proguard, readme)
     }
 }
 
 dependencies {
-<<<<<<< HEAD
     api project(":transaction-database")
     api project(":taler-kotlin-android")
-=======
-    // Local shared module
-    implementation project(":taler-kotlin-android")
->>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
+    implementation 'androidx.compose.runtime:runtime-saveable:1.9.4'
+
+    // text manipulation
+    implementation("org.apache.commons:commons-text:1.11.0")
+    implementation 'androidx.compose.ui:ui-graphics:1.9.5'
+
+    // Desugar
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 
     // Qtart crypto/logic AAR // TODO needs update to 16kb page sizes
     implementation "net.taler:qtart:$qtart_version@aar"
-<<<<<<< HEAD
     implementation("io.coil-kt:coil-compose:2.4.0") {
         exclude group: 'androidx.lifecycle', module: 'lifecycle-viewmodel-ktx'
     }
-=======
-
-    // Kotlin reflection (explicitly versioned externally)
-    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
->>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
 
     // AndroidX + Material UI
     implementation 'androidx.preference:preference-ktx:1.2.1'
     implementation "com.google.android.material:material:$material_version"
     implementation "androidx.constraintlayout:constraintlayout:$constraintlayout_version"
-<<<<<<< HEAD
     implementation "androidx.browser:browser:1.8.0"
     implementation "androidx.biometric:biometric-ktx:1.4.0-alpha02"
 
-    // Compose - OPTIMIZED (removed duplicate version overrides)
+    // Compose
     implementation platform('androidx.compose:compose-bom:2025.05.00')
     implementation 'androidx.compose.ui:ui'
     implementation 'androidx.compose.material3:material3'
     implementation 'androidx.compose.material:material-icons-extended'
-<<<<<<< HEAD
-=======
-    implementation 'androidx.compose.ui:ui-tooling-preview'
-    implementation 'androidx.compose.ui:ui-geometry:1.9.3'
-    debugImplementation 'androidx.compose.ui:ui-tooling'
-    implementation 'androidx.activity:activity-compose:1.11.0'
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose"
->>>>>>> 5c7011a (fixed preview animations)
     implementation "androidx.compose.runtime:runtime-livedata"
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose"
     implementation 'androidx.activity:activity-compose:1.9.3'
     implementation 'androidx.compose.ui:ui-tooling-preview'
     implementation 'androidx.compose.ui:ui-viewbinding'
     implementation "androidx.fragment:fragment-compose:1.8.6"
-<<<<<<< HEAD
     implementation 'androidx.compose.foundation:foundation:1.9.3'
-<<<<<<< HEAD
-=======
-    implementation 'androidx.browser:browser:1.9.0'
-
-    // --- Jetpack Compose (Kotlin 2.x compatible setup) ---
-    implementation platform('androidx.compose:compose-bom:2025.10.00')
-    implementation 'androidx.compose.material3:material3'
-    implementation 'androidx.compose.material:material-icons-extended'
-    implementation 'androidx.compose.runtime:runtime-livedata'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose'
-    implementation 'com.google.accompanist:accompanist-themeadapter-material3:0.36.0'
-    implementation 'androidx.activity:activity-compose:1.11.0'
-    implementation 'androidx.compose.ui:ui'
-    implementation 'androidx.compose.ui:ui-graphics'
-    implementation 'androidx.compose.ui:ui-tooling-preview'
-    implementation 'androidx.compose.ui:ui-viewbinding'
-    implementation 'androidx.fragment:fragment-compose:1.8.9'
->>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
-=======
-    implementation 'androidx.compose.ui:ui-graphics:1.9.3'
-    implementation 'androidx.compose.material3:material3:1.4.0'
->>>>>>> 321d128 (updated send to be more dynamic)
-=======
->>>>>>> 58ace4b (added 100 stack for sle; fixed issues w/ SLE_BILLS_CENTS)
     debugImplementation 'androidx.compose.ui:ui-tooling'
-    // REMOVED: Duplicate Compose dependencies managed by BOM
-    // REMOVED: Accompanist (not used)
+    implementation 'com.google.accompanist:accompanist-themeadapter-material3:0.36.0'
 
-<<<<<<< HEAD
     // Lists
     implementation "androidx.recyclerview:recyclerview:1.4.0"
 
     // Navigation
-=======
-    // RecyclerView & selection support
-    implementation 'androidx.recyclerview:recyclerview:1.4.0'
-    implementation 'androidx.recyclerview:recyclerview-selection:1.2.0'
-
-    // Jetpack Navigation
->>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 
     // Lifecycle / LiveData
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     // QR code support (embedded ZXing)
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0@aar'
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
     implementation 'com.google.zxing:core:3.5.2'
 
-<<<<<<< HEAD
     // Progress bar
-=======
-    // Misc UI helpers
->>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
     implementation 'me.zhanghai.android.materialprogressbar:library:1.6.1'
-=======
-    // QR codes
-    implementation 'com.google.zxing:core:3.5.2'
-    implementation 'com.journeyapps:zxing-android-embedded:4.3.0@aar'
->>>>>>> 58ace4b (added 100 stack for sle; fixed issues w/ SLE_BILLS_CENTS)
 
     // Markdown rendering via Markwon
     def markwon_version = '4.6.2'
     implementation "io.noties.markwon:core:$markwon_version"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     // JNA
-=======
-    // JNA/Desugaring
->>>>>>> 58ace4b (added 100 stack for sle; fixed issues w/ SLE_BILLS_CENTS)
     implementation "net.java.dev.jna:jna:5.17.0@aar"
-=======
-    // QR codes - OPTIMIZED (generation only)
->>>>>>> 3c73fbf (update gradle builds, proguard, readme)
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
     implementation 'com.google.zxing:core:3.5.2'
 
-    // Markdown rendering - OPTIMIZED (core only)
+    // Markdown rendering - (core only)
     implementation "io.noties.markwon:core:4.6.2"
-    // REMOVED: ext-tables (not used)
-    // REMOVED: recycler (not used)
 
     // JNA
     implementation "net.java.dev.jna:jna:5.17.0@aar"
@@ -348,21 +195,6 @@ dependencies {
     // Testing
     testImplementation "junit:junit:$junit_version"
     testImplementation 'org.json:json:20220320'
-=======
-    // JNA for native interop (must match qtart)
-    implementation "net.java.dev.jna:jna:5.18.1@aar"
-
-    // DataStore + Protobuf
-    implementation "androidx.datastore:datastore:$datastore_version"
-    implementation "com.google.protobuf:protobuf-javalite:4.32.1"
-
-    // Unit tests
-    testImplementation "junit:junit:$junit_version"
-    testImplementation 'org.json:json:20250517'
-
-    // SVG rendering
-    implementation 'com.caverock:androidsvg-aar:1.4'
->>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
 }
 
 // Enables opt-in APIs throughout Kotlin sources
@@ -372,21 +204,11 @@ tasks.withType(KotlinCompile).configureEach {
     }
 }
 
-<<<<<<< HEAD
 // All architectures including x86 for emulators
 ext.abiCodes = ['armeabi-v7a': 1, 'arm64-v8a': 2, x86: 3, x86_64: 4]
 android.applicationVariants.configureEach { variant ->
     variant.outputs.each { output ->
         def baseAbiVersionCode = project.ext.abiCodes.get(output.getFilter(com.android.build.OutputFile.ABI))
-=======
-// --- ABI-specific version codes (for multi-ABI releases) ---
-ext.abiCodes = ['armeabi-v7a': 1, 'arm64-v8a': 2, x86: 3, x86_64: 4]
-android.applicationVariants.configureEach { variant ->
-    variant.outputs.each { output ->
-        def baseAbiVersionCode = project.ext.abiCodes.get(
-                output.getFilter(com.android.build.OutputFile.ABI)
-        )
->>>>>>> 888f42d (:wallet is now included in settings.gralde; need 2 migrate 2 gradle 10 compatability)
         if (baseAbiVersionCode != null) {
             output.versionCodeOverride = 10 * variant.versionCode + baseAbiVersionCode
         }

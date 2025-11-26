@@ -17,21 +17,43 @@ used for financial transactions, sensitive financial information, nor as a suppl
 GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT MAY BREAK EXISTING GNU TALER ANDROID BUILDS!**
 
 ## this version has known issues:
-- Transaction database is hardcoded to test path
+- Transaction database is hardcoded to test implementation
 - Proper transaction filtering in history is not yet implemented
 - Chests do not dynamically update
 - Protobuf of user settings not fully integrated
 - Withdrawing KUDOS in dev mode sometimes bugs out
 - Transaction database needs to be integrated into wallet-core 
-- Icons need touch-ups and resizing
+- Icons need touch-ups and resizing; UI/UX doesn't fully fit screen at the moment
+- Landscape mode is bugged
+- Switching between landscape -> portrait exists OIM mode
 - Transaction history cards do not display bills and show date in a written format instead of icons
 - Transaction history requires filters by amount of currency spent, currency in transaction, or by date 
 - Transaction history should potentially explore pagination 
 - Transaction history might benefit from a default screen when there are no transactions in the system
+- App version is bugged
+- Only KUDOS are properly integrated; currently mapped to Leones (1:1)
+- OIM mode "withdraw test kudos" not linked to Taler backend
 ---
 # Building and Structure
 
-## Setup instructions
+## Installation Instructions
+1. Download the correct APK
+    - for non-debug: please search for the app on FDroid
+    - debug apks reccomended for development; else use regular apk
+    - arm64 for most Android devices (armeabi for legacy devices)
+    - x86_64 for emulation  (x86 for legacy devices)
+3. [Withdraw test kudos](https://bank.demo.taler.net/?lang=en) to begin
+    - if in a debug apk, do: Settigs->Developer mode -> Withdraw demo KUDOS
+    - you may have to play around clicking "Withdraw demo KUDOS" and "Providers", buggy connecting to the backend is a known issue
+3. Click Balance button, then click the blue "Switch to OIM" button
+4. Click on the chest to enter the wallet screen, where you should see the test currency and the features in the corners.
+5. The top left button represents the Receive Money user story. Click this icon to scan a QR Code to accept a incoming payment.
+6. The top right button represents the Send Money user story. Click the icon to be entered into a screen where you can visually select the amount of money to send, along with a purpose for the transaction.
+7. The bottom left Ledger icon represents transaction history. Click the icon to view the transaction history of your past transactions.
+8. The top center chest button, on the Wallet  screen, takes you back to the OIM Home Screen.
+9. Navigation: Use the provided Back to taler button to go back to the Taler Main UI. Use the android Back buttons to go back one screen.
+
+## Repo Setup instructions
 
 ### 1. Clone the Repository
 
@@ -114,19 +136,7 @@ Orali Money provides a safe, inclusive financial tool that addresses this barrie
 
 ---
 
-## Instructions
-
-1. Download the correct APK (arm64 for most Android devices; x86_64 for emulation) 
-2. [Withdraw test kudos](https://bank.demo.taler.net/?lang=en) to begin
-3. Click Balance button, then click the blue "Switch to OIM" button
-4. Click on the chest to enter the wallet screen, where you should see the test currency and the features in the corners.
-5. The top left button represents the Receive Money user story. Click this icon to scan a QR Code to accept a incoming payment.
-6. The top right button represents the Send Money user story. Click the icon to be entered into a screen where you can visually select the amount of money to send, along with a purpose for the transaction.
-7. The bottom left Ledger icon represents transaction history. Click the icon to view the transaction history of your past transactions.
-8. The top center chest button, on the Wallet  screen, takes you back to the OIM Home Screen.
-9. Navigation: Use the provided Back to taler button to go back to the Taler Main UI. Use the android Back buttons to go back one screen.
----
-## Design Choices:
+## Design Choices
 Certain Design Choices were made in the development of the app and features that may not seem obvious at first glance. Provided here is a short justification as to why they were made.
 
 1.Banknote Stacks and certain Icons: In the wallet screen,home screen, etc. certain icons are used, and certain values are displayed as stacks in a certain way. For example, the 40 value is displayed as a specific stack

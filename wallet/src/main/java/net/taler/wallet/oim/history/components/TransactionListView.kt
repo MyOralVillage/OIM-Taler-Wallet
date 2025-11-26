@@ -41,7 +41,7 @@ import net.taler.database.filter.PurposeFilter
 import net.taler.wallet.BuildConfig
 import net.taler.wallet.oim.history.filter.PurposeGrid
 import net.taler.wallet.oim.res_mapping_extensions.Background
-import net.taler.wallet.oim.res_mapping_extensions.Buttons
+import net.taler.wallet.oim.res_mapping_extensions.UIIcons
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -61,11 +61,11 @@ fun TransactionsListView() {
             },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(10.dp)
+                .padding(end = 16.dp, bottom = 72.dp)
                 .size(100.dp),
         ) {
             Icon(
-                painter = painterResource(Buttons("filter").resourceMapper()),
+                bitmap = UIIcons("filter").resourceMapper(),
                 contentDescription = "null",
                 modifier = Modifier
                     .fillMaxSize()
@@ -233,7 +233,8 @@ private fun RowScope.MainContent() {
                 date = transaction.datetime.fmtString(
                     DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                 purpose = transaction.purpose,
-                dir = transaction.direction
+                dir = transaction.direction,
+                displayAmount = transaction.amount
             )
         }
     }
