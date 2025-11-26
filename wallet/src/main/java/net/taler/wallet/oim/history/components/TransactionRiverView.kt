@@ -10,6 +10,8 @@
 
 package net.taler.wallet.oim.history.components
 
+import android.graphics.Paint
+import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,40 +30,43 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
+import io.ktor.client.request.invoke
+import io.ktor.http.invoke
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.taler.common.Amount as CommonAmount
 import net.taler.database.TranxHistory
 import net.taler.database.data_models.Tranx
 import net.taler.wallet.BuildConfig
+import net.taler.wallet.oim.res_mapping_extensions.Tile
 import net.taler.wallet.oim.res_mapping_extensions.UIIcons
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.oim.send.components.NotesGalleryOverlay
+import net.taler.wallet.oim.send.components.StackedNotes
 import net.taler.wallet.oim.send.components.WoodTableBackground
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
-import net.taler.wallet.oim.res_mapping_extensions.Tile
-import kotlinx.coroutines.delay
-import net.taler.wallet.oim.send.components.StackedNotes
-import net.taler.wallet.oim.send.components.NotesGalleryOverlay
-
 
 @Composable
 fun TransactionHistoryView(
@@ -85,14 +90,13 @@ fun TransactionHistoryView(
             TransactionsListView()
         }
 
-        // show chest/home ONLY when the river is visible
         if (showRiver) {
             FloatingActionButton(
                 onClick = onHome,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 14.dp),
-                containerColor = Color(0xFF0B6AAE),
+                containerColor = Color.White,
                 contentColor = Color.White,
                 shape = MaterialTheme.shapes.large
             ) {
@@ -100,25 +104,32 @@ fun TransactionHistoryView(
                     bitmap = UIIcons("chest_open").resourceMapper(),
                     contentDescription = "Back to OIM home",
                     tint = Color.Unspecified,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(52.dp)   // bigger chest
                 )
             }
         }
 
-        // toggle button stays bottom-right
         FloatingActionButton(
             onClick = { showRiver = !showRiver },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(24.dp),
-            containerColor = Color(0xFF0376C4),
-            contentColor = Color.White,
+            containerColor = Color.White,
+            contentColor = Color(0xFF0376C4),
             shape = MaterialTheme.shapes.large
         ) {
             if (showRiver) {
-                Icon(Icons.Default.List, contentDescription = "Show list")
+                Icon(
+                    Icons.Default.List,
+                    contentDescription = "Show list",
+                    modifier = Modifier.size(32.dp) // bigger list icon
+                )
             } else {
-                Icon(Icons.Default.Water, contentDescription = "Show river")
+                Icon(
+                    Icons.Default.Water,
+                    contentDescription = "Show river",
+                    modifier = Modifier.size(32.dp) // bigger water icon
+                )
             }
         }
     }
@@ -151,7 +162,6 @@ fun OimRiverTransactionsView(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        // wood background like other OIM screens
         WoodTableBackground(
             modifier = Modifier.fillMaxSize(),
             light = false
@@ -160,7 +170,6 @@ fun OimRiverTransactionsView(
         Column(
             Modifier
                 .fillMaxSize()
-                // push whole river scene down so it starts below the chest
                 .padding(top = 96.dp)
         ) {
             Box(
@@ -168,7 +177,6 @@ fun OimRiverTransactionsView(
                     .fillMaxWidth()
                     .weight(1f),
             ) {
-                // river itself (leaves room on the right for notes)
                 RiverSceneCanvasPerEvent(
                     transactions = txns,
                     onTransactionClick = {
@@ -179,14 +187,13 @@ fun OimRiverTransactionsView(
                         .fillMaxWidth()
                         .height(300.dp)
                         .padding(
-                            start = 16.dp,
-                            end = 120.dp, // reserved gap for BalanceNotes
+                            start = 120.dp,
+                            end = 120.dp,
                             top = 12.dp,
                             bottom = 12.dp
                         )
                 )
 
-                // LEFT SIDE: Receive (top) + Send (bottom)
                 Column(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
@@ -195,13 +202,11 @@ fun OimRiverTransactionsView(
                     verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // TOP = RECEIVE
                     HistorySideButton(
                         bitmap = UIIcons("receive").resourceMapper(),
                         bgColor = Color(0xFF4CAF50),
                         onClick = onReceiveClick
                     )
-                    // BOTTOM = SEND
                     HistorySideButton(
                         bitmap = UIIcons("send").resourceMapper(),
                         bgColor = Color(0xFFC32909),
@@ -209,8 +214,6 @@ fun OimRiverTransactionsView(
                     )
                 }
 
-                // RIGHT SIDE: current balance as notes (no numbers),
-                // centered vertically next to the river.
                 if (balanceAmount != null) {
                     BalanceStackedNotes(
                         amount = balanceAmount,
@@ -219,7 +222,7 @@ fun OimRiverTransactionsView(
                             if (!isStackExpanded) {
                                 isStackExpanded = true
                                 scope.launch {
-                                    delay(400)   // wait for unstack animation
+                                    delay(400)
                                     showStackPreview = true
                                 }
                             }
@@ -238,6 +241,7 @@ fun OimRiverTransactionsView(
             }
         }
     }
+
     if (balanceAmount != null) {
         val noteResIds = remember(balanceAmount) { balanceAmount.resourceMapper() }
         NotesGalleryOverlay(
@@ -303,7 +307,6 @@ private fun HistorySideButton(
     }
 }
 
-/** Shows the balance as a stack/grid of notes on the right side (no numeric text). */
 @Composable
 private fun BalanceNotes(
     amount: net.taler.common.Amount,
@@ -348,7 +351,6 @@ private fun RiverSceneCanvasPerEvent(
     val hitRects = remember { mutableStateListOf<Pair<Rect, Tranx>>() }
     val scrollState = rememberScrollState()
 
-    // Textures
     val farmRes  = Tile("farm").resourceMapper()
     val blankRes = Tile("blank").resourceMapper()
     val riverRes = Tile("river").resourceMapper()
@@ -359,11 +361,16 @@ private fun RiverSceneCanvasPerEvent(
     val riverBitmap = ImageBitmap.imageResource(riverRes)
     val lakeBitmap  = ImageBitmap.imageResource(lakeRes)
 
+    // layout constants (dp -> will be converted inside canvas)
+    val minFarmWidthDp = 110.dp          // still wide enough for date, but allows more variation
+    val farmSpacingDp = 24.dp
+    val perTxnWidthBase = 170.dp
+    val perTxnWidth = max(perTxnWidthBase, minFarmWidthDp + farmSpacingDp)
+
     Row(
         modifier = modifier.horizontalScroll(scrollState)
     ) {
         val n = max(transactions.size, 1)
-        val perTxnWidth = 140.dp
         val minCanvasWidth = 1000.dp
         val desiredWidth = perTxnWidth * n
         val canvasWidth =
@@ -385,25 +392,35 @@ private fun RiverSceneCanvasPerEvent(
             val w = size.width
             val h = size.height
 
-            val landBottom = h * 0.58f
-            val riverBaseline = landBottom
-            val yellowTop = landBottom
+            // strip at the very top reserved for dates
+            val dateStripHeightPx = 32.dp.toPx()
+
+            // ----- RIVER GEOMETRY -----
+            val riverBaseline = h * 0.55f       // bottom of the river
+            val landBottom = riverBaseline
+            val yellowTop = riverBaseline
             val yellowBottom = h
 
-            // ---------- BACKGROUNDS ----------
+            // backgrounds
             drawTiledImageInRect(
-                image = farmBitmap,
-                rect = Rect(0f, 0f, w, landBottom)
+                image = blankBitmap,
+                rect = Rect(
+                    left = 0f,
+                    top = 0f,
+                    right = size.width,
+                    bottom = landBottom
+                )
+
             )
             drawTiledImageInRect(
                 image = blankBitmap,
                 rect = Rect(0f, yellowTop, w, yellowBottom)
             )
 
-            // ---------- RIVER THICKNESS LOGIC (unchanged) ----------
             val nTx = transactions.size
             if (nTx == 0) return@Canvas
 
+            // ----- AMOUNT PROPORTIONS -----
             val maxSingleMaj = transactions
                 .map {
                     val maj = it.amount.value.toDouble() +
@@ -413,16 +430,21 @@ private fun RiverSceneCanvasPerEvent(
                 .maxOrNull()
                 ?.takeIf { it > 0.0 } ?: 1.0
 
-            val minTh = h * 0.028f
-            val maxTh = h * 0.11f
-            var currentTh = h * 0.055f
+            val amountProportions = transactions.map { t ->
+                val maj = t.amount.value.toDouble() +
+                        t.amount.fraction.toDouble() / 100_000_000.0
+                (abs(maj) / maxSingleMaj).toFloat()
+            }
+
+            // ----- RIVER THICKNESS (dynamic) -----
+            val minTh = h * 0.03f
+            val maxTh = h * 0.12f
+            var currentTh = h * 0.06f
             val thicknessAtPoints = mutableListOf<Float>()
             thicknessAtPoints += currentTh
 
-            transactions.forEach { t ->
-                val maj = t.amount.value.toDouble() +
-                        t.amount.fraction.toDouble() / 100_000_000.0
-                val proportion = (abs(maj) / maxSingleMaj).toFloat()
+            transactions.forEachIndexed { idx, t ->
+                val proportion = amountProportions[idx]
                 val delta = (maxTh - minTh) * 0.6f * proportion
 
                 currentTh = if (t.direction.getValue()) {
@@ -438,16 +460,80 @@ private fun RiverSceneCanvasPerEvent(
             val usableW = w - leftPad
             val step = if (nTx > 0) usableW / nTx else 0f
 
+            val minFarmWidthPx = minFarmWidthDp.toPx()
+            val farmSpacingPx = farmSpacingDp.toPx()
+
+            // ----- FARMS: same height, variable width, with spacing -----
+            transactions.forEachIndexed { idx, t ->
+                val xCenter = leftPad + idx * step + step / 2f
+                val proportion = amountProportions[idx]
+
+                val farmTop = dateStripHeightPx
+                val farmHeight = landBottom - farmTop
+
+                val minWidthFactor = 0.6f
+                val maxWidthFactor = 1.7f
+                val widthFactor = (minWidthFactor +
+                        (maxWidthFactor - minWidthFactor) * proportion)
+                    .coerceIn(minWidthFactor, maxWidthFactor)
+
+                var farmWidth = step * widthFactor
+                farmWidth = max(farmWidth, minFarmWidthPx)
+
+                val maxAllowedWidth = max(step - farmSpacingPx, minFarmWidthPx)
+                farmWidth = min(farmWidth, maxAllowedWidth)
+
+                val farmRect = Rect(
+                    left = xCenter - farmWidth / 2f,
+                    top = farmTop,
+                    right = xCenter + farmWidth / 2f,
+                    bottom = farmTop + farmHeight
+                )
+
+                drawImageStretchInRect(
+                    image = farmBitmap,
+                    rect = farmRect
+                )
+
+                hitRects += farmRect to t
+
+                val baseDate = t.datetime.fmtString(
+                    DateTimeFormatter.ofPattern("yyyy/MM/dd")
+                )
+                val parts = baseDate.split("/")
+                val year = parts.getOrNull(0) ?: "----"
+                val month = parts.getOrNull(1) ?: "--"
+                val day = parts.getOrNull(2) ?: "--"
+                val dateStr = "☀️ $day / 🌙 $month / ⭐ $year"
+
+                drawIntoCanvas { canvas ->
+                    val paint = Paint().apply {
+                        color = AndroidColor.WHITE
+                        textSize = 14.dp.toPx()
+                        isAntiAlias = true
+                        textAlign = Paint.Align.CENTER
+                    }
+
+                    // baseline a bit above the farm top
+                    val textY = dateStripHeightPx - 6.dp.toPx()
+                    canvas.nativeCanvas.drawText(
+                        dateStr,
+                        xCenter,
+                        textY,
+                        paint
+                    )
+                }
+            }
+
+            // ----- RIVER PATH: dynamic thickness, flat bottom -----
             val topPath = Path()
             val bottomPath = Path()
+
             for (i in 0..nTx) {
                 val x = leftPad + i * step
                 val thisTh = thicknessAtPoints[i]
-                val wave = kotlin.math.sin(
-                    i / max(1f, nTx.toFloat()) * 5f
-                ) * (h * 0.01f)
-                val topY = riverBaseline - thisTh + wave
-                val bottomY = riverBaseline + wave
+                val topY = riverBaseline - thisTh
+                val bottomY = riverBaseline
 
                 if (i == 0) {
                     topPath.moveTo(x, topY)
@@ -462,16 +548,12 @@ private fun RiverSceneCanvasPerEvent(
                 addPath(topPath)
                 for (i in nTx downTo 0) {
                     val x = leftPad + i * step
-                    val wave = kotlin.math.sin(
-                        i / max(1f, nTx.toFloat()) * 5f
-                    ) * (h * 0.01f)
-                    val bottomY = riverBaseline + wave
+                    val bottomY = riverBaseline
                     lineTo(x, bottomY)
                 }
                 close()
             }
 
-            // Fill river with river texture
             clipPath(river) {
                 drawTiledImageInRect(
                     image = riverBitmap,
@@ -480,85 +562,42 @@ private fun RiverSceneCanvasPerEvent(
             }
             drawPath(river, color = Color(0xFF005188), style = Stroke(2.dp.toPx()))
 
-            // ---------- LAKES ALONG THE BOTTOM EDGE OF THE RIVER ----------
-            val lakeCount = 4
-
-            val lakeHeight = h * 0.40f          // taller
-            val lakeWidth  = lakeHeight * 1.3f  // wider than tall
-
-            for (i in 0 until lakeCount) {
-                val frac = (i + 1) / (lakeCount + 1).toFloat()
-                val cx = leftPad + frac * usableW
-
-                // Move them up so they sit more "on the tip" of the river
-                val top = (riverBaseline - lakeHeight * 0.01f).coerceAtLeast(0f)
-                val bottom = (top + lakeHeight).coerceAtMost(h)
-
-                val rect = Rect(
-                    left = cx - lakeWidth / 2f,
-                    top = top,
-                    right = cx + lakeWidth / 2f,
-                    bottom = bottom
-                )
-
-                drawImageFitInRect(
-                    image = lakeBitmap,
-                    rect = rect
-                )
-            }
-
-            // ---------- EVENTS & HIT AREAS (unchanged) ----------
-            val hitRadius = 20.dp.toPx()
+            // ----- LAKES: big, attached to bottom of river -----
             transactions.forEachIndexed { idx, t ->
-                val x = leftPad + idx * step + step / 2f
-                val thisTh = thicknessAtPoints[idx + 1]
-                val wave = kotlin.math.sin(
-                    idx / max(1f, nTx.toFloat()) * 5f
-                ) * (h * 0.01f)
-                val topY = riverBaseline - thisTh + wave
-                val bottomY = riverBaseline + wave
+                if (!t.direction.getValue()) {
+                    val xCenter = leftPad + idx * step + step / 2f
+                    val proportion = amountProportions[idx]
 
-                if (t.direction.getValue()) {
-                    val pipeTop = topY - 26.dp.toPx()
-                    drawLine(
-                        color = Color(0xFF2ECC71),
-                        start = Offset(x, pipeTop),
-                        end = Offset(x, topY),
-                        strokeWidth = 6.dp.toPx()
+                    val baseLakeHeight = h * 0.34f
+                    val minLakeFactor = 0.9f
+                    val maxLakeFactor = 1.5f
+                    val lakeFactor = (minLakeFactor +
+                            (maxLakeFactor - minLakeFactor) * proportion)
+                        .coerceIn(minLakeFactor, maxLakeFactor)
+
+                    val lakeHeight = baseLakeHeight * lakeFactor
+                    val lakeWidth = lakeHeight * 1.35f
+
+                    val lakeTop = riverBaseline
+
+                    val lakeRect = Rect(
+                        left = xCenter - lakeWidth / 2f,
+                        top = lakeTop,
+                        right = xCenter + lakeWidth / 2f,
+                        bottom = lakeTop + lakeHeight
                     )
-                    drawCircle(
-                        color = Color(0xFF2ECC71),
-                        radius = 6.dp.toPx(),
-                        center = Offset(x, pipeTop)
+
+                    drawImageFitInRect(
+                        image = lakeBitmap,
+                        rect = lakeRect
                     )
-                    val rect = Rect(
-                        left = x - hitRadius,
-                        top = pipeTop - hitRadius,
-                        right = x + hitRadius,
-                        bottom = topY + hitRadius
-                    )
-                    hitRects += rect to t
-                } else {
-                    val center = Offset(x, bottomY + 16.dp.toPx())
-                    drawCircle(
-                        color = Color(0xFFE74C3C),
-                        radius = 10.dp.toPx(),
-                        center = center
-                    )
-                    val rect = Rect(
-                        left = center.x - hitRadius,
-                        top = center.y - hitRadius,
-                        right = center.x + hitRadius,
-                        bottom = center.y + hitRadius
-                    )
-                    hitRects += rect to t
+
+                    hitRects += lakeRect to t
                 }
             }
         }
     }
 }
-
-
 
 @Composable
 private fun BalanceStackedNotes(
@@ -584,8 +623,6 @@ private fun BalanceStackedNotes(
         )
     }
 }
-
-
 
 @Composable
 private fun SideOimActionButton(
@@ -680,7 +717,20 @@ private fun DrawScope.drawTiledImageInRect(
     }
 }
 
-// Fit the whole image into a rect (used for lake tiles)
+// Stretch image to fill rect (used for farms so height is uniform visually)
+private fun DrawScope.drawImageStretchInRect(
+    image: ImageBitmap,
+    rect: Rect
+) {
+    drawImage(
+        image = image,
+        srcSize = IntSize(image.width, image.height),
+        dstOffset = IntOffset(rect.left.toInt(), rect.top.toInt()),
+        dstSize = IntSize(rect.width.toInt(), rect.height.toInt())
+    )
+}
+
+// Fit the whole image into a rect while preserving aspect ratio (used for lakes)
 private fun DrawScope.drawImageFitInRect(
     image: ImageBitmap,
     rect: Rect
