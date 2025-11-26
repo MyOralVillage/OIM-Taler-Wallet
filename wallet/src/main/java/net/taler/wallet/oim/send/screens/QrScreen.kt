@@ -94,7 +94,7 @@ fun QrScreen(
                     color = Color.White,
                     shape = RoundedCornerShape(12.dp),
                     shadowElevation = 8.dp,
-                    modifier = Modifier.size(300.dp)
+                    modifier = Modifier.size(270.dp).aspectRatio(1f)
                 ) {
                     if (talerUri == null) {
                         Column(
@@ -109,7 +109,7 @@ fun QrScreen(
                             Text("Preparing payment…", color = Color.Black)
                         }
                     } else {
-                        val qrBitmap = remember(talerUri) { generateQrBitmap(talerUri, 2048) }
+                        val qrBitmap = remember(talerUri) { generateQrBitmap(talerUri, 1024) }
                         Image(
                             bitmap = qrBitmap.asImageBitmap(),
                             contentDescription = "Taler QR",

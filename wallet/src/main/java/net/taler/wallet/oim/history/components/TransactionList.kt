@@ -35,16 +35,19 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.taler.common.R.drawable.incoming_transaction
 import net.taler.common.R.drawable.outgoing_transaction
 import net.taler.database.data_models.Amount
+import net.taler.database.data_models.EDUC_CLTH
 import net.taler.database.data_models.FilterableDirection
 import net.taler.database.data_models.TranxPurp
 import net.taler.wallet.oim.history.components.Bills
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
 import net.taler.wallet.oim.res_mapping_extensions.resourceMapper // Amount
+import net.taler.wallet.oim.send.components.ColumnNotes
 import java.time.LocalDate
 
 @Composable
@@ -144,17 +147,6 @@ fun TransactionCard(
                     )
                 }
 
-                Bills(
-                    amount = displayAmount,
-                    billWidth = 100,
-                    billHeight = 64,
-                    coinSize = 33,
-                    billOffsetX = 7,
-                    billOffsetY = 12,
-                    coinOffsetX = 15,
-                    coinOffsetY = 24
-                )
-
                 Box(
                     modifier = Modifier
                         .background(
@@ -181,6 +173,21 @@ fun TransactionCard(
                     }
                 }
             }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 20.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                    ColumnNotes(
+                        amount = displayAmount,
+                        stackOffsetX = 8.dp,
+                        stackOffsetY = 8.dp,
+                        stackGap = 2.dp,
+                        noteWidth = 115.dp,
+                        noteHeight = 80.dp,
+                        rowGap = 4.dp,
+                        stacksPerRow = 4
+                    )
+            }
         }
     }
 }
@@ -204,4 +211,26 @@ private fun DatePill(icon: String, value: String) {
             Text(text = value, fontSize = 14.sp, color = Color.DarkGray)
         }
     }
+}
+
+@Preview(
+    showBackground = true,
+    showSystemUi = false,
+    name = "Transaction List View Preview",
+    device = "spec:width=411dp,height=891dp,orientation=landscape"
+)
+@Composable
+fun TransactionCardPreview(){
+    TransactionCard(
+        amount = "35",
+        currency = "SLE",
+        date = "2025-11-25",
+        purpose = EDUC_CLTH,
+        dir = FilterableDirection.INCOMING,
+        displayAmount = Amount(
+            currency = "SLE",
+            value = 20,
+            fraction = 0
+        )
+    )
 }

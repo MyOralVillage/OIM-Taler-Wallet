@@ -575,10 +575,12 @@ private fun BalanceStackedNotes(
     ) {
         StackedNotes(
             noteResIds = noteResIds,
-            noteHeight = 79.dp,
-            noteWidth = 115.dp,
+            noteHeight = 60.dp,
+            noteWidth = 86.dp,
             expanded = isStackExpanded,
-            onClick = onExpand
+            onClick = onExpand,
+            notesPerRow = 2,
+            stacksPerRow = 2
         )
     }
 }
