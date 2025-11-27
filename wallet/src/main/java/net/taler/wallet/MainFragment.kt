@@ -18,7 +18,6 @@ package net.taler.wallet
 import android.view.Menu
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.core.os.bundleOf
 import android.view.LayoutInflater
 import android.view.MenuInflater
@@ -76,7 +75,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -106,7 +104,7 @@ import net.taler.wallet.oim.main.OIMChestScreen
 import net.taler.wallet.oim.main.OIMHomeScreen
 import net.taler.wallet.oim.main.OIMReceiveScreen
 import net.taler.wallet.oim.main.rememberOimReceiveFlowState
-import net.taler.wallet.oim.res_mapping_extensions.UIIcons
+import net.taler.wallet.oim.utils.resourceMappers.UIIcons
 import net.taler.wallet.settings.SettingsFragment
 import net.taler.wallet.transactions.Transaction
 import net.taler.wallet.transactions.TransactionMajorState
@@ -356,9 +354,6 @@ class MainFragment: Fragment() {
                         null -> { }
                     }
                 } else {
-
-                    val configuration = LocalConfiguration.current
-
                     Box(modifier = Modifier.fillMaxSize()) {
                         Scaffold(
                             bottomBar = {
@@ -381,8 +376,8 @@ class MainFragment: Fragment() {
                                             .size(buttonSize)
                                             .background(
                                                 MaterialTheme
-                                                .colorScheme
-                                                .surfaceVariant.copy(alpha = 0.9f),
+                                                    .colorScheme
+                                                    .surfaceVariant.copy(alpha = 0.9f),
                                                 CircleShape
                                             ),
                                         onClick = {
@@ -420,22 +415,12 @@ class MainFragment: Fragment() {
                                             .size(buttonSize)
                                             .background(
                                                 MaterialTheme
-                                                .colorScheme
-                                                .surfaceVariant.copy(alpha = 0.9f),
+                                                    .colorScheme
+                                                    .surfaceVariant.copy(alpha = 0.9f),
                                                 CircleShape
                                             ),
                                         onClick = {
-                                            Log.d("OIM_DEBUG", "OIM Mode button clicked.")
                                             val activity = requireActivity() as AppCompatActivity
-                                            Log.d("OIM_DEBUG", "Activity is set.")
-
-                                            val orientation = activity.resources.configuration.orientation
-                                            Log.d("OIM_DEBUG", "Current orientation: $orientation")
-                                            Log.d("OIM_DEBUG", "ORIENTATION_LANDSCAPE constant: ${android.content.res.Configuration.ORIENTATION_LANDSCAPE}")
-
-                                            val isLandscape = orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-                                            Log.d("OIM_DEBUG", "Is landscape: $isLandscape")
-
                                             if (
                                                 activity
                                                     .resources
@@ -447,19 +432,16 @@ class MainFragment: Fragment() {
                                                     .res
                                                     .Configuration
                                                     .ORIENTATION_LANDSCAPE
-                                                )
+                                            )
                                             {
-                                                Log.d("OIM_DEBUG", "If.")
                                                 enterOimAfterLandscape = true
                                                 activity.requestedOrientation =
                                                     android
-                                                    .content
-                                                    .pm
-                                                    .ActivityInfo
-                                                    .SCREEN_ORIENTATION_LANDSCAPE
-                                                Log.d("OIM_DEBUG", "Orientation changed.")
+                                                        .content
+                                                        .pm
+                                                        .ActivityInfo
+                                                        .SCREEN_ORIENTATION_LANDSCAPE
                                             } else {
-                                                Log.d("OIM_DEBUG", "Else.")
                                                 oimScreen = OimScreen.HOME
                                             }
                                         }
@@ -547,7 +529,7 @@ class MainFragment: Fragment() {
                 if (oimScreen == null) {
                     val disableActions = remember(balanceState, online) {
                         !online ||
-                        (balanceState as? BalanceState.Success)?.balances?.isEmpty() ?: true
+                                (balanceState as? BalanceState.Success)?.balances?.isEmpty() ?: true
                     }
                     TalerActionsModal(
                         showSheet = showSheet,
