@@ -12,8 +12,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.core.graphics.createBitmap
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
-import net.taler.wallet.oim.res_mapping_extensions.*
 import com.google.zxing.*
+import net.taler.wallet.oim.utils.resourceMappers.Background
 
 /**
  * ## Asser loader - WoodTableBackground
@@ -27,7 +27,7 @@ import com.google.zxing.*
  *
  * @param modifier Layout modifier for positioning or scaling the background.
  * @param light When `true`, uses a light wood texture; otherwise uses dark wood.
- * @see Background.resourceMapper
+ * @see net.taler.wallet.oim.utils.resourceMappers.Background.resourceMapper
  */
 @Composable
 fun WoodTableBackground(

@@ -16,8 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.taler.database.data_models.Amount
-import net.taler.wallet.MainViewModel
-import net.taler.wallet.oim.res_mapping_extensions.UIIcons
+import net.taler.wallet.oim.utils.resourceMappers.UIIcons
 
 /**
  * ## OimTopBarCentered

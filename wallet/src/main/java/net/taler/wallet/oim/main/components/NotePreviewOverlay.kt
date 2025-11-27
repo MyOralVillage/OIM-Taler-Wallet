@@ -17,8 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import net.taler.wallet.oim.res_mapping_extensions.UIIcons
-import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.oim.utils.resourceMappers.UIIcons
 
 /**
  * A full-screen overlay that displays a single banknote in a larger view.

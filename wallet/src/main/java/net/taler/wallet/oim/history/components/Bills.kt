@@ -29,7 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.taler.common.R
 import net.taler.database.data_models.Amount
-import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
 
 @Composable
 fun Bills(

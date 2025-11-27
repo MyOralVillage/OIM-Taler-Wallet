@@ -1,4 +1,4 @@
-package net.taler.wallet.oim.res_mapping_extensions
+package net.taler.wallet.oim.utils.resourceMappers
 /*
  * This file is part of GNU Taler
  * (C) 2025 Taler Systems S.A.
@@ -18,8 +18,11 @@ package net.taler.wallet.oim.res_mapping_extensions
 import androidx.annotation.DrawableRes
 import net.taler.common.R
 import net.taler.database.data_models.*
+import kotlin.collections.mutableListOf
 
-/** KUDOS mapped to Leones */
+/** KUDOS mapped to Leones.
+ * toCurrencyFrame returns a composable table
+ * representation of a transaction. */
 @DrawableRes
 internal fun Amount.resourceMapper(): List<Int> {
     val result = mutableListOf<Int>()

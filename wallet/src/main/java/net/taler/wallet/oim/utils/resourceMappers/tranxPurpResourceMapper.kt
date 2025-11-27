@@ -14,7 +14,7 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.wallet.oim.res_mapping_extensions
+package net.taler.wallet.oim.utils.resourceMappers
 
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable

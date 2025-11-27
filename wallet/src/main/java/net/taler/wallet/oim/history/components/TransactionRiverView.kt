@@ -49,17 +49,15 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
-import io.ktor.client.request.invoke
-import io.ktor.http.invoke
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.taler.common.Amount as CommonAmount
 import net.taler.database.TranxHistory
 import net.taler.database.data_models.Tranx
 import net.taler.wallet.BuildConfig
-import net.taler.wallet.oim.res_mapping_extensions.Tile
-import net.taler.wallet.oim.res_mapping_extensions.UIIcons
-import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.oim.utils.resourceMappers.Tile
+import net.taler.wallet.oim.utils.resourceMappers.UIIcons
+import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
 import net.taler.wallet.oim.send.components.NotesGalleryOverlay
 import net.taler.wallet.oim.send.components.StackedNotes
 import net.taler.wallet.oim.send.components.WoodTableBackground

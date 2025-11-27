@@ -1,6 +1,7 @@
 package net.taler.wallet.oim.send.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,19 +11,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.taler.database.data_models.Amount
+import net.taler.database.data_models.HLTH_MEDS
 import net.taler.database.data_models.TranxPurp
-import net.taler.wallet.oim.res_mapping_extensions.UIIcons
-import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.oim.utils.resourceMappers.UIIcons
+import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
 import net.taler.wallet.oim.send.components.WoodTableBackground
 import net.taler.wallet.oim.send.components.generateQrBitmap
+import net.taler.wallet.oim.utils.OimColours
 
 /**
  * ## QR Screen
@@ -57,23 +63,12 @@ fun QrScreen(
             .statusBarsPadding()
     ) {
         // background
-        WoodTableBackground(modifier = Modifier.fillMaxSize(), light = false)
-
+        WoodTableBackground(modifier = Modifier.fillMaxSize())
 
         // main row: QR left, info right
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-//            IconButton(
-//                onClick = onHome
-//            ) {
-//                Image(
-//                    bitmap = UIIcons("chest_open").resourceMapper(),
-//                    contentDescription = "Done / back to chest",
-//                    modifier = Modifier.size(70.dp),
-//                    contentScale = ContentScale.Fit
-//                )
-//            }
             Image(
                 bitmap = UIIcons("chest_open").resourceMapper(),
                 contentDescription = "Done / back to chest",
@@ -94,7 +89,9 @@ fun QrScreen(
                     color = Color.White,
                     shape = RoundedCornerShape(12.dp),
                     shadowElevation = 8.dp,
-                    modifier = Modifier.size(270.dp).aspectRatio(1f)
+                    modifier = Modifier
+                        .size(270.dp)
+                        .aspectRatio(1f)
                 ) {
                     if (talerUri == null) {
                         Column(
@@ -130,24 +127,40 @@ fun QrScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        text = amount.amountStr,
-                        color = Color.White,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 56.sp
-                    )
-                    Text(
-                        text = amount.spec?.name ?: amount.currency,
-                        color = Color.White.copy(alpha = 0.9f),
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 26.sp
-                    )
-
+                    Box(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .shadow(8.dp, shape = RoundedCornerShape(12.dp))
+                            .background(
+                                OimColours.OUTGOING_COLOUR,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(16.dp) // inner padding inside the box
+                    ) { Column(
+                        modifier = Modifier,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = amount.amountStr,
+                            color = Color.White.copy(alpha=0.85f),
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 56.sp,
+                        )
+                        Text(
+                            text = amount.spec?.name ?: amount.currency,
+                            color = Color.White.copy(alpha = 0.85f),
+                            fontWeight = FontWeight.Medium,
+                            fontStyle = FontStyle.Italic,
+                            fontSize = 26.sp
+                        )
+                    }
+                    }
                     Spacer(Modifier.height(24.dp))
 
                     if (purpose != null) {
                         Surface(
-                            color = Color.White,
+                            color = Color(purpose.colourInt()),
                             shape = RoundedCornerShape(16.dp),
                             shadowElevation = 4.dp
                         ) {
@@ -170,11 +183,3 @@ fun QrScreen(
         }
     }
 }
-
-
-
-
-
-
-
-

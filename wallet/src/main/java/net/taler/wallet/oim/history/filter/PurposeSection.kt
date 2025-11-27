@@ -19,7 +19,6 @@ package net.taler.wallet.oim.history.filter
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.content.MediaType.Companion.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -30,7 +29,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,14 +39,13 @@ import net.taler.database.data_models.TranxPurp
 import net.taler.database.filter.PurposeFilter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.tooling.preview.Preview
 import net.taler.database.data_models.EDUC_SCHL
 import net.taler.database.data_models.EXPN_GRCR
 import net.taler.database.data_models.HLTH_DOCT
 import net.taler.database.data_models.UTIL_WATR
 import net.taler.database.data_models.tranxPurpLookup
-import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
 
 
 /**
