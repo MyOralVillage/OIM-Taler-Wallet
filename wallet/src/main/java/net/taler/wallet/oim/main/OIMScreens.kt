@@ -35,17 +35,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.zxing.client.android.Intents.Scan.MIXED_SCAN
 import com.google.zxing.client.android.Intents.Scan.SCAN_TYPE
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.journeyapps.barcodescanner.ScanOptions.QR_CODE
 import net.taler.database.TranxHistory
+import net.taler.database.data_models.Amount
 import net.taler.database.data_models.FilterableDirection
 import net.taler.database.data_models.Timestamp
 import net.taler.wallet.BuildConfig
 import net.taler.wallet.MainViewModel
 import net.taler.wallet.balances.BalanceState
+import net.taler.wallet.balances.ScopeInfo
 import net.taler.wallet.compose.collectAsStateLifecycleAware
 import net.taler.wallet.peer.IncomingAccepted
 import net.taler.wallet.peer.IncomingAccepting
@@ -239,7 +242,37 @@ fun OIMHomeScreen(
             onChestClick = onNavigateToChest,
             onBackToTalerClick = onBackToTaler,
         )
+        // === State: Account and Balance ===
+        val balanceState by model.balanceManager.state.observeAsState(BalanceState.None)
+        val selectedScope by model.transactionManager.selectedScope.collectAsStateWithLifecycle(
+            initialValue = null
+        )
 
+        /**
+         * Active scope automatically resolves to the current selection if present;
+         * otherwise falls back to the first account with KUDOS or TESTKUDOS.
+         */
+        val activeScope: ScopeInfo? = remember(balanceState, selectedScope) {
+            selectedScope ?: (balanceState as? BalanceState.Success)?.let { bs ->
+                bs.balances.firstOrNull { it.currency.equals("KUDOS", true) }?.scopeInfo
+                    ?: bs.balances.firstOrNull { it.currency.equals("TESTKUDOS", true) }?.scopeInfo
+            }
+        }
+
+        // Amount entered by the user, defaulting to 0 in the active currency.
+        var amount by remember(activeScope) {
+            mutableStateOf(Amount.fromString(activeScope?.currency ?: "KUDOS", "0"))
+        }
+
+        // Current balance formatted for display.
+        val balanceLabel: Amount = remember(balanceState, activeScope) {
+            val success = balanceState as? BalanceState.Success
+            val entry = success?.balances?.firstOrNull { it.scopeInfo == activeScope }
+            Amount.fromString(
+                activeScope?.currency ?: "KUDOS",
+                entry?.available?.toString(showSymbol = false) ?: "0"
+            )
+        }
         val terms = receiveFlow.dialogTerms
         if (receiveFlow.isScanningOrLoading || terms != null) {
             Box(
@@ -251,7 +284,8 @@ fun OIMHomeScreen(
                 OIMReceiveScreen(
                     terms = terms,
                     onAccept = { terms?.let { receiveFlow.confirmTerms(it) } },
-                    onReject = { terms?.let { receiveFlow.rejectTerms(it) } }
+                    onReject = { terms?.let { receiveFlow.rejectTerms(it) } },
+                    balance = balanceLabel
                 )
             }
         }

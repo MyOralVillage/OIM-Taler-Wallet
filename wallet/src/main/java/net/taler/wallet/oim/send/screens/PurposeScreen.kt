@@ -24,7 +24,7 @@ import net.taler.database.data_models.tranxPurpLookup
 import net.taler.wallet.oim.send.components.WoodTableBackground
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.res.painterResource
-import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
+import net.taler.wallet.oim.resourceMappers.resourceMapper
 
 /**
  * Card representing a single transaction purpose.
@@ -43,13 +43,12 @@ fun PurposeCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val colour = Color(tranxPurp.colourInt())
     Card(
         modifier = modifier
             .clickable(onClick = onClick)
             .border(
-                width = if (isSelected) 4.dp else 3.dp,
-                color = if (isSelected) Color(0xFF16CA58) else Color.White,  // ← Green when selected
+                width = 5.dp,
+                color = if (isSelected) Color.Unspecified else Color(tranxPurp.colourInt()),
                 shape = RoundedCornerShape(10.dp)
             ),
         shape = RoundedCornerShape(10.dp),

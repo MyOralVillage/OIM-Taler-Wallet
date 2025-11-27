@@ -1,5 +1,7 @@
 package net.taler.wallet.oim.send.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
@@ -17,15 +19,20 @@ import net.taler.database.data_models.Amount
 import net.taler.wallet.oim.send.components.*
 import java.math.BigDecimal
 import androidx.compose.material.icons.filled.MoneyOff
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import net.taler.wallet.oim.utils.resourceMappers.CHF_BILLS
-import net.taler.wallet.oim.utils.resourceMappers.EUR_BILLS_CENTS
-import net.taler.wallet.oim.utils.resourceMappers.SLE_BILLS_CENTS
-import net.taler.wallet.oim.utils.resourceMappers.XOF_BILLS
-import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.layout.ContentScale
+import net.taler.wallet.oim.OimColours
+import net.taler.wallet.oim.OimTopBarCentered
+import net.taler.wallet.oim.resourceMappers.CHF_BILLS
+import net.taler.wallet.oim.resourceMappers.EUR_BILLS_CENTS
+import net.taler.wallet.oim.resourceMappers.SLE_BILLS_CENTS
+import net.taler.wallet.oim.resourceMappers.UIIcons
+import net.taler.wallet.oim.resourceMappers.XOF_BILLS
+import net.taler.wallet.oim.resourceMappers.resourceMapper
 
 /**
  * Main screen for sending money.
@@ -122,11 +129,12 @@ fun SendScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // TOP BAR — now has clickable chest
+
+            // TOP BAR
             OimTopBarCentered(
                 balance = balance,
-                onSendClick = onSend,
-                onChestClick = onChest
+                onChestClick = onChest,
+                colour = OimColours.OUTGOING_COLOUR
             )
 
             Spacer(Modifier.weight(1f))
@@ -154,49 +162,75 @@ fun SendScreen(
                     )
                 }
 
-                // simple undo button
-                Button(
-                    onClick = {
-                        if (denomOrder.isNotEmpty()) {
-                            // Remove from the last denomination that was added
-                            val lastDenom = denomOrder.last()
-                            val amounts = pileAmountsByDenom[lastDenom]
-                            val notes = pilesByDenom[lastDenom]
-
-                            if (amounts != null && amounts.isNotEmpty()) {
-                                val popped = amounts.removeAt(amounts.lastIndex)
-                                if (notes != null && notes.isNotEmpty()) {
-                                    notes.removeAt(notes.lastIndex)
-                                }
-
-                                // If this denomination is now empty, remove it from order
-                                if (amounts.isEmpty()) {
-                                    pileAmountsByDenom.remove(lastDenom)
-                                    pilesByDenom.remove(lastDenom)
-                                    denomOrder.removeAt(denomOrder.lastIndex)
-                                    denomScaleFactors.remove(lastDenom)
-                                    if (expandedDenom == lastDenom) {
-                                        expandedDenom = null
-                                    }
-                                }
-
-                                displayAmount = minus(displayAmount, popped)
-                                onRemoveLast(popped)
-                            }
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
-                    contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
-                    modifier = Modifier
-                        .size(80.dp)
-                        .alpha(0.8f)
+                Column(
+                    modifier = Modifier,
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.MoneyOff,
-                        contentDescription = "Undo",
-                        tint = Color.White
-                    )
+
+                    // SEND BUTTON
+                    Box(
+                        modifier = Modifier
+                            .size(70.dp)
+                            .background(
+                                color = OimColours.OUTGOING_COLOUR,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .clickable { onSend() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            bitmap = UIIcons("send").resourceMapper(),
+                            contentDescription = "Send",
+                            modifier = Modifier.size(50.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(28.dp)) // space between send + undo
+
+                    // UNDO BUTTON
+                    Button(
+                        onClick = {
+                            if (denomOrder.isNotEmpty()) {
+                                val lastDenom = denomOrder.last()
+                                val amounts = pileAmountsByDenom[lastDenom]
+                                val notes = pilesByDenom[lastDenom]
+
+                                if (amounts != null && amounts.isNotEmpty()) {
+                                    val popped = amounts.removeAt(amounts.lastIndex)
+                                    if (notes != null && notes.isNotEmpty()) {
+                                        notes.removeAt(notes.lastIndex)
+                                    }
+
+                                    if (amounts.isEmpty()) {
+                                        pileAmountsByDenom.remove(lastDenom)
+                                        pilesByDenom.remove(lastDenom)
+                                        denomOrder.removeAt(denomOrder.lastIndex)
+                                        denomScaleFactors.remove(lastDenom)
+                                        if (expandedDenom == lastDenom) expandedDenom = null
+                                    }
+
+                                    displayAmount = minus(displayAmount, popped)
+                                    onRemoveLast(popped)
+                                }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = OimColours.INCOMING_COLOUR
+                        ),
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier.size(70.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoneyOff,
+                            contentDescription = "Undo",
+                            tint = Color.White,
+                            modifier = Modifier.size(58.dp)
+                        )
+                    }
                 }
+
             }
 
             // figure out currency and denominations
@@ -387,7 +421,9 @@ fun SendScreen(
                     .offset(
                         x = with(density) { currentX.toDp() },
                         y = with(density) {
-                            val baseY = ((screenHeight / 2).toPx()).toDp() - (baseSizeDp * scaleFactor * 0.65f)
+                            val baseY = (
+                            (screenHeight / 2).toPx()).toDp()
+                            - (baseSizeDp * scaleFactor * 0.65f)
                             if (isExpanded) baseY - 100.dp else baseY
                         }
                     )

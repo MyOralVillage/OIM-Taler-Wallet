@@ -18,17 +18,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.taler.database.data_models.Amount
-import net.taler.database.data_models.HLTH_MEDS
 import net.taler.database.data_models.TranxPurp
-import net.taler.wallet.oim.utils.resourceMappers.UIIcons
-import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
+import net.taler.wallet.oim.resourceMappers.UIIcons
+import net.taler.wallet.oim.resourceMappers.resourceMapper
 import net.taler.wallet.oim.send.components.WoodTableBackground
 import net.taler.wallet.oim.send.components.generateQrBitmap
-import net.taler.wallet.oim.utils.OimColours
+import net.taler.wallet.oim.OimColours
+import net.taler.wallet.oim.OimTopBarCentered
 
 /**
  * ## QR Screen
@@ -47,12 +46,11 @@ import net.taler.wallet.oim.utils.OimColours
  * @param onBack Callback invoked when the Back button is pressed.
  * @param onHome Optional callback invoked when the Home button is pressed.
  */
-
-
 @Composable
 fun QrScreen(
     talerUri: String?,
     amount: Amount,
+    balance: Amount,
     purpose: TranxPurp?,
     onBack: () -> Unit,          // still here for signature compatibility
     onHome: () -> Unit = {}
@@ -69,13 +67,18 @@ fun QrScreen(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                bitmap = UIIcons("chest_open").resourceMapper(),
-                contentDescription = "Done / back to chest",
-                modifier = Modifier
-                    .size(60.dp)
-                    .clickable { onHome() },
-                contentScale = ContentScale.Fit
+//            Image(
+//                bitmap = UIIcons("chest_open").resourceMapper(),
+//                contentDescription = "Done / back to chest",
+//                modifier = Modifier
+//                    .size(60.dp)
+//                    .clickable { onHome() },
+//                contentScale = ContentScale.Fit
+//            )
+            OimTopBarCentered(
+                balance = balance,
+                onChestClick = onHome,
+                colour = OimColours.OUTGOING_COLOUR
             )
             Row(
                 modifier = Modifier

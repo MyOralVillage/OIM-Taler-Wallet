@@ -1,4 +1,4 @@
-package net.taler.wallet.oim.utils.resourceMappers
+package net.taler.wallet.oim.resourceMappers
 /*
  * This file is part of GNU Taler
  * (C) 2025 Taler Systems S.A.

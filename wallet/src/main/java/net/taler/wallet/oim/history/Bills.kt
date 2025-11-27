@@ -1,4 +1,4 @@
-package net.taler.wallet.oim.history.components
+package net.taler.wallet.oim.history
 
 /*
  * This file is part of GNU Taler
@@ -29,7 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.taler.common.R
 import net.taler.database.data_models.Amount
-import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
+import net.taler.wallet.oim.resourceMappers.resourceMapper
 
 @Composable
 fun Bills(

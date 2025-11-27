@@ -1,6 +1,6 @@
 @file:OptIn(
-    androidx.compose.material3.ExperimentalMaterial3Api::class,
-    kotlinx.serialization.InternalSerializationApi::class
+    ExperimentalMaterial3Api::class,
+    InternalSerializationApi::class
 )
 /*
  * This file is part of GNU Taler
@@ -8,7 +8,7 @@
  * GPLv3-or-later
  */
 
-package net.taler.wallet.oim.history.components
+package net.taler.wallet.oim.history
 
 import android.graphics.Paint
 import android.graphics.Color as AndroidColor
@@ -51,13 +51,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.InternalSerializationApi
 import net.taler.common.Amount as CommonAmount
 import net.taler.database.TranxHistory
 import net.taler.database.data_models.Tranx
 import net.taler.wallet.BuildConfig
-import net.taler.wallet.oim.utils.resourceMappers.Tile
-import net.taler.wallet.oim.utils.resourceMappers.UIIcons
-import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
+import net.taler.wallet.oim.resourceMappers.Tile
+import net.taler.wallet.oim.resourceMappers.UIIcons
+import net.taler.wallet.oim.resourceMappers.resourceMapper
 import net.taler.wallet.oim.send.components.NotesGalleryOverlay
 import net.taler.wallet.oim.send.components.StackedNotes
 import net.taler.wallet.oim.send.components.WoodTableBackground
@@ -70,7 +71,7 @@ import kotlin.math.min
 fun TransactionHistoryView(
     modifier: Modifier = Modifier,
     onHome: () -> Unit = {},
-    balanceAmount: net.taler.common.Amount? = null,
+    balanceAmount: CommonAmount? = null,
     onSendClick: () -> Unit = {},
     onReceiveClick: () -> Unit = {},
 ) {
@@ -137,7 +138,7 @@ fun TransactionHistoryView(
 fun OimRiverTransactionsView(
     modifier: Modifier = Modifier,
     transactions: List<Tranx>? = null,
-    balanceAmount: net.taler.common.Amount? = null,
+    balanceAmount: CommonAmount? = null,
     onSendClick: () -> Unit = {},
     onReceiveClick: () -> Unit = {},
 ) {
@@ -307,7 +308,7 @@ private fun HistorySideButton(
 
 @Composable
 private fun BalanceNotes(
-    amount: net.taler.common.Amount,
+    amount: CommonAmount,
     modifier: Modifier = Modifier,
     maxPerRow: Int = 3,
 ) {
@@ -599,7 +600,7 @@ private fun RiverSceneCanvasPerEvent(
 
 @Composable
 private fun BalanceStackedNotes(
-    amount: net.taler.common.Amount,
+    amount: CommonAmount,
     isStackExpanded: Boolean,
     onExpand: () -> Unit,
     modifier: Modifier = Modifier,

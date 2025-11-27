@@ -60,9 +60,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.taler.wallet.balances.BalanceState
 import net.taler.wallet.compose.TalerSurface
-import net.taler.wallet.oim.utils.resourceMappers.Background
-import net.taler.wallet.oim.utils.resourceMappers.UIIcons
-import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
+import net.taler.wallet.oim.OimColours
+import net.taler.wallet.oim.resourceMappers.Background
+import net.taler.wallet.oim.resourceMappers.UIIcons
+import net.taler.wallet.oim.resourceMappers.resourceMapper
 import net.taler.wallet.oim.send.components.StackedNotes
 import net.taler.wallet.oim.main.components.NotePreviewOverlay
 import net.taler.wallet.oim.send.components.NotesGalleryOverlay
@@ -177,7 +178,7 @@ fun OIMChestScreenContent(
                 }
             }
 
-            /** Wooden background — this should be the ONLY background layer. */
+            /** Wooden background  */
             Image(
                 painter = painterResource(Background(LocalContext.current).resourceMapper()),
                 contentDescription = "Wooden background",
@@ -202,7 +203,7 @@ fun OIMChestScreenContent(
                     // top right "send" button; shaded red
                     ButtonBox(
                         UIIcons("send").resourceMapper(),
-                        Color(0xFFC32909),
+                        OimColours.OUTGOING_COLOUR,
                         onSendClick,
                         topButtonSize,
                         topIconSize
@@ -211,7 +212,7 @@ fun OIMChestScreenContent(
                     // top center "chest open" button; no shade
                     ButtonBox(
                         UIIcons("chest_open").resourceMapper(),
-                        Color.White,
+                        Color.Unspecified,
                         onBackClick,
                         centerButtonSize,
                         centerIconSize
@@ -220,7 +221,7 @@ fun OIMChestScreenContent(
                     // top right "receive" button; green shade
                     ButtonBox(
                         UIIcons("receive").resourceMapper(),
-                        Color(0xff4caf50),
+                        OimColours.INCOMING_COLOUR,
                         onRequestClick,
                         topButtonSize,
                         topIconSize
@@ -294,7 +295,8 @@ fun OIMChestScreenContent(
                         modifier = Modifier
                             .size(historyButtonSize)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0x6600838F).copy(
+                            .background(
+                                OimColours.TRX_HIST_COLOUR.copy(
                                 alpha = if (isHistActive) 0.9f else 0.6f
                             ))
                             .clickable {
@@ -322,39 +324,7 @@ fun OIMChestScreenContent(
                     noteResId = selectedNoteResId!!,
                     onDismiss = { selectedNoteResId = null }
                 )
-//                Box(
-//                    modifier = Modifier
-//                        .fillMaxSize()
-//                        .background(Color.Black.copy(alpha = 0.7f))
-//                        .clickable { selectedNoteResId = null },
-//                    contentAlignment = Alignment.Center
-//                ) {
-//                    Image(
-//                        painter = painterResource(id = selectedNoteResId!!),
-//                        contentDescription = "Expanded banknote",
-//                        modifier = Modifier
-//                            .fillMaxWidth(0.8f)
-//                            .wrapContentHeight(),
-//                        contentScale = ContentScale.Fit
-//                    )
-//
-//                    // Close button
-//                    Box(
-//                        modifier = Modifier
-//                            .align(Alignment.TopEnd)
-//                            .padding(32.dp)
-//                            .size(48.dp)
-//                            .background(Color.White.copy(alpha = 0.3f), CircleShape)
-//                            .clickable { selectedNoteResId = null },
-//                        contentAlignment = Alignment.Center
-//                    ) {
-//                        Image(
-//                            bitmap = UIIcons("redcross").resourceMapper(),
-//                            contentDescription = "Close",
-//                            modifier = Modifier.size(24.dp)
-//                        )
-//                    }
-//                }
+
             }
 
             NotesGalleryOverlay(

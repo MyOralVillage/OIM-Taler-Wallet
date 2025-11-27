@@ -1,4 +1,4 @@
-package net.taler.wallet.oim.utils.resourceMappers
+package net.taler.wallet.oim.resourceMappers
 
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable

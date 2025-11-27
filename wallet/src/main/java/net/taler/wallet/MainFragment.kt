@@ -104,7 +104,7 @@ import net.taler.wallet.oim.main.OIMChestScreen
 import net.taler.wallet.oim.main.OIMHomeScreen
 import net.taler.wallet.oim.main.OIMReceiveScreen
 import net.taler.wallet.oim.main.rememberOimReceiveFlowState
-import net.taler.wallet.oim.utils.resourceMappers.UIIcons
+import net.taler.wallet.oim.resourceMappers.UIIcons
 import net.taler.wallet.settings.SettingsFragment
 import net.taler.wallet.transactions.Transaction
 import net.taler.wallet.transactions.TransactionMajorState
@@ -114,6 +114,7 @@ import net.taler.wallet.transactions.TransactionStateFilter.Nonfinal
 import kotlin.math.roundToInt
 import net.taler.wallet.R.id.*
 import androidx.core.view.MenuProvider
+import net.taler.wallet.oim.history.TransactionHistoryView
 
 /**
  * Main fragment of the Taler wallet application.
@@ -330,7 +331,7 @@ class MainFragment: Fragment() {
                             }
 
                             Box(modifier = Modifier.fillMaxSize()) {
-                                net.taler.wallet.oim.history.components.TransactionHistoryView(
+                                TransactionHistoryView(
                                     onHome = { oimScreen = OimScreen.CHEST },
                                     balanceAmount = amountForNotes,
                                     onSendClick = { oimScreen = OimScreen.SEND },

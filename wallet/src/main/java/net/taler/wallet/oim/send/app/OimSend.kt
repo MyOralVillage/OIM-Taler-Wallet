@@ -1,5 +1,7 @@
 package net.taler.wallet.oim.send.app
 
+
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -56,18 +58,3 @@ class OimSendHostActivity : ComponentActivity() {
         }
     }
 }
-
-/**
- * Top-level theming function for OIM-related composables.
- *
- * This wraps the [MaterialTheme] composable with default theming and is intended to
- * be used as the base theme for the OIM user interface. Override or extend this
- * in the future to incorporate custom typography, color schemes, or shape theming.
- *
- * @param content Composable lambda representing the UI content to be themed.
- */
-@Composable
-fun OimTheme(content: @Composable () -> Unit) {
-    MaterialTheme(content = content)
-}
-

@@ -13,7 +13,7 @@ import androidx.core.graphics.createBitmap
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.*
-import net.taler.wallet.oim.utils.resourceMappers.Background
+import net.taler.wallet.oim.resourceMappers.Background
 
 /**
  * ## Asser loader - WoodTableBackground
@@ -26,13 +26,13 @@ import net.taler.wallet.oim.utils.resourceMappers.Background
  * is layered behind animated components such as [NoteFlyer] and [NotesPile].
  *
  * @param modifier Layout modifier for positioning or scaling the background.
- * @param light When `true`, uses a light wood texture; otherwise uses dark wood.
- * @see net.taler.wallet.oim.utils.resourceMappers.Background.resourceMapper
+ * @param light **DEPRECATED** picks background based off of dark/light mode
+ * @see Background.resourceMapper
  */
 @Composable
 fun WoodTableBackground(
     modifier: Modifier = Modifier,
-    light: Boolean? = null
+   light: Boolean? = null
 ) {
     Image(
         painter = painterResource(Background(LocalContext.current).resourceMapper()),

@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import net.taler.database.data_models.Amount
-import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
+import net.taler.wallet.oim.resourceMappers.resourceMapper
 import kotlin.math.ceil
 import kotlin.math.min
 

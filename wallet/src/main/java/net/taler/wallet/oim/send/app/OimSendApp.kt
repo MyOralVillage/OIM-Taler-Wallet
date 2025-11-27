@@ -1,4 +1,4 @@
-package net.taler.wallet.oim.send.app
+ package net.taler.wallet.oim.send.app
 
 import android.widget.Toast
 import androidx.compose.runtime.*
@@ -354,6 +354,7 @@ fun OimSendApp(
         Screen.Qr -> QrScreen(
             talerUri = talerUri,
             amount = amount,
+            balance = balanceLabel,
             purpose = chosenPurpose,
             onBack = {
                 amount = Amount.zero(amount.currency)

@@ -31,8 +31,8 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import net.taler.wallet.compose.TalerSurface
-import net.taler.wallet.oim.utils.resourceMappers.Background
-import net.taler.wallet.oim.utils.resourceMappers.UIIcons
+import net.taler.wallet.oim.resourceMappers.Background
+import net.taler.wallet.oim.resourceMappers.UIIcons
 
 /**
  * Stateless OIM home screen that shows the wooden background, QR scan shortcut, and the

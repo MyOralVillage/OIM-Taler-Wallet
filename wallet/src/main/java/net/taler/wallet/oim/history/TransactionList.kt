@@ -14,7 +14,7 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package net.taler.wallet.oim.history.components
+package net.taler.wallet.oim.history
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -38,7 +38,7 @@ import net.taler.database.data_models.Amount
 import net.taler.database.data_models.EDUC_CLTH
 import net.taler.database.data_models.FilterableDirection
 import net.taler.database.data_models.TranxPurp
-import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
+import net.taler.wallet.oim.resourceMappers.resourceMapper
 import net.taler.wallet.oim.send.components.ColumnNotes
 import java.time.LocalDate
 
