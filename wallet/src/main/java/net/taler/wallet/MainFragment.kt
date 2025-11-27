@@ -18,6 +18,7 @@ package net.taler.wallet
 import android.view.Menu
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.core.os.bundleOf
 import android.view.LayoutInflater
 import android.view.MenuInflater
@@ -75,6 +76,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -354,6 +356,9 @@ class MainFragment: Fragment() {
                         null -> { }
                     }
                 } else {
+
+                    val configuration = LocalConfiguration.current
+
                     Box(modifier = Modifier.fillMaxSize()) {
                         Scaffold(
                             bottomBar = {
@@ -420,20 +425,31 @@ class MainFragment: Fragment() {
                                                 CircleShape
                                             ),
                                         onClick = {
+                                            Log.d("OIM_DEBUG", "OIM Mode button clicked.")
                                             val activity = requireActivity() as AppCompatActivity
+                                            Log.d("OIM_DEBUG", "Activity is set.")
+
+                                            val orientation = activity.resources.configuration.orientation
+                                            Log.d("OIM_DEBUG", "Current orientation: $orientation")
+                                            Log.d("OIM_DEBUG", "ORIENTATION_LANDSCAPE constant: ${android.content.res.Configuration.ORIENTATION_LANDSCAPE}")
+
+                                            val isLandscape = orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+                                            Log.d("OIM_DEBUG", "Is landscape: $isLandscape")
+
                                             if (
                                                 activity
-                                                .resources
-                                                .configuration
-                                                .orientation
+                                                    .resources
+                                                    .configuration
+                                                    .orientation
                                                 !=
                                                 android
-                                                .content
-                                                .res
-                                                .Configuration
-                                                .ORIENTATION_LANDSCAPE
+                                                    .content
+                                                    .res
+                                                    .Configuration
+                                                    .ORIENTATION_LANDSCAPE
                                                 )
                                             {
+                                                Log.d("OIM_DEBUG", "If.")
                                                 enterOimAfterLandscape = true
                                                 activity.requestedOrientation =
                                                     android
@@ -441,7 +457,9 @@ class MainFragment: Fragment() {
                                                     .pm
                                                     .ActivityInfo
                                                     .SCREEN_ORIENTATION_LANDSCAPE
+                                                Log.d("OIM_DEBUG", "Orientation changed.")
                                             } else {
+                                                Log.d("OIM_DEBUG", "Else.")
                                                 oimScreen = OimScreen.HOME
                                             }
                                         }
