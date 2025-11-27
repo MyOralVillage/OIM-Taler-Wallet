@@ -14,290 +14,302 @@
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
 
- package net.taler.wallet.oim.main
+package net.taler.wallet.oim.main
 
- import android.util.Log
- import android.widget.Toast
- import androidx.activity.compose.rememberLauncherForActivityResult
- import androidx.compose.foundation.background
- import androidx.compose.foundation.layout.Box
- import androidx.compose.foundation.layout.fillMaxSize
- import androidx.compose.material3.MaterialTheme
- import androidx.compose.runtime.Composable
- import androidx.compose.runtime.LaunchedEffect
- import androidx.compose.runtime.Stable
- import androidx.compose.runtime.getValue
- import androidx.compose.runtime.livedata.observeAsState
- import androidx.compose.runtime.mutableStateOf
- import androidx.compose.runtime.remember
- import androidx.compose.runtime.setValue
- import androidx.compose.ui.Alignment
- import androidx.compose.ui.Modifier
- import androidx.compose.ui.graphics.Color
- import androidx.compose.ui.platform.LocalContext
- import com.google.zxing.client.android.Intents.Scan.MIXED_SCAN
- import com.google.zxing.client.android.Intents.Scan.SCAN_TYPE
- import com.journeyapps.barcodescanner.ScanContract
- import com.journeyapps.barcodescanner.ScanOptions
- import com.journeyapps.barcodescanner.ScanOptions.QR_CODE
- import net.taler.database.TranxHistory
- import net.taler.database.data_models.FilterableDirection
- import net.taler.database.data_models.Timestamp
- import net.taler.wallet.BuildConfig
- import net.taler.wallet.MainViewModel
- import net.taler.wallet.balances.BalanceState
- import net.taler.wallet.compose.collectAsStateLifecycleAware
- import net.taler.wallet.peer.IncomingAccepted
- import net.taler.wallet.peer.IncomingAccepting
- import net.taler.wallet.peer.IncomingError
- import net.taler.wallet.peer.IncomingTerms
- import net.taler.wallet.peer.IncomingTosReview
- import net.taler.wallet.systemBarsPaddingBottom
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import com.google.zxing.client.android.Intents.Scan.MIXED_SCAN
+import com.google.zxing.client.android.Intents.Scan.SCAN_TYPE
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
+import com.journeyapps.barcodescanner.ScanOptions.QR_CODE
+import net.taler.database.TranxHistory
+import net.taler.database.data_models.FilterableDirection
+import net.taler.database.data_models.Timestamp
+import net.taler.wallet.BuildConfig
+import net.taler.wallet.MainViewModel
+import net.taler.wallet.balances.BalanceState
+import net.taler.wallet.compose.collectAsStateLifecycleAware
+import net.taler.wallet.peer.IncomingAccepted
+import net.taler.wallet.peer.IncomingAccepting
+import net.taler.wallet.peer.IncomingError
+import net.taler.wallet.peer.IncomingTerms
+import net.taler.wallet.peer.IncomingTosReview
+import net.taler.wallet.systemBarsPaddingBottom
 
- private const val TAG = "OIMCompose"
+private const val TAG = "OIMCompose"
 
- @Stable
- data class OimReceiveFlowState(
-     val launchReceiveScan: () -> Unit,
-     val dialogTerms: IncomingTerms?,
-     val confirmTerms: (IncomingTerms) -> Unit,
-     val rejectTerms: (IncomingTerms) -> Unit,
- )
+@Stable
+data class OimReceiveFlowState(
+    val launchReceiveScan: () -> Unit,
+    val dialogTerms: IncomingTerms?,
+    val isScanningOrLoading: Boolean,
+    val confirmTerms: (IncomingTerms) -> Unit,
+    val rejectTerms: (IncomingTerms) -> Unit,
+)
 
- @Composable
- internal fun rememberOimReceiveFlowState(
-     model: MainViewModel,
-     onReviewTos: ((String) -> Unit)? = null,
-     showDevToasts: Boolean = model.devMode.value == true,
- ): OimReceiveFlowState {
-     val context = LocalContext.current
-     val peerManager = model.peerManager
+@Composable
+internal fun rememberOimReceiveFlowState(
+    model: MainViewModel,
+    onReviewTos: ((String) -> Unit)? = null,
+    showDevToasts: Boolean = model.devMode.value == true,
+): OimReceiveFlowState {
+    val context = LocalContext.current
+    val peerManager = model.peerManager
 
-     val barcodeLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
-         if (result == null || result.contents == null) return@rememberLauncherForActivityResult
-         val scannedUri = result.contents
-         Log.d(TAG, "Scanned URI: $scannedUri")
-         peerManager.preparePeerPushCredit(scannedUri)
-     }
+    var isScanningOrLoading by remember { mutableStateOf(false) }
 
-     var lastTerms: IncomingTerms? by remember { mutableStateOf(null) }
-     val paymentState by peerManager.incomingPushState.collectAsStateLifecycleAware()
+    val barcodeLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
+        if (result == null || result.contents == null) {
+            isScanningOrLoading = false
+            return@rememberLauncherForActivityResult
+        }
+        val scannedUri = result.contents
+        Log.d(TAG, "Scanned URI: $scannedUri")
+        peerManager.preparePeerPushCredit(scannedUri)
+    }
 
-     val exchanges by model.exchangeManager.exchanges.observeAsState(emptyList())
-     LaunchedEffect(exchanges) {
-         model.peerManager.refreshPeerPushCreditTos(exchanges)
-     }
+    var lastTerms: IncomingTerms? by remember { mutableStateOf(null) }
+    val paymentState by peerManager.incomingPushState.collectAsStateLifecycleAware()
 
-     LaunchedEffect(paymentState) {
-         when (val state = paymentState) {
-             is IncomingTerms -> if (state !is IncomingAccepting) {
-                 lastTerms = state
-                 if (showDevToasts) {
-                     Toast.makeText(
-                         context, "Terms ready: ${state.amountEffective}",
-                         Toast.LENGTH_SHORT).show()
-                 }
-             }
-             is IncomingTosReview -> {
-                 Toast.makeText(context, "Exchange ToS need review", Toast.LENGTH_SHORT).show()
-             }
-             is IncomingAccepted -> {
-                 Toast.makeText(
-                     context,
-                     "Payment received successfully!",
-                     Toast.LENGTH_LONG
-                 ).show()
-                 lastTerms?.let { terms ->
-                     val appCtx = context.applicationContext
-                     runCatching {
-                         if (BuildConfig.DEBUG)
-                             TranxHistory.initTest(appCtx)
-                         else TranxHistory.initTest(appCtx)
-                     }
+    val exchanges by model.exchangeManager.exchanges.observeAsState(emptyList())
+    LaunchedEffect(exchanges) {
+        model.peerManager.refreshPeerPushCreditTos(exchanges)
+    }
 
-                     runCatching {
-                         TranxHistory.newTransaction(
-                             tid = "RECEIVED_${System.currentTimeMillis()}",
-                             purp = null,
-                             amt = terms.amountEffective,
-                             dir = FilterableDirection.INCOMING,
-                             tms = Timestamp.now(),
-                         )
-                     }.onFailure { e ->
-                         Log.e(TAG, "Local DB log failed (will retry after init): ${e.message}")
-                         runCatching {
-                             if (BuildConfig.DEBUG)
-                                 TranxHistory.initTest(appCtx)
-                             else TranxHistory.initTest(appCtx)
-                             TranxHistory.newTransaction(
-                                 tid = "RECEIVED_${System.currentTimeMillis()}",
-                                 purp = null,
-                                 amt = terms.amountEffective,
-                                 dir = FilterableDirection.INCOMING,
-                                 tms = Timestamp.now(),
-                             )
-                         }.onFailure { ex ->
-                             Log.e(TAG, "Local DB log failed after init: ${ex.message}", ex)
-                         }
-                     }
-                 }
-             }
-             is IncomingError -> {
-                 val msg = if (showDevToasts) state.info.toString() else state.info.userFacingMsg
-                 Toast.makeText(context, "Payment error: $msg", Toast.LENGTH_SHORT).show()
-             }
-             else -> Unit
-         }
-     }
+    LaunchedEffect(paymentState) {
+        when (val state = paymentState) {
+            is IncomingTerms -> if (state !is IncomingAccepting) {
+                lastTerms = state
+                if (showDevToasts) {
+                    Toast.makeText(
+                        context, "Terms ready: ${state.amountEffective}",
+                        Toast.LENGTH_SHORT).show()
+                }
+            }
+            is IncomingTosReview -> {
+                Toast.makeText(context, "Exchange ToS need review", Toast.LENGTH_SHORT).show()
+            }
+            is IncomingAccepted -> {
+                isScanningOrLoading = false
+                Toast.makeText(
+                    context,
+                    "Payment received successfully!",
+                    Toast.LENGTH_LONG
+                ).show()
+                lastTerms?.let { terms ->
+                    val appCtx = context.applicationContext
+                    runCatching {
+                        if (BuildConfig.DEBUG)
+                            TranxHistory.initTest(appCtx)
+                        else TranxHistory.initTest(appCtx)
+                    }
 
-     val dialogTerms = when (val state = paymentState) {
-         is IncomingTerms -> if (state is IncomingAccepting) null else state
-         else -> null
-     }
+                    runCatching {
+                        TranxHistory.newTransaction(
+                            tid = "RECEIVED_${System.currentTimeMillis()}",
+                            purp = null,
+                            amt = terms.amountEffective,
+                            dir = FilterableDirection.INCOMING,
+                            tms = Timestamp.now(),
+                        )
+                    }.onFailure { e ->
+                        Log.e(TAG, "Local DB log failed (will retry after init): ${e.message}")
+                        runCatching {
+                            if (BuildConfig.DEBUG)
+                                TranxHistory.initTest(appCtx)
+                            else TranxHistory.initTest(appCtx)
+                            TranxHistory.newTransaction(
+                                tid = "RECEIVED_${System.currentTimeMillis()}",
+                                purp = null,
+                                amt = terms.amountEffective,
+                                dir = FilterableDirection.INCOMING,
+                                tms = Timestamp.now(),
+                            )
+                        }.onFailure { ex ->
+                            Log.e(TAG, "Local DB log failed after init: ${ex.message}", ex)
+                        }
+                    }
+                }
+            }
+            is IncomingError -> {
+                isScanningOrLoading = false
+                val msg = if (showDevToasts) state.info.toString() else state.info.userFacingMsg
+                Toast.makeText(context, "Payment error: $msg", Toast.LENGTH_SHORT).show()
+            }
+            else -> Unit
+        }
+    }
 
-     val launchReceiveScan = remember(barcodeLauncher) {
-         {
-             val scanOptions = ScanOptions().apply {
-                 setPrompt("")
-                 setBeepEnabled(true)
-                 setOrientationLocked(false)
-                 setDesiredBarcodeFormats(QR_CODE)
-                 addExtra(SCAN_TYPE, MIXED_SCAN)
-             }
-             barcodeLauncher.launch(scanOptions)
-         }
-     }
+    val dialogTerms = when (val state = paymentState) {
+        is IncomingTerms -> if (state is IncomingAccepting) null else state
+        else -> null
+    }
 
-     val confirmTerms = remember(onReviewTos, peerManager) {
-         { terms: IncomingTerms ->
-             if (terms is IncomingTosReview) {
-                 onReviewTos?.invoke(terms.exchangeBaseUrl) ?: Unit
-             } else {
-                 peerManager.confirmPeerPushCredit(terms)
-             }
-         }
-     }
+    val launchReceiveScan = remember(barcodeLauncher) {
+        {
+            val scanOptions = ScanOptions().apply {
+                setPrompt("")
+                setBeepEnabled(false)
+                setOrientationLocked(false)
+                setDesiredBarcodeFormats(QR_CODE)
+                addExtra(SCAN_TYPE, MIXED_SCAN)
+            }
+            isScanningOrLoading = true
+            barcodeLauncher.launch(scanOptions)
+        }
+    }
 
-     val rejectTerms = remember(peerManager, context) {
-         { terms: IncomingTerms ->
-             Toast.makeText(context, "Payment rejected", Toast.LENGTH_SHORT).show()
-             peerManager.rejectPeerPushCredit(terms)
-         }
-     }
+    val confirmTerms = remember(onReviewTos, peerManager) {
+        { terms: IncomingTerms ->
+            if (terms is IncomingTosReview) {
+                onReviewTos?.invoke(terms.exchangeBaseUrl) ?: Unit
+            } else {
+                peerManager.confirmPeerPushCredit(terms)
+                isScanningOrLoading = false
+            }
+        }
+    }
 
-     return OimReceiveFlowState(
-         launchReceiveScan = launchReceiveScan,
-         dialogTerms = dialogTerms,
-         confirmTerms = confirmTerms,
-         rejectTerms = rejectTerms,
-     )
- }
+    val rejectTerms = remember(peerManager, context) {
+        { terms: IncomingTerms ->
+            Toast.makeText(context, "Payment rejected", Toast.LENGTH_SHORT).show()
+            peerManager.rejectPeerPushCredit(terms)
+            isScanningOrLoading = false
+        }
+    }
 
- /**
-  * Entry point for rendering the OIM home experience inside the main Compose navigator.
-  *
-  * @param model shared [MainViewModel] exposing peer, balance, and exchange managers.
-  * @param onNavigateToChest callback invoked when the user opens their chest.
-  * @param onBackToTaler callback that returns the user to the classic wallet experience.
-  * @param onReviewTos optional handler used when an exchange requires terms review.
-  * @param modifier host modifier for positioning within the parent layout.
-  * @param showDevToasts toggles additional debugging toasts for development builds.
-  */
- @Composable
- fun OIMHomeScreen(
-     model: MainViewModel,
-     onNavigateToChest: () -> Unit,
-     onBackToTaler: () -> Unit,
-     onReviewTos: ((String) -> Unit)? = null,
-     modifier: Modifier = Modifier,
-     showDevToasts: Boolean = model.devMode.value == true,
- ) {
-     val receiveFlow = rememberOimReceiveFlowState(
-         model = model,
-         onReviewTos = onReviewTos,
-         showDevToasts = showDevToasts,
-     )
+    return OimReceiveFlowState(
+        launchReceiveScan = launchReceiveScan,
+        dialogTerms = dialogTerms,
+        isScanningOrLoading = isScanningOrLoading,
+        confirmTerms = confirmTerms,
+        rejectTerms = rejectTerms,
+    )
+}
 
-     // UI with dialog overlay when terms are available (not accepting)
-     Box(modifier = modifier.fillMaxSize()) {
-         OIMHomeScreenContent(
-             modifier = Modifier
-                 .fillMaxSize(),
-             onScanQrClick = receiveFlow.launchReceiveScan,
-             onChestClick = onNavigateToChest,
-             onBackToTalerClick = onBackToTaler,
-         )
+/**
+ * Entry point for rendering the OIM home experience inside the main Compose navigator.
+ *
+ * @param model shared [MainViewModel] exposing peer, balance, and exchange managers.
+ * @param onNavigateToChest callback invoked when the user opens their chest.
+ * @param onBackToTaler callback that returns the user to the classic wallet experience.
+ * @param onReviewTos optional handler used when an exchange requires terms review.
+ * @param modifier host modifier for positioning within the parent layout.
+ * @param showDevToasts toggles additional debugging toasts for development builds.
+ */
+@Composable
+fun OIMHomeScreen(
+    model: MainViewModel,
+    onNavigateToChest: () -> Unit,
+    onBackToTaler: () -> Unit,
+    onReviewTos: ((String) -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    showDevToasts: Boolean = model.devMode.value == true,
+) {
+    val receiveFlow = rememberOimReceiveFlowState(
+        model = model,
+        onReviewTos = onReviewTos,
+        showDevToasts = showDevToasts,
+    )
 
-         val terms = receiveFlow.dialogTerms
-         if (terms != null) {
-             Box(
-                 modifier = Modifier
-                     .fillMaxSize()
-                     .background(Color.Black.copy(alpha = 0.5f)),
-                 contentAlignment = Alignment.Center,
-             ) {
-                 OIMPaymentDialog(
-                     terms = terms,
-                     onAccept = { receiveFlow.confirmTerms(terms) },
-                     onReject = { receiveFlow.rejectTerms(terms) }
-                 )
-             }
-         }
-     }
- }
+    // UI with dialog overlay when terms are available (not accepting)
+    Box(modifier = modifier.fillMaxSize()) {
+        OIMHomeScreenContent(
+            modifier = Modifier
+                .fillMaxSize(),
+            onScanQrClick = receiveFlow.launchReceiveScan,
+            onChestClick = onNavigateToChest,
+            onBackToTalerClick = onBackToTaler,
+        )
 
- /**
-  * Entry point for the OIM chest screen that wires the view model state to the
-  * stateless [OIMChestScreenContent].
-  *
-  * @param model shared [MainViewModel] providing balances and withdraw actions.
-  * @param onBackClick callback for the central chest button.
-  * @param onSendClick callback for the send shortcut.
-  * @param onRequestClick callback for the receive shortcut.
-  * @param onTransactionHistoryClick opens the transaction history view.
-  * @param onWithdrawTestKudosClick optional dev helper for minting test kudos.
-  * @param modifier root modifier supplied by the host.
-  */
- @Composable
- fun OIMChestScreen(
-     model: MainViewModel,
-     onBackClick: () -> Unit,
-     onSendClick: () -> Unit,
-     onRequestClick: () -> Unit,
-     onTransactionHistoryClick: () -> Unit,
-     onWithdrawTestKudosClick: () -> Unit = { model.withdrawManager.withdrawTestBalance() },
-     modifier: Modifier = Modifier,
- ) {
-     MaterialTheme {
-         val balanceState by model.balanceManager.state.observeAsState(BalanceState.None)
-         OIMChestScreenContent(
-             modifier = modifier,
-             onBackClick = onBackClick,
-             onSendClick = onSendClick,
-             onRequestClick = onRequestClick,
-             onTransactionHistoryClick = onTransactionHistoryClick,
-             onWithdrawTestKudosClick = onWithdrawTestKudosClick,
-             balanceState = balanceState
-         )
-     }
- }
+        val terms = receiveFlow.dialogTerms
+        if (receiveFlow.isScanningOrLoading || terms != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black), // Opaque background for full screen feel
+                contentAlignment = Alignment.Center,
+            ) {
+                OIMReceiveScreen(
+                    terms = terms,
+                    onAccept = { terms?.let { receiveFlow.confirmTerms(it) } },
+                    onReject = { terms?.let { receiveFlow.rejectTerms(it) } }
+                )
+            }
+        }
+    }
+}
 
- // --- Helpers ---
+/**
+ * Entry point for the OIM chest screen that wires the view model state to the
+ * stateless [OIMChestScreenContent].
+ *
+ * @param model shared [MainViewModel] providing balances and withdraw actions.
+ * @param onBackClick callback for the central chest button.
+ * @param onSendClick callback for the send shortcut.
+ * @param onRequestClick callback for the receive shortcut.
+ * @param onTransactionHistoryClick opens the transaction history view.
+ * @param onWithdrawTestKudosClick optional dev helper for minting test kudos.
+ * @param modifier root modifier supplied by the host.
+ */
+@Composable
+fun OIMChestScreen(
+    model: MainViewModel,
+    onBackClick: () -> Unit,
+    onSendClick: () -> Unit,
+    onRequestClick: () -> Unit,
+    onTransactionHistoryClick: () -> Unit,
+    onWithdrawTestKudosClick: () -> Unit = { model.withdrawManager.withdrawTestBalance() },
+    modifier: Modifier = Modifier,
+) {
+    MaterialTheme {
+        val balanceState by model.balanceManager.state.observeAsState(BalanceState.None)
+        OIMChestScreenContent(
+            modifier = modifier,
+            onBackClick = onBackClick,
+            onSendClick = onSendClick,
+            onRequestClick = onRequestClick,
+            onTransactionHistoryClick = onTransactionHistoryClick,
+            onWithdrawTestKudosClick = onWithdrawTestKudosClick,
+            balanceState = balanceState
+        )
+    }
+}
 
- /** Validates that the supplied URI represents an OIM peer push request. */
- private fun validateIncomingPushUri(uri: String): Boolean {
-     return try {
-         val normalized = uri.trim().lowercase()
-         if (normalized.startsWith("payto://")) return false
-         val schemeLen = when {
-             normalized.startsWith("taler://") -> "taler://".length
-             normalized.startsWith("ext+taler://") -> "ext+taler://".length
-             normalized.startsWith("taler+http://") -> return false
-             else -> return false
-         }
-         val action = normalized.substring(schemeLen)
-         action.startsWith("pay-push/")
-     } catch (e: Exception) {
-         false
-     }
- }
+// --- Helpers ---
+
+/** Validates that the supplied URI represents an OIM peer push request. */
+private fun validateIncomingPushUri(uri: String): Boolean {
+    return try {
+        val normalized = uri.trim().lowercase()
+        if (normalized.startsWith("payto://")) return false
+        val schemeLen = when {
+            normalized.startsWith("taler://") -> "taler://".length
+            normalized.startsWith("ext+taler://") -> "ext+taler://".length
+            normalized.startsWith("taler+http://") -> return false
+            else -> return false
+        }
+        val action = normalized.substring(schemeLen)
+        action.startsWith("pay-push/")
+    } catch (e: Exception) {
+        false
+    }
+}
