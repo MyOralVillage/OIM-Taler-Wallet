@@ -251,6 +251,9 @@ class MainFragment: Fragment() {
                             onReviewTos = reviewTos,
                         )
                         OimScreen.CHEST -> run {
+
+                            BackHandler(true) { oimScreen = OimScreen.HOME }
+
                             val receiveFlow = rememberOimReceiveFlowState(
                                 model = model,
                                 onReviewTos = reviewTos,

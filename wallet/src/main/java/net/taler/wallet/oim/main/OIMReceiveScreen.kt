@@ -46,8 +46,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.taler.database.data_models.tranxPurpLookup
-import net.taler.wallet.oim.res_mapping_extensions.UIIcons
-import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.oim.utils.resourceMappers.Background
+import net.taler.wallet.oim.utils.resourceMappers.UIIcons
+import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
 import net.taler.wallet.oim.send.components.NotesGalleryOverlay
 import net.taler.wallet.oim.send.components.StackedNotes
 import net.taler.wallet.oim.send.components.WoodTableBackground
