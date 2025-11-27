@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,8 +22,6 @@ import java.math.BigDecimal
 import androidx.compose.material.icons.filled.MoneyOff
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.layout.ContentScale
 import net.taler.wallet.oim.OimColours
@@ -33,11 +32,16 @@ import net.taler.wallet.oim.resourceMappers.SLE_BILLS_CENTS
 import net.taler.wallet.oim.resourceMappers.UIIcons
 import net.taler.wallet.oim.resourceMappers.XOF_BILLS
 import net.taler.wallet.oim.resourceMappers.resourceMapper
+import net.taler.wallet.oim.resourceMappers.consolidate
+import kotlinx.coroutines.delay
+import kotlin.random.Random
 
 /**
  * Main screen for sending money.
  *
- * Integrates amount display, flying notes animation, and note selection.
+ * Notes are displayed in horizontal rows, with each denomination getting its own pile.
+ * When enough small denominations accumulate, they automatically consolidate into larger ones
+ * with a smooth animation (e.g., 5x0.01 SLE → 1x0.05 SLE).
  *
  * @param balance The wallet balance to show in the top bar.
  * @param amount The currently selected sending amount.
@@ -89,40 +93,44 @@ fun SendScreen(
             light = false
         )
 
-        // flying-note state
-        data class Pending(val value: Amount, val bmp: Int, val start: Offset, val denomKey: String, val scaleFactor: Float)
+        // Consolidation animation state
+        data class ConsolidationAnim(
+            val sourceDenom: String,
+            val targetDenom: String,
+            val sourcePositions: List<Offset>,
+            val targetPosition: Offset,
+            val sourceRes: List<Int>,
+            val targetRes: Int
+        )
+        var consolidationAnim by remember { mutableStateOf<ConsolidationAnim?>(null) }
+
+        // Regular note flight state
+        data class Pending(val value: Amount, val bmp: Int, val start: Offset, val denomKey: String)
         var pending by remember { mutableStateOf<Pending?>(null) }
 
-        // Multiple piles - one per denomination, sorted by value (largest to smallest)
-        val pilesByDenom = remember { mutableStateMapOf<String, MutableList<Int>>() }
-        val pileAmountsByDenom = remember { mutableStateMapOf<String, MutableList<Amount>>() }
-        val denomOrder = remember { mutableStateListOf<String>() }
-        val denomScaleFactors = remember { mutableStateMapOf<String, Float>() }
+        // Store all amounts as a flat list, but render them as consolidated piles
+        val allAmounts = remember { mutableStateListOf<Amount>() }
 
-        // Expanded state for click-to-enlarge
-        var expandedDenom by remember { mutableStateOf<String?>(null) }
+        // Derived state: consolidated view of amounts
+        val consolidatedAmounts = remember(allAmounts.size) {
+            derivedStateOf { allAmounts.toList().consolidate() }
+        }
 
         val density = LocalDensity.current
         val screenWidth = this@BoxWithConstraints.maxWidth
         val screenHeight = this@BoxWithConstraints.maxHeight
 
-        // Base size relative to screen DPI and size
+        // Base size for notes
         val baseSizeDp = remember(density, screenWidth, screenHeight) {
             with(density) {
-                val screenWidthDp = screenWidth
-                val screenHeightDp = screenHeight
-                val minDimension = minOf(screenWidthDp, screenHeightDp)
-                // Base size is proportional to screen size, typically 15-20% of min dimension
-                (minDimension * 0.18f).coerceIn(80.dp, 150.dp)
+                val minDimension = minOf(screenWidth, screenHeight)
+                (minDimension * 0.12f).coerceIn(60.dp, 120.dp)
             }
         }
 
-        // Helper function to sort denominations by value (largest first)
-        fun getSortedDenomOrder(): List<String> {
-            return denomOrder.sortedByDescending { denomKey ->
-                BigDecimal(denomKey)
-            }
-        }
+        // Layout constants
+        val pileAreaCenterY = with(density) { (screenHeight * 0.45f).toPx() }
+        val pileSpacing = with(density) { 16.dp.toPx() }
 
         Column(
             Modifier
@@ -139,7 +147,7 @@ fun SendScreen(
 
             Spacer(Modifier.weight(1f))
 
-            // total amount + undo
+            // total amount + buttons
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -187,33 +195,15 @@ fun SendScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(28.dp)) // space between send + undo
+                    Spacer(modifier = Modifier.height(28.dp))
 
                     // UNDO BUTTON
                     Button(
                         onClick = {
-                            if (denomOrder.isNotEmpty()) {
-                                val lastDenom = denomOrder.last()
-                                val amounts = pileAmountsByDenom[lastDenom]
-                                val notes = pilesByDenom[lastDenom]
-
-                                if (amounts != null && amounts.isNotEmpty()) {
-                                    val popped = amounts.removeAt(amounts.lastIndex)
-                                    if (notes != null && notes.isNotEmpty()) {
-                                        notes.removeAt(notes.lastIndex)
-                                    }
-
-                                    if (amounts.isEmpty()) {
-                                        pileAmountsByDenom.remove(lastDenom)
-                                        pilesByDenom.remove(lastDenom)
-                                        denomOrder.removeAt(denomOrder.lastIndex)
-                                        denomScaleFactors.remove(lastDenom)
-                                        if (expandedDenom == lastDenom) expandedDenom = null
-                                    }
-
-                                    displayAmount = minus(displayAmount, popped)
-                                    onRemoveLast(popped)
-                                }
+                            if (allAmounts.isNotEmpty()) {
+                                val popped = allAmounts.removeAt(allAmounts.lastIndex)
+                                displayAmount = minus(displayAmount, popped)
+                                onRemoveLast(popped)
                             }
                         },
                         colors = ButtonDefaults.buttonColors(
@@ -230,7 +220,6 @@ fun SendScreen(
                         )
                     }
                 }
-
             }
 
             // figure out currency and denominations
@@ -266,25 +255,6 @@ fun SendScreen(
                     resId to Amount.fromString(currency, amountStr)
                 }
 
-            // Calculate scale factors based on denomination value
-            // Lowest denomination = smallest size, highest = largest size
-            val denominationValues = noteThumbnails.map { (_, amount) ->
-                BigDecimal(amount.amountStr)
-            }
-            val minDenom = denominationValues.minOrNull() ?: BigDecimal.ONE
-            val maxDenom = denominationValues.maxOrNull() ?: BigDecimal.ONE
-
-            val scaleFactors = noteThumbnails.map { (_, amount) ->
-                val value = BigDecimal(amount.amountStr)
-                if (maxDenom == minDenom) {
-                    1.0f
-                } else {
-                    // Subtle scale from 0.85 to 1.15 based on denomination
-                    val normalized = (value - minDenom).toFloat() / (maxDenom - minDenom).toFloat()
-                    0.85f + (normalized * 0.3f)
-                }
-            }
-
             // which are affordable
             val affordableNotes = noteThumbnails.map { (_, noteAmount) ->
                 val noteValue = BigDecimal(noteAmount.amountStr)
@@ -300,147 +270,115 @@ fun SendScreen(
                 onAddRequest = { billAmount, startCenter ->
                     val bmp = billAmount.resourceMapper().firstOrNull() ?: return@NotesStrip
                     val denomKey = billAmount.amountStr
-
-                    // Find the scale factor for this denomination
-                    val index = noteThumbnails.indexOfFirst { it.second.amountStr == denomKey }
-                    val scaleFactor = if (index >= 0) scaleFactors[index] else 1.0f
-
-                    if (!denomScaleFactors.containsKey(denomKey)) {
-                        denomScaleFactors[denomKey] = scaleFactor
-                    }
-
-                    pending = Pending(billAmount, bmp, startCenter, denomKey, scaleFactor)
+                    pending = Pending(billAmount, bmp, startCenter, denomKey)
                 },
                 onRemoveLast = {
-                    if (denomOrder.isNotEmpty()) {
-                        val lastDenom = denomOrder.last()
-                        val amounts = pileAmountsByDenom[lastDenom]
-                        val notes = pilesByDenom[lastDenom]
-
-                        if (amounts != null && amounts.isNotEmpty()) {
-                            val popped = amounts.removeAt(amounts.lastIndex)
-                            if (notes != null && notes.isNotEmpty()) {
-                                notes.removeAt(notes.lastIndex)
-                            }
-
-                            if (amounts.isEmpty()) {
-                                pileAmountsByDenom.remove(lastDenom)
-                                pilesByDenom.remove(lastDenom)
-                                denomOrder.removeAt(denomOrder.lastIndex)
-                                denomScaleFactors.remove(lastDenom)
-                                if (expandedDenom == lastDenom) {
-                                    expandedDenom = null
-                                }
-                            }
-
-                            displayAmount = minus(displayAmount, popped)
-                            onRemoveLast(popped)
-                        }
+                    if (allAmounts.isNotEmpty()) {
+                        val popped = allAmounts.removeAt(allAmounts.lastIndex)
+                        displayAmount = minus(displayAmount, popped)
+                        onRemoveLast(popped)
                     }
                 }
             )
         }
 
-        // actual flying note
+        // Calculate pile positions for consolidated view (left to right, largest to smallest)
+        val consolidated = consolidatedAmounts.value
+        val sortedDenoms = consolidated.map { it.amountStr }.distinct().sortedByDescending { BigDecimal(it) }
+
+        // Group consolidated amounts by denomination
+        val pilesByDenom = consolidated.groupBy { it.amountStr }
+
+        // Helper function to calculate positions for a given set of denominations
+        fun calculatePilePositions(denoms: List<String>): Map<String, Offset> {
+            val positions = mutableMapOf<String, Offset>()
+            if (denoms.isEmpty()) return positions
+
+            val totalWidth = denoms.size * with(density) { baseSizeDp.toPx() } +
+                    (denoms.size - 1) * pileSpacing
+            val startXPos = with(density) { (screenWidth / 2).toPx() } - totalWidth / 2
+            var currentXPos = startXPos
+
+            denoms.forEach { denomKey ->
+                val pileWidth = with(density) { baseSizeDp.toPx() }
+                positions[denomKey] = Offset(currentXPos + pileWidth / 2, pileAreaCenterY)
+                currentXPos += pileWidth + pileSpacing
+            }
+            return positions
+        }
+
+        val pilePositions = calculatePilePositions(sortedDenoms)
+
+        // Regular note flight (when adding a new note)
         pending?.let { p ->
-            // Calculate target position based on sorted order (largest to smallest, left to right)
-            val sortedOrder = getSortedDenomOrder()
-            val stackIndex = sortedOrder.indexOf(p.denomKey).let {
-                if (it == -1) sortedOrder.size else it
-            }
+            // Simulate what the consolidated state will look like after adding this note
+            val afterAdd = (allAmounts.toList() + p.value).consolidate()
+            val afterAddDenoms = afterAdd.map { it.amountStr }.distinct()
+                .sortedByDescending { BigDecimal(it) }
 
-            val pileWidthPx = with(density) { (baseSizeDp * p.scaleFactor).toPx() }
-            val spacing = with(density) { (baseSizeDp * 0.2f).toPx() }
+            // Find the largest denomination that will exist after consolidation
+            // The new note will appear to fly to that largest pile
+            val targetDenom = afterAddDenoms.firstOrNull() ?: p.denomKey
 
-            // Calculate total width considering scale factors of sorted denominations
-            val totalWidth = sortedOrder.sumOf { denom ->
-                val scale = denomScaleFactors[denom] ?: 1.0f
-                with(density) { (baseSizeDp * scale).toPx() }.toDouble()
-            } + spacing * (sortedOrder.size.coerceAtLeast(1) - 1)
-
-            val startX = with(density) { (screenWidth / 2).toPx() } - totalWidth.toFloat() / 2
-
-            // Calculate X position by summing up widths of previous stacks in sorted order
-            var targetX = startX
-            for (i in 0 until stackIndex) {
-                val prevScale = denomScaleFactors[sortedOrder[i]] ?: 1.0f
-                targetX += with(density) { (baseSizeDp * prevScale).toPx() }
-                targetX += spacing
-            }
-            targetX += pileWidthPx / 2
-
-            val targetY = with(density) { (screenHeight / 2).toPx() }
-            val endPosition = Offset(targetX, targetY)
+            // Calculate positions for the future state
+            val futurePositions = calculatePilePositions(afterAddDenoms)
+            val targetPos = futurePositions[targetDenom]
+                ?: Offset(with(density) { (screenWidth / 2).toPx() }, pileAreaCenterY)
 
             NoteFlyer(
                 noteRes = p.bmp,
                 startInRoot = p.start,
-                endInRoot = endPosition,
-                widthPx = pileWidthPx,
+                endInRoot = targetPos,
+                widthPx = with(density) { baseSizeDp.toPx() },
                 onArrive = {
-                    // Add to appropriate denomination pile
-                    if (!pilesByDenom.containsKey(p.denomKey)) {
-                        pilesByDenom[p.denomKey] = mutableListOf()
-                        pileAmountsByDenom[p.denomKey] = mutableListOf()
-                        denomOrder.add(p.denomKey)
-                    }
-                    pilesByDenom[p.denomKey]?.add(p.bmp)
-                    pileAmountsByDenom[p.denomKey]?.add(p.value)
-
+                    // Add to the flat list
+                    allAmounts.add(p.value)
                     displayAmount = plus(displayAmount, p.value)
                     onAdd(p.value)
                     pending = null
-                },
+                    // Consolidation happens automatically via derivedStateOf
+                }
             )
         }
 
-        // Render all piles horizontally (largest to smallest, left to right)
-        val sortedOrder = getSortedDenomOrder()
-        val spacing = with(density) { (baseSizeDp * 0.2f).toPx() }
+        // Render all denomination piles
+        sortedDenoms.forEach { denomKey ->
+            val notesInPile = pilesByDenom[denomKey] ?: return@forEach
+            val position = pilePositions[denomKey] ?: return@forEach
 
-        // Calculate total width for centering
-        val totalWidth = sortedOrder.sumOf { denom ->
-            val scale = denomScaleFactors[denom] ?: 1.0f
-            with(density) { (baseSizeDp * scale).toPx() }.toDouble()
-        } + spacing * (sortedOrder.size - 1).coerceAtLeast(0)
+            // Get resource IDs for this pile
+            val resourceIds = notesInPile.mapNotNull { amount ->
+                amount.resourceMapper().firstOrNull()
+            }
 
-        val startX = with(density) { (screenWidth / 2).toPx() } - totalWidth.toFloat() / 2
-        var currentX = startX
-
-        sortedOrder.forEach { denomKey ->
-            val notes = pilesByDenom[denomKey] ?: return@forEach
-            val scaleFactor = denomScaleFactors[denomKey] ?: 1.0f
-            val pileWidthPx = with(density) { (baseSizeDp * scaleFactor).toPx() }
-
-            // Check if this pile is expanded
-            val isExpanded = expandedDenom == denomKey
-            val displayScale = if (isExpanded) 2.5f else 1.0f
-
+            // Render the pile directly at the calculated position
             Box(
                 modifier = Modifier
                     .offset(
-                        x = with(density) { currentX.toDp() },
-                        y = with(density) {
-                            val baseY = (
-                            (screenHeight / 2).toPx()).toDp()
-                            - (baseSizeDp * scaleFactor * 0.65f)
-                            if (isExpanded) baseY - 100.dp else baseY
-                        }
+                        x = with(density) { (position.x - baseSizeDp.toPx() / 2).toDp() },
+                        y = with(density) { (position.y - baseSizeDp.toPx() * 0.65f).toDp() }
                     )
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {
-                        expandedDenom = if (isExpanded) null else denomKey
-                    }
+                    .width(with(density) { baseSizeDp })
             ) {
-                NotesPile(
-                    landedNotes = notes.map { ImageBitmap.imageResource(it) },
-                    noteWidthPx = pileWidthPx * displayScale
-                )
-            }
+                // Draw notes bottom-to-top with random offsets
+                resourceIds.forEachIndexed { i, resId ->
+                    val rot = remember(denomKey, i) { Random.nextFloat() * 18f - 9f }
+                    val dx = remember(denomKey, i) { (Random.nextInt(-10, 10)).dp }
+                    val dy = remember(denomKey, i) { (Random.nextInt(-3, 9)).dp }
 
-            currentX += pileWidthPx + spacing
+                    Image(
+                        bitmap = ImageBitmap.imageResource(resId),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .offset(dx, dy)
+                            .width(with(density) { baseSizeDp })
+                            .graphicsLayer {
+                                rotationZ = rot
+                            },
+                        contentScale = ContentScale.FillWidth
+                    )
+                }
+            }
         }
     }
 }

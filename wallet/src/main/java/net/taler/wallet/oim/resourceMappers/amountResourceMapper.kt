@@ -18,7 +18,110 @@ package net.taler.wallet.oim.resourceMappers
 import androidx.annotation.DrawableRes
 import net.taler.common.R
 import net.taler.database.data_models.*
+import java.math.BigDecimal
 import kotlin.collections.mutableListOf
+
+/**
+ * Extension function to consolidate a list of amounts into their optimal denomination representation.
+ *
+ * For example:
+ * - 5x0.01 SLE → 1x0.05 SLE
+ * - 10x0.01 SLE → 1x0.10 SLE
+ * - 2x0.05 SLE → 1x0.10 SLE
+ *
+ * The consolidation process:
+ * 1. Sum all amounts to get total value
+ * 2. Call Amount.resourceMapper() which automatically returns the optimal denomination breakdown
+ * 3. Convert each denomination back to Amount objects
+ *
+ * @return List of consolidated Amount objects, sorted from largest to smallest denomination
+ */
+internal fun List<Amount>.consolidate(): List<Amount> {
+    if (this.isEmpty()) return emptyList()
+
+    // Get currency from first amount
+    val currency = this.first().spec?.name ?: this.first().currency
+
+    // Sum all amounts
+    val totalValue = this.fold(BigDecimal.ZERO) { acc, amount ->
+        acc + BigDecimal(amount.amountStr)
+    }
+
+    // Create a single Amount representing the total
+    val totalAmount = Amount.fromString(currency, totalValue.stripTrailingZeros().toPlainString())
+
+    // Get the optimal denomination breakdown using resourceMapper
+    val optimalResIds = totalAmount.resourceMapper()
+
+    // Convert resource IDs back to Amount objects
+    val consolidated = mutableListOf<Amount>()
+
+    // We need to map each resId back to its denomination value
+    // This requires knowing which currency we're working with
+    when (currency) {
+        "CHF" -> {
+            optimalResIds.forEach { resId ->
+                val denomValue = CHF_BILLS.find { it.second == resId }?.first
+                if (denomValue != null) {
+                    val francs = denomValue / 2
+                    val half = denomValue % 2
+                    val amountStr = if (half == 0) "$francs.00" else "$francs.50"
+                    consolidated.add(Amount.fromString(currency, amountStr))
+                }
+            }
+        }
+        "XOF" -> {
+            optimalResIds.forEach { resId ->
+                val denomValue = XOF_BILLS.find { it.second == resId }?.first
+                if (denomValue != null) {
+                    consolidated.add(Amount.fromString(currency, denomValue.toString()))
+                }
+            }
+        }
+        "EUR", "SLE", "KUDOS", "KUD" -> {
+            val denomList = when (currency) {
+                "EUR" -> EUR_BILLS_CENTS
+                else -> SLE_BILLS_CENTS // SLE, KUDOS, KUD all use same structure
+            }
+
+            optimalResIds.forEach { resId ->
+                val denomValue = denomList.find { it.second == resId }?.first
+                if (denomValue != null) {
+                    val whole = denomValue / 100
+                    val cents = denomValue % 100
+                    val amountStr = "$whole.${cents.toString().padStart(2, '0')}"
+                    consolidated.add(Amount.fromString(currency, amountStr))
+                }
+            }
+        }
+    }
+
+    // Sort from largest to smallest denomination
+    return consolidated.sortedByDescending { BigDecimal(it.amountStr) }
+}
+
+/**
+ * Helper function to check if consolidation would reduce the number of notes/coins.
+ * Useful for determining when to trigger consolidation animation.
+ */
+fun List<Amount>.canConsolidate(): Boolean {
+    val consolidated = this.consolidate()
+    return consolidated.size < this.size
+}
+
+/**
+ * Extension to get the total value of a list of amounts
+ */
+internal fun List<Amount>.sumAmounts(): Amount {
+    if (this.isEmpty()) return Amount.fromString("", "0")
+
+    val currency = this.first().spec?.name ?: this.first().currency
+    val totalValue = this.fold(BigDecimal.ZERO) { acc, amount ->
+        acc + BigDecimal(amount.amountStr)
+    }
+
+    return Amount.fromString(currency, totalValue.stripTrailingZeros().toPlainString())
+}
 
 /** KUDOS mapped to Leones.
  * toCurrencyFrame returns a composable table

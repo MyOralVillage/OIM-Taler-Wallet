@@ -65,6 +65,7 @@ fun QrScreen(
 
         // main row: QR left, info right
         Column(
+            Modifier.fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 //            Image(
