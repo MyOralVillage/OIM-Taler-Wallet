@@ -104,7 +104,7 @@ import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.compose.collectAsStateLifecycleAware
 import net.taler.wallet.oim.main.OIMChestScreen
 import net.taler.wallet.oim.main.OIMHomeScreen
-import net.taler.wallet.oim.main.OIMPaymentDialog
+import net.taler.wallet.oim.main.OIMReceiveScreen
 import net.taler.wallet.oim.main.rememberOimReceiveFlowState
 import net.taler.wallet.oim.res_mapping_extensions.UIIcons
 import net.taler.wallet.settings.SettingsFragment
@@ -271,17 +271,17 @@ class MainFragment: Fragment() {
                                 )
 
                                 val terms = receiveFlow.dialogTerms
-                                if (terms != null) {
+                                if (receiveFlow.isScanningOrLoading || terms != null) {
                                     Box(
                                         modifier = Modifier
                                             .fillMaxSize()
-                                            .background(Color.Black.copy(alpha = 0.5f)),
+                                            .background(Color.Black),
                                         contentAlignment = Alignment.Center,
                                     ) {
-                                        OIMPaymentDialog(
+                                        OIMReceiveScreen(
                                             terms = terms,
-                                            onAccept = { receiveFlow.confirmTerms(terms) },
-                                            onReject = { receiveFlow.rejectTerms(terms) }
+                                            onAccept = { terms?.let { receiveFlow.confirmTerms(it) } },
+                                            onReject = { terms?.let { receiveFlow.rejectTerms(it) } }
                                         )
                                     }
                                 }
@@ -337,17 +337,17 @@ class MainFragment: Fragment() {
                                 )
 
                                 val terms = receiveFlow.dialogTerms
-                                if (terms != null) {
+                                if (receiveFlow.isScanningOrLoading || terms != null) {
                                     Box(
                                         modifier = Modifier
                                             .fillMaxSize()
-                                            .background(Color.Black.copy(alpha = 0.5f)),
+                                            .background(Color.Black),
                                         contentAlignment = Alignment.Center,
                                     ) {
-                                        OIMPaymentDialog(
+                                        OIMReceiveScreen(
                                             terms = terms,
-                                            onAccept = { receiveFlow.confirmTerms(terms) },
-                                            onReject = { receiveFlow.rejectTerms(terms) }
+                                            onAccept = { terms?.let { receiveFlow.confirmTerms(it) } },
+                                            onReject = { terms?.let { receiveFlow.rejectTerms(it) } }
                                         )
                                     }
                                 }
