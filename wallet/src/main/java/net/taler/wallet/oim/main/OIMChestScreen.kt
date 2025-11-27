@@ -67,7 +67,7 @@ import net.taler.wallet.oim.resourceMappers.resourceMapper
 import net.taler.wallet.oim.send.components.StackedNotes
 import net.taler.wallet.oim.main.components.NotePreviewOverlay
 import net.taler.wallet.oim.send.components.NotesGalleryOverlay
-
+import androidx.compose.ui.tooling.preview.Preview
 /** Reusable button composable with toggle + delay */
 @Composable
 private fun ButtonBox(

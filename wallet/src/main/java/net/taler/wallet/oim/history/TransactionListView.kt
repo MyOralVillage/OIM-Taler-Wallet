@@ -20,13 +20,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import kotlinx.serialization.InternalSerializationApi
 import net.taler.database.data_models.*
 import net.taler.database.TranxHistory
@@ -43,14 +42,26 @@ fun TransactionsListView(balance: Amount, onHome: () -> Unit) {
             .fillMaxSize()
             .statusBarsPadding()
     ) {
+        // Background
         BackgroundImage()
-        MainLayout()
+
+        // Main content with top padding to avoid overlap
+        val topBarHeight = 80.dp // adjust to match OimTopBarCentered height
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = topBarHeight)
+                .verticalScroll(rememberScrollState())
+        ) {
+            MainContent()
+        }
+
+        // OIM Top Bar on top
         OimTopBarCentered(
             balance = balance,
             onChestClick = onHome,
-            colour = OimColours.INCOMING_COLOUR
+            colour = OimColours.TRX_HIST_COLOUR,
         )
-
     }
 }
 
@@ -95,6 +106,8 @@ private fun MainContent() {
             .fillMaxHeight()
             .fillMaxWidth(0.1f)
             .verticalScroll(rememberScrollState())
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
     ) {
         // left column kept empty intentionally
     }

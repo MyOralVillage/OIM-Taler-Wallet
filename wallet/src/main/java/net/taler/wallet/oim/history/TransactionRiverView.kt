@@ -2,11 +2,7 @@
     ExperimentalMaterial3Api::class,
     InternalSerializationApi::class
 )
-/*
- * This file is part of GNU Taler
- * (C) 2025 Taler Systems S.A.
- * GPLv3-or-later
- */
+
 
 package net.taler.wallet.oim.history
 
@@ -22,7 +18,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Water
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -43,7 +39,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -52,10 +47,17 @@ import androidx.compose.ui.unit.max
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.InternalSerializationApi
+import net.taler.database.data_models.FDtm
 import net.taler.common.Amount as CommonAmount
 import net.taler.database.TranxHistory
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.EDUC_CLTH
+import net.taler.database.data_models.EXPN_FARM
+import net.taler.database.data_models.FilterableDirection
 import net.taler.database.data_models.Tranx
 import net.taler.wallet.BuildConfig
+import net.taler.wallet.oim.OimColours
+import net.taler.wallet.oim.OimTopBarCentered
 import net.taler.wallet.oim.resourceMappers.Tile
 import net.taler.wallet.oim.resourceMappers.UIIcons
 import net.taler.wallet.oim.resourceMappers.resourceMapper
@@ -66,11 +68,12 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
-
+import androidx.compose.ui.tooling.preview.Preview
 @Composable
 fun TransactionHistoryView(
     modifier: Modifier = Modifier,
     onHome: () -> Unit = {},
+    balanceLabel: Amount,
     balanceAmount: CommonAmount? = null,
     onSendClick: () -> Unit = {},
     onReceiveClick: () -> Unit = {},
@@ -78,58 +81,46 @@ fun TransactionHistoryView(
     var showRiver by rememberSaveable { mutableStateOf(true) }
 
     Box(modifier = modifier.fillMaxSize().statusBarsPadding()) {
-        if (showRiver) {
-            OimRiverTransactionsView(
-                modifier = Modifier.fillMaxSize(),
-                balanceAmount = balanceAmount,
-                onSendClick = onSendClick,
-                onReceiveClick = onReceiveClick,
+        // --- OIM TOP BAR ---
+        Column(modifier = Modifier.fillMaxSize()) {
+            OimTopBarCentered(
+                balance = balanceLabel,
+                onChestClick = onHome,
+                colour = OimColours.TRX_HIST_COLOUR
             )
-        } else {
-            TransactionsListView()
-        }
 
-        if (showRiver) {
-            FloatingActionButton(
-                onClick = onHome,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 14.dp),
-                containerColor = Color.White,
-                contentColor = Color.White,
-                shape = MaterialTheme.shapes.large
-            ) {
-                Icon(
-                    bitmap = UIIcons("chest_open").resourceMapper(),
-                    contentDescription = "Back to OIM home",
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(52.dp)   // bigger chest
-                )
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (showRiver) {
+                    OimRiverTransactionsView(
+                        modifier = Modifier.fillMaxSize(),
+                        balanceAmount = balanceAmount,
+                        onSendClick = onSendClick,
+                        onReceiveClick = onReceiveClick,
+                    )
+                } else {
+                    TransactionsListView(
+                        balance = balanceLabel,
+                        onHome = onHome
+                    )
+                }
             }
         }
 
+        // --- FAB ---
         FloatingActionButton(
             onClick = { showRiver = !showRiver },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(24.dp),
             containerColor = Color.White,
-            contentColor = Color(0xFF0376C4),
+            contentColor = OimColours.TRX_HIST_COLOUR,
             shape = MaterialTheme.shapes.large
         ) {
-            if (showRiver) {
-                Icon(
-                    Icons.Default.List,
-                    contentDescription = "Show list",
-                    modifier = Modifier.size(32.dp) // bigger list icon
-                )
-            } else {
-                Icon(
-                    Icons.Default.Water,
-                    contentDescription = "Show river",
-                    modifier = Modifier.size(32.dp) // bigger water icon
-                )
-            }
+            Icon(
+                imageVector = if (showRiver) Icons.AutoMirrored.Filled.List else Icons.Default.Water,
+                contentDescription = if (showRiver) "Show list" else "Show river",
+                modifier = Modifier.size(32.dp)
+            )
         }
     }
 }
@@ -203,12 +194,12 @@ fun OimRiverTransactionsView(
                 ) {
                     HistorySideButton(
                         bitmap = UIIcons("receive").resourceMapper(),
-                        bgColor = Color(0xFF4CAF50),
+                        bgColor = OimColours.INCOMING_COLOUR,
                         onClick = onReceiveClick
                     )
                     HistorySideButton(
                         bitmap = UIIcons("send").resourceMapper(),
-                        bgColor = Color(0xFFC32909),
+                        bgColor = OimColours.OUTGOING_COLOUR,
                         onClick = onSendClick
                     )
                 }
@@ -420,13 +411,11 @@ private fun RiverSceneCanvasPerEvent(
             if (nTx == 0) return@Canvas
 
             // ----- AMOUNT PROPORTIONS -----
-            val maxSingleMaj = transactions
-                .map {
-                    val maj = it.amount.value.toDouble() +
-                            it.amount.fraction.toDouble() / 100_000_000.0
-                    abs(maj)
-                }
-                .maxOrNull()
+            val maxSingleMaj = transactions.maxOfOrNull {
+                val maj = it.amount.value.toDouble() +
+                        it.amount.fraction.toDouble() / 100_000_000.0
+                abs(maj)
+            }
                 ?.takeIf { it > 0.0 } ?: 1.0
 
             val amountProportions = transactions.map { t ->
@@ -457,7 +446,7 @@ private fun RiverSceneCanvasPerEvent(
 
             val leftPad = 0f
             val usableW = w - leftPad
-            val step = if (nTx > 0) usableW / nTx else 0f
+            val step = usableW / nTx
 
             val minFarmWidthPx = minFarmWidthDp.toPx()
             val farmSpacingPx = farmSpacingDp.toPx()
@@ -755,15 +744,38 @@ private fun DrawScope.drawImageFitInRect(
     )
 }
 
-@Preview(
-    showBackground = true,
-    showSystemUi = false,
-    name = "History Toggle Preview",
-    device = "spec:width=920dp,height=460dp,orientation=landscape"
-)
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
 fun TransactionHistoryViewPreview() {
-    MaterialTheme {
-        TransactionHistoryView()
-    }
+    // Provide a fake balance and some dummy transactions
+    val fakeAmount = CommonAmount(
+        value = 100,
+        fraction = 50_000_000, // 0.5 fraction
+        currency = "USD"
+    )
+
+    val fakeTranx = listOf(
+        Tranx(
+            amount = CommonAmount("XOF", 10000L, 0),
+            datetime = FDtm(),
+            direction = FilterableDirection.INCOMING,
+            purpose = EDUC_CLTH,
+            TID = "1234"
+        ),
+        Tranx(
+            amount = Amount("EUR", 200L, 0),
+            datetime = FDtm(),
+            direction = FilterableDirection.OUTGOING,
+            purpose = EXPN_FARM,
+            TID = "4567"
+        )
+    )
+
+    TransactionHistoryView(
+        balanceLabel = Amount("SLE", 200L, 0),
+        balanceAmount = fakeAmount,
+        onHome = {},
+        onSendClick = {},
+        onReceiveClick = {}
+    )
 }
