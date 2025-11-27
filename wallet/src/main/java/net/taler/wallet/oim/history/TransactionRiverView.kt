@@ -69,6 +69,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import androidx.compose.ui.tooling.preview.Preview
+
 @Composable
 fun TransactionHistoryView(
     modifier: Modifier = Modifier,
@@ -80,15 +81,31 @@ fun TransactionHistoryView(
 ) {
     var showRiver by rememberSaveable { mutableStateOf(true) }
 
-    Box(modifier = modifier.fillMaxSize().statusBarsPadding()) {
-        // --- OIM TOP BAR ---
-        Column(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+    ) {
+        // Background for the entire view
+        WoodTableBackground(
+            modifier = Modifier.fillMaxSize(),
+            light = false
+        )
+
+        // Main content in a Column like SendScreen
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            // OIM Top Bar at the top
             OimTopBarCentered(
                 balance = balanceLabel,
                 onChestClick = onHome,
                 colour = OimColours.TRX_HIST_COLOUR
             )
 
+            // Content below the top bar
             Box(modifier = Modifier.fillMaxSize()) {
                 if (showRiver) {
                     OimRiverTransactionsView(
@@ -106,7 +123,7 @@ fun TransactionHistoryView(
             }
         }
 
-        // --- FAB ---
+        // FAB on top of everything
         FloatingActionButton(
             onClick = { showRiver = !showRiver },
             modifier = Modifier
@@ -152,15 +169,10 @@ fun OimRiverTransactionsView(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        WoodTableBackground(
-            modifier = Modifier.fillMaxSize(),
-            light = false
-        )
-
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(top = 96.dp)
+                .padding(top = 80.dp)  // Adjusted for top bar that's now outside
         ) {
             Box(
                 modifier = Modifier
@@ -747,35 +759,37 @@ private fun DrawScope.drawImageFitInRect(
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
 fun TransactionHistoryViewPreview() {
-    // Provide a fake balance and some dummy transactions
-    val fakeAmount = CommonAmount(
-        value = 100,
-        fraction = 50_000_000, // 0.5 fraction
-        currency = "USD"
-    )
-
-    val fakeTranx = listOf(
-        Tranx(
-            amount = CommonAmount("XOF", 10000L, 0),
-            datetime = FDtm(),
-            direction = FilterableDirection.INCOMING,
-            purpose = EDUC_CLTH,
-            TID = "1234"
-        ),
-        Tranx(
-            amount = Amount("EUR", 200L, 0),
-            datetime = FDtm(),
-            direction = FilterableDirection.OUTGOING,
-            purpose = EXPN_FARM,
-            TID = "4567"
+    MaterialTheme {
+        // Provide a fake balance and some dummy transactions
+        val fakeAmount = CommonAmount(
+            value = 100,
+            fraction = 50_000_000, // 0.5 fraction
+            currency = "USD"
         )
-    )
 
-    TransactionHistoryView(
-        balanceLabel = Amount("SLE", 200L, 0),
-        balanceAmount = fakeAmount,
-        onHome = {},
-        onSendClick = {},
-        onReceiveClick = {}
-    )
+        val fakeTranx = listOf(
+            Tranx(
+                amount = CommonAmount("XOF", 10000L, 0),
+                datetime = FDtm(),
+                direction = FilterableDirection.INCOMING,
+                purpose = EDUC_CLTH,
+                TID = "1234"
+            ),
+            Tranx(
+                amount = Amount("EUR", 200L, 0),
+                datetime = FDtm(),
+                direction = FilterableDirection.OUTGOING,
+                purpose = EXPN_FARM,
+                TID = "4567"
+            )
+        )
+
+        TransactionHistoryView(
+            balanceLabel = Amount("SLE", 200L, 0),
+            balanceAmount = fakeAmount,
+            onHome = {},
+            onSendClick = {},
+            onReceiveClick = {}
+        )
+    }
 }

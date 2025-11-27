@@ -20,11 +20,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.serialization.InternalSerializationApi
 import net.taler.database.data_models.*
@@ -45,25 +47,74 @@ fun TransactionsListView(balance: Amount, onHome: () -> Unit) {
         // Background
         BackgroundImage()
 
-        // Main content with top padding to avoid overlap
-        val topBarHeight = 80.dp // adjust to match OimTopBarCentered height
+        // Main content in a Column like SendScreen
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = topBarHeight)
-                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
         ) {
-            MainContent()
-        }
+            // OIM Top Bar at the top
+            OimTopBarCentered(
+                balance = balance,
+                onChestClick = onHome,
+                colour = OimColours.TRX_HIST_COLOUR,
+            )
 
-        // OIM Top Bar on top
-        OimTopBarCentered(
-            balance = balance,
-            onChestClick = onHome,
-            colour = OimColours.TRX_HIST_COLOUR,
+            // Scrollable content below
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                MainContent()
+            }
+        }
+    }
+}
+
+/**
+ * Preview: Standard Pixel 5 device
+ * Shows the transaction list with top bar
+ */
+@Preview(
+    showBackground = true,
+    device = "id:pixel_5",
+    name = "Transactions List - Pixel 5"
+)
+@Composable
+fun TransactionsListViewPreview() {
+    MaterialTheme {
+        val mockBalance = Amount.fromString("EUR", "1250.75")
+
+        TransactionsListView(
+            balance = mockBalance,
+            onHome = { }
         )
     }
 }
+
+/**
+ * Preview: Different currency
+ * Shows how the top bar looks with different balance
+ */
+@Preview(
+    showBackground = true,
+    device = "id:pixel_5",
+    name = "Transactions List - SLE"
+)
+@Composable
+fun TransactionsListViewPreviewSLE() {
+    MaterialTheme {
+        val mockBalance = Amount.fromString("SLE", "45.50")
+
+        TransactionsListView(
+            balance = mockBalance,
+            onHome = { }
+        )
+    }
+}
+
+
 
 @Composable
 private fun BackgroundImage() {

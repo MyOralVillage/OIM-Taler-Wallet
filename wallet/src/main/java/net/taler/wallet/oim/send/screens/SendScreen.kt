@@ -102,7 +102,6 @@ fun SendScreen(
             val sourceRes: List<Int>,
             val targetRes: Int
         )
-        var consolidationAnim by remember { mutableStateOf<ConsolidationAnim?>(null) }
 
         // Regular note flight state
         data class Pending(val value: Amount, val bmp: Int, val start: Offset, val denomKey: String)
