@@ -412,7 +412,6 @@ class MainFragment: Fragment() {
 
 
                                     // Right -> OIM Mode Button
-                                    var enterOimAfterLandscape by remember { mutableStateOf(false)}
                                     IconButton(
                                         modifier = Modifier
                                             .size(buttonSize)
@@ -424,29 +423,13 @@ class MainFragment: Fragment() {
                                             ),
                                         onClick = {
                                             val activity = requireActivity() as AppCompatActivity
-                                            if (
-                                                activity
-                                                    .resources
-                                                    .configuration
-                                                    .orientation
-                                                !=
+                                            oimScreen = OimScreen.HOME
+                                            activity.requestedOrientation =
                                                 android
                                                     .content
-                                                    .res
-                                                    .Configuration
-                                                    .ORIENTATION_LANDSCAPE
-                                            )
-                                            {
-                                                enterOimAfterLandscape = true
-                                                activity.requestedOrientation =
-                                                    android
-                                                        .content
-                                                        .pm
-                                                        .ActivityInfo
-                                                        .SCREEN_ORIENTATION_LANDSCAPE
-                                            } else {
-                                                oimScreen = OimScreen.HOME
-                                            }
+                                                    .pm
+                                                    .ActivityInfo
+                                                    .SCREEN_ORIENTATION_LANDSCAPE
                                         }
                                     ) {
                                         Icon(

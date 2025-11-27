@@ -53,6 +53,7 @@
         <!-- Main launcher activity -->
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|uiMode"
             android:exported="true"
             android:launchMode="singleInstance"
             android:theme="@style/AppTheme.NoActionBar"
