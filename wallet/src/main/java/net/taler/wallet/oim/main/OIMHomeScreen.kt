@@ -17,29 +17,22 @@
 package net.taler.wallet.oim.main
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import net.taler.wallet.compose.TalerSurface
-import net.taler.wallet.oim.res_mapping_extensions.Background
-import net.taler.wallet.oim.res_mapping_extensions.UIIcons
+import net.taler.wallet.oim.utils.resourceMappers.Background
+import net.taler.wallet.oim.utils.resourceMappers.UIIcons
 
 /**
  * Stateless OIM home screen that shows the wooden background, QR scan shortcut, and the

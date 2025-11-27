@@ -15,8 +15,16 @@
  */
 package net.taler.database.data_models
 
+import android.graphics.Color
 import kotlinx.serialization.Serializable
 import androidx.core.graphics.toColorInt
+
+// colours associated with each purpose
+private const val TRX_GRP_HEALTHCARE_COLOUR   = 0x95F010BA
+private const val TRX_GRP_EDUCATION_COLOUR    = 0xFF2E86AB
+private const val TRX_GRP_EXPENSES_COLOUR     = 0xFFA6449A
+private const val TRX_GRP_UTILITIES_COLOUR    = 0xFFC6831E
+private const val TRX_GRP_TRANSACTIONS_COLOUR = 0xFFEDD03E
 
 /**
  * Interface for representing transaction purposes
@@ -32,18 +40,18 @@ sealed interface TranxPurp : Filterable<TranxPurp> {
      * used to group together similar purposes in UI. */
     val tranxGroup: String
 
-    /** hex colour of string */
-    val colourHex: String
+    /** colour of transaction purpose */
+    val colourHex: Long
+
 
     /** Compares two TranxPurp alphabetically by their cmp field
      * @return
      *  - -1 if this is smaller
      *  - 0  if they are equal
      *  - +1 if this is larger */
-    override fun compareTo(other: TranxPurp):
-            Int = cmp.compareTo(other.cmp)
+    override fun compareTo(other: TranxPurp): Int = cmp.compareTo(other.cmp)
 
-    /** @return the colour int */
+    /** @return the colour integer */
     fun colourInt(): Int = colourHex.toColorInt()
 }
 
@@ -53,7 +61,7 @@ sealed interface TranxPurp : Filterable<TranxPurp> {
 object EDUC_CLTH : TranxPurp {
     override val cmp = "EDUC_CLTH"
     override val tranxGroup = "Education"
-    override val colourHex = "#ccddff"
+    override val colourHex = TRX_GRP_EDUCATION_COLOUR
 }
 
 /** Tuition or general schooling fees */
@@ -61,7 +69,7 @@ object EDUC_CLTH : TranxPurp {
 object EDUC_SCHL : TranxPurp {
     override val cmp = "EDUC_SCHL"
     override val tranxGroup = "Education"
-    override val colourHex = "#ccddff"
+    override val colourHex = TRX_GRP_EDUCATION_COLOUR
 
 }
 
@@ -70,7 +78,7 @@ object EDUC_SCHL : TranxPurp {
 object EDUC_SUPL : TranxPurp {
     override val cmp = "EDUC_SUPL"
     override val tranxGroup = "Education"
-    override val colourHex = "#ccddff"
+    override val colourHex = TRX_GRP_EDUCATION_COLOUR
 }
 
 /** Phone expenses */
@@ -78,7 +86,7 @@ object EDUC_SUPL : TranxPurp {
 object EXPN_CELL : TranxPurp {
     override val cmp = "EXPN_CELL"
     override val tranxGroup = "Expenses"
-    override val colourHex ="#a6749a"
+    override val colourHex =TRX_GRP_EXPENSES_COLOUR
 }
 
 /** Loan repayment / debt expenses */
@@ -86,7 +94,7 @@ object EXPN_CELL : TranxPurp {
 object EXPN_DEBT : TranxPurp {
     override val cmp = "EXPN_DEBT"
     override val tranxGroup = "Expenses"
-    override val colourHex ="#a6749a"
+    override val colourHex =TRX_GRP_EXPENSES_COLOUR
 }
 
 /** Farming expenses (tools, seeds, maintenance) */
@@ -94,7 +102,7 @@ object EXPN_DEBT : TranxPurp {
 object EXPN_FARM : TranxPurp {
     override val cmp = "EXPN_FARM"
     override val tranxGroup = "Expenses"
-    override val colourHex ="#a6749a"
+    override val colourHex =TRX_GRP_EXPENSES_COLOUR
 }
 
 /** Grocery expenses */
@@ -102,7 +110,7 @@ object EXPN_FARM : TranxPurp {
 object EXPN_GRCR : TranxPurp {
     override val cmp = "EXPN_GRCR"
     override val tranxGroup = "Expenses"
-    override val colourHex ="#a6749a"
+    override val colourHex =TRX_GRP_EXPENSES_COLOUR
 }
 
 /** Market fee expenses */
@@ -110,7 +118,7 @@ object EXPN_GRCR : TranxPurp {
 object EXP_MRKT : TranxPurp {
     override val cmp = "EXP_MRKT"
     override val tranxGroup = "Expenses"
-    override val colourHex ="#a6749a"
+    override val colourHex =TRX_GRP_EXPENSES_COLOUR
 }
 
 /** Gas/petrol expenses */
@@ -118,7 +126,7 @@ object EXP_MRKT : TranxPurp {
 object EXPN_PTRL : TranxPurp {
     override val cmp = "EXPN_PTRL"
     override val tranxGroup = "Expenses"
-    override val colourHex ="#a6749a"
+    override val colourHex =TRX_GRP_EXPENSES_COLOUR
 }
 
 /** Housing expenses */
@@ -126,7 +134,7 @@ object EXPN_PTRL : TranxPurp {
 object EXPN_RENT : TranxPurp {
     override val cmp = "EXPN_RENT"
     override val tranxGroup = "Expenses"
-    override val colourHex ="#a6749a"
+    override val colourHex =TRX_GRP_EXPENSES_COLOUR
 }
 
 /** Tool/equipment expenses */
@@ -134,7 +142,7 @@ object EXPN_RENT : TranxPurp {
 object EXPN_TOOL : TranxPurp {
     override val cmp = "EXPN_TOOL"
     override val tranxGroup = "Expenses"
-    override val colourHex ="#a6749a"
+    override val colourHex =TRX_GRP_EXPENSES_COLOUR
 }
 
 /** Transportation-related expenses */
@@ -142,7 +150,7 @@ object EXPN_TOOL : TranxPurp {
 object EXPN_TRPT : TranxPurp {
     override val cmp = "EXPN_TRPT"
     override val tranxGroup = "Expenses"
-    override val colourHex ="#a6749a"
+    override val colourHex =TRX_GRP_EXPENSES_COLOUR
 }
 
 /** Doctor/clinic visits */
@@ -150,7 +158,7 @@ object EXPN_TRPT : TranxPurp {
 object HLTH_DOCT : TranxPurp {
     override val cmp = "HLTH_DOCT"
     override val tranxGroup = "Healthcare"
-    override val colourHex = "#74fac8"
+    override val colourHex = TRX_GRP_HEALTHCARE_COLOUR
 }
 
 /** Medicine */
@@ -158,7 +166,7 @@ object HLTH_DOCT : TranxPurp {
 object HLTH_MEDS : TranxPurp {
     override val cmp = "HLTH_MEDS"
     override val tranxGroup = "Healthcare"
-    override val colourHex = "#74fac8"
+    override val colourHex = TRX_GRP_HEALTHCARE_COLOUR
 }
 
 /** Receive money via transaction */
@@ -166,7 +174,7 @@ object HLTH_MEDS : TranxPurp {
 object TRNS_RECV : TranxPurp {
     override val cmp = "TRNS_RECV"
     override val tranxGroup = "Transactions"
-    override val colourHex = "#ae9ffa"
+    override val colourHex = TRX_GRP_TRANSACTIONS_COLOUR
 }
 
 /** Send money via transaction */
@@ -174,7 +182,7 @@ object TRNS_RECV : TranxPurp {
 object TRNS_SEND : TranxPurp {
     override val cmp = "TRNS_SEND"
     override val tranxGroup = "Transactions"
-    override val colourHex = "#ae9ffa"
+    override val colourHex = TRX_GRP_TRANSACTIONS_COLOUR
 }
 
 /** Electricity/power utilities */
@@ -182,7 +190,7 @@ object TRNS_SEND : TranxPurp {
 object UTIL_ELEC : TranxPurp {
     override val cmp = "UTIL_ELEC"
     override val tranxGroup = "Utilities"
-    override val colourHex = "#ffcff0"
+    override val colourHex = TRX_GRP_UTILITIES_COLOUR
 }
 
 /** Water utilities */
@@ -190,7 +198,7 @@ object UTIL_ELEC : TranxPurp {
 object UTIL_WATR : TranxPurp {
     override val cmp = "UTIL_WATR"
     override val tranxGroup = "Utilities"
-    override val colourHex = "#ffcff0"
+    override val colourHex = TRX_GRP_UTILITIES_COLOUR
 }
 
 /**

@@ -10,15 +10,22 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.taler.database.data_models.Amount
-import net.taler.wallet.oim.res_mapping_extensions.*
 import net.taler.wallet.oim.send.components.*
 import java.math.BigDecimal
 import androidx.compose.material.icons.filled.MoneyOff
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import net.taler.wallet.oim.utils.resourceMappers.CHF_BILLS
+import net.taler.wallet.oim.utils.resourceMappers.EUR_BILLS_CENTS
+import net.taler.wallet.oim.utils.resourceMappers.SLE_BILLS_CENTS
+import net.taler.wallet.oim.utils.resourceMappers.XOF_BILLS
+import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
 
 /**
  * Main screen for sending money.
@@ -59,7 +66,7 @@ fun SendScreen(
         val cur = a.spec?.name ?: a.currency
         val diff = (
                 BigDecimal(a.amountStr) - BigDecimal(b.amountStr)
-        ).coerceAtLeast(BigDecimal.ZERO)
+                ).coerceAtLeast(BigDecimal.ZERO)
         return Amount.fromString(cur, diff.stripTrailingZeros().toPlainString())
     }
 
@@ -76,26 +83,39 @@ fun SendScreen(
         )
 
         // flying-note state
-        data class Pending(val value: Amount, val bmp: Int, val start: Offset)
+        data class Pending(val value: Amount, val bmp: Int, val start: Offset, val denomKey: String, val scaleFactor: Float)
         var pending by remember { mutableStateOf<Pending?>(null) }
 
-        val pile = remember { mutableStateListOf<Int>() }
-        val pileAmounts = remember { mutableStateListOf<Amount>() }
+        // Multiple piles - one per denomination, sorted by value (largest to smallest)
+        val pilesByDenom = remember { mutableStateMapOf<String, MutableList<Int>>() }
+        val pileAmountsByDenom = remember { mutableStateMapOf<String, MutableList<Amount>>() }
+        val denomOrder = remember { mutableStateListOf<String>() }
+        val denomScaleFactors = remember { mutableStateMapOf<String, Float>() }
+
+        // Expanded state for click-to-enlarge
+        var expandedDenom by remember { mutableStateOf<String?>(null) }
 
         val density = LocalDensity.current
-        val endCenter = with(density) {
-            Offset(
-                x = (this@BoxWithConstraints.maxWidth / 2).toPx(),
-                y = (this@BoxWithConstraints.maxHeight / 2).toPx()
-            )
+        val screenWidth = this@BoxWithConstraints.maxWidth
+        val screenHeight = this@BoxWithConstraints.maxHeight
+
+        // Base size relative to screen DPI and size
+        val baseSizeDp = remember(density, screenWidth, screenHeight) {
+            with(density) {
+                val screenWidthDp = screenWidth
+                val screenHeightDp = screenHeight
+                val minDimension = minOf(screenWidthDp, screenHeightDp)
+                // Base size is proportional to screen size, typically 15-20% of min dimension
+                (minDimension * 0.18f).coerceIn(80.dp, 150.dp)
+            }
         }
 
-        // the stack of landed notes in the middle
-//        val pileWidthPx = with(density) { 160.dp.toPx() }
-//        NotesPile(
-//            landedNotes = pile.map { ImageBitmap.imageResource(it) },
-//            noteWidthPx = pileWidthPx
-//        )
+        // Helper function to sort denominations by value (largest first)
+        fun getSortedDenomOrder(): List<String> {
+            return denomOrder.sortedByDescending { denomKey ->
+                BigDecimal(denomKey)
+            }
+        }
 
         Column(
             Modifier
@@ -137,11 +157,32 @@ fun SendScreen(
                 // simple undo button
                 Button(
                     onClick = {
-                        if (pileAmounts.isNotEmpty()) {
-                            val popped = pileAmounts.removeAt(pileAmounts.lastIndex)
-                            if (pile.isNotEmpty()) pile.removeAt(pile.lastIndex)
-                            displayAmount = minus(displayAmount, popped)
-                            onRemoveLast(popped)
+                        if (denomOrder.isNotEmpty()) {
+                            // Remove from the last denomination that was added
+                            val lastDenom = denomOrder.last()
+                            val amounts = pileAmountsByDenom[lastDenom]
+                            val notes = pilesByDenom[lastDenom]
+
+                            if (amounts != null && amounts.isNotEmpty()) {
+                                val popped = amounts.removeAt(amounts.lastIndex)
+                                if (notes != null && notes.isNotEmpty()) {
+                                    notes.removeAt(notes.lastIndex)
+                                }
+
+                                // If this denomination is now empty, remove it from order
+                                if (amounts.isEmpty()) {
+                                    pileAmountsByDenom.remove(lastDenom)
+                                    pilesByDenom.remove(lastDenom)
+                                    denomOrder.removeAt(denomOrder.lastIndex)
+                                    denomScaleFactors.remove(lastDenom)
+                                    if (expandedDenom == lastDenom) {
+                                        expandedDenom = null
+                                    }
+                                }
+
+                                displayAmount = minus(displayAmount, popped)
+                                onRemoveLast(popped)
+                            }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
@@ -188,7 +229,26 @@ fun SendScreen(
                         }
                         else -> "0"
                     }
-                resId to Amount.fromString(currency, amountStr)
+                    resId to Amount.fromString(currency, amountStr)
+                }
+
+            // Calculate scale factors based on denomination value
+            // Lowest denomination = smallest size, highest = largest size
+            val denominationValues = noteThumbnails.map { (_, amount) ->
+                BigDecimal(amount.amountStr)
+            }
+            val minDenom = denominationValues.minOrNull() ?: BigDecimal.ONE
+            val maxDenom = denominationValues.maxOrNull() ?: BigDecimal.ONE
+
+            val scaleFactors = noteThumbnails.map { (_, amount) ->
+                val value = BigDecimal(amount.amountStr)
+                if (maxDenom == minDenom) {
+                    1.0f
+                } else {
+                    // Subtle scale from 0.85 to 1.15 based on denomination
+                    val normalized = (value - minDenom).toFloat() / (maxDenom - minDenom).toFloat()
+                    0.85f + (normalized * 0.3f)
+                }
             }
 
             // which are affordable
@@ -205,14 +265,43 @@ fun SendScreen(
                 enabledStates = affordableNotes,
                 onAddRequest = { billAmount, startCenter ->
                     val bmp = billAmount.resourceMapper().firstOrNull() ?: return@NotesStrip
-                    pending = Pending(billAmount, bmp, startCenter)
+                    val denomKey = billAmount.amountStr
+
+                    // Find the scale factor for this denomination
+                    val index = noteThumbnails.indexOfFirst { it.second.amountStr == denomKey }
+                    val scaleFactor = if (index >= 0) scaleFactors[index] else 1.0f
+
+                    if (!denomScaleFactors.containsKey(denomKey)) {
+                        denomScaleFactors[denomKey] = scaleFactor
+                    }
+
+                    pending = Pending(billAmount, bmp, startCenter, denomKey, scaleFactor)
                 },
                 onRemoveLast = {
-                    if (pileAmounts.isNotEmpty()) {
-                        val popped = pileAmounts.removeAt(pileAmounts.lastIndex)
-                        if (pile.isNotEmpty()) pile.removeAt(pile.lastIndex)
-                        displayAmount = minus(displayAmount, popped)
-                        onRemoveLast(popped)
+                    if (denomOrder.isNotEmpty()) {
+                        val lastDenom = denomOrder.last()
+                        val amounts = pileAmountsByDenom[lastDenom]
+                        val notes = pilesByDenom[lastDenom]
+
+                        if (amounts != null && amounts.isNotEmpty()) {
+                            val popped = amounts.removeAt(amounts.lastIndex)
+                            if (notes != null && notes.isNotEmpty()) {
+                                notes.removeAt(notes.lastIndex)
+                            }
+
+                            if (amounts.isEmpty()) {
+                                pileAmountsByDenom.remove(lastDenom)
+                                pilesByDenom.remove(lastDenom)
+                                denomOrder.removeAt(denomOrder.lastIndex)
+                                denomScaleFactors.remove(lastDenom)
+                                if (expandedDenom == lastDenom) {
+                                    expandedDenom = null
+                                }
+                            }
+
+                            displayAmount = minus(displayAmount, popped)
+                            onRemoveLast(popped)
+                        }
                     }
                 }
             )
@@ -220,15 +309,50 @@ fun SendScreen(
 
         // actual flying note
         pending?.let { p ->
-            val widthPx = with(density) { 115.dp.toPx() }
+            // Calculate target position based on sorted order (largest to smallest, left to right)
+            val sortedOrder = getSortedDenomOrder()
+            val stackIndex = sortedOrder.indexOf(p.denomKey).let {
+                if (it == -1) sortedOrder.size else it
+            }
+
+            val pileWidthPx = with(density) { (baseSizeDp * p.scaleFactor).toPx() }
+            val spacing = with(density) { (baseSizeDp * 0.2f).toPx() }
+
+            // Calculate total width considering scale factors of sorted denominations
+            val totalWidth = sortedOrder.sumOf { denom ->
+                val scale = denomScaleFactors[denom] ?: 1.0f
+                with(density) { (baseSizeDp * scale).toPx() }.toDouble()
+            } + spacing * (sortedOrder.size.coerceAtLeast(1) - 1)
+
+            val startX = with(density) { (screenWidth / 2).toPx() } - totalWidth.toFloat() / 2
+
+            // Calculate X position by summing up widths of previous stacks in sorted order
+            var targetX = startX
+            for (i in 0 until stackIndex) {
+                val prevScale = denomScaleFactors[sortedOrder[i]] ?: 1.0f
+                targetX += with(density) { (baseSizeDp * prevScale).toPx() }
+                targetX += spacing
+            }
+            targetX += pileWidthPx / 2
+
+            val targetY = with(density) { (screenHeight / 2).toPx() }
+            val endPosition = Offset(targetX, targetY)
+
             NoteFlyer(
                 noteRes = p.bmp,
                 startInRoot = p.start,
-                endInRoot = endCenter,
-                widthPx = widthPx,
+                endInRoot = endPosition,
+                widthPx = pileWidthPx,
                 onArrive = {
-                    pile.add(p.bmp)
-                    pileAmounts.add(p.value)
+                    // Add to appropriate denomination pile
+                    if (!pilesByDenom.containsKey(p.denomKey)) {
+                        pilesByDenom[p.denomKey] = mutableListOf()
+                        pileAmountsByDenom[p.denomKey] = mutableListOf()
+                        denomOrder.add(p.denomKey)
+                    }
+                    pilesByDenom[p.denomKey]?.add(p.bmp)
+                    pileAmountsByDenom[p.denomKey]?.add(p.value)
+
                     displayAmount = plus(displayAmount, p.value)
                     onAdd(p.value)
                     pending = null
@@ -236,11 +360,191 @@ fun SendScreen(
             )
         }
 
-        val pileWidthPx = with(density) { 115.dp.toPx() }
-        NotesPile(
-            landedNotes = pile.map { ImageBitmap.imageResource(it) },
-            noteWidthPx = pileWidthPx
-        )
+        // Render all piles horizontally (largest to smallest, left to right)
+        val sortedOrder = getSortedDenomOrder()
+        val spacing = with(density) { (baseSizeDp * 0.2f).toPx() }
 
+        // Calculate total width for centering
+        val totalWidth = sortedOrder.sumOf { denom ->
+            val scale = denomScaleFactors[denom] ?: 1.0f
+            with(density) { (baseSizeDp * scale).toPx() }.toDouble()
+        } + spacing * (sortedOrder.size - 1).coerceAtLeast(0)
+
+        val startX = with(density) { (screenWidth / 2).toPx() } - totalWidth.toFloat() / 2
+        var currentX = startX
+
+        sortedOrder.forEach { denomKey ->
+            val notes = pilesByDenom[denomKey] ?: return@forEach
+            val scaleFactor = denomScaleFactors[denomKey] ?: 1.0f
+            val pileWidthPx = with(density) { (baseSizeDp * scaleFactor).toPx() }
+
+            // Check if this pile is expanded
+            val isExpanded = expandedDenom == denomKey
+            val displayScale = if (isExpanded) 2.5f else 1.0f
+
+            Box(
+                modifier = Modifier
+                    .offset(
+                        x = with(density) { currentX.toDp() },
+                        y = with(density) {
+                            val baseY = ((screenHeight / 2).toPx()).toDp() - (baseSizeDp * scaleFactor * 0.65f)
+                            if (isExpanded) baseY - 100.dp else baseY
+                        }
+                    )
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        expandedDenom = if (isExpanded) null else denomKey
+                    }
+            ) {
+                NotesPile(
+                    landedNotes = notes.map { ImageBitmap.imageResource(it) },
+                    noteWidthPx = pileWidthPx * displayScale
+                )
+            }
+
+            currentX += pileWidthPx + spacing
+        }
+    }
+}
+
+/**
+ * Preview: Standard Pixel 5 device with EUR currency
+ * Shows the initial state with no amount selected
+ */
+@Preview(
+    showBackground = true,
+    device = "id:pixel_5",
+    name = "Pixel 5 - EUR"
+)
+@Composable
+fun SendScreenPreview() {
+    MaterialTheme {
+        val mockBalance = Amount.fromString("EUR", "500.00")
+        val mockAmount = Amount.fromString("EUR", "0.00")
+
+        SendScreen(
+            balance = mockBalance,
+            amount = mockAmount,
+            onAdd = { },
+            onRemoveLast = { },
+            onChoosePurpose = { },
+            onSend = { },
+            onHome = { },
+            onChest = { }
+        )
+    }
+}
+
+/**
+ * Preview: High DPI device with CHF currency
+ * Demonstrates how notes scale on high-density screens
+ */
+@Preview(
+    showBackground = true,
+    device = "spec:width=411dp,height=891dp,dpi=420",
+    name = "High DPI - CHF"
+)
+@Composable
+fun SendScreenPreviewHighDPI() {
+    MaterialTheme {
+        val mockBalance = Amount.fromString("CHF", "1000.00")
+        val mockAmount = Amount.fromString("CHF", "0.00")
+
+        SendScreen(
+            balance = mockBalance,
+            amount = mockAmount,
+            onAdd = { },
+            onRemoveLast = { },
+            onChoosePurpose = { },
+            onSend = { },
+            onHome = { },
+            onChest = { }
+        )
+    }
+}
+
+/**
+ * Preview: Low DPI device with KUDOS currency
+ * Shows how the interface adapts to lower-resolution screens
+ */
+@Preview(
+    showBackground = true,
+    device = "spec:width=320dp,height=640dp,dpi=240",
+    name = "Low DPI - KUDOS"
+)
+@Composable
+fun SendScreenPreviewLowDPI() {
+    MaterialTheme {
+        val mockBalance = Amount.fromString("KUDOS", "250.00")
+        val mockAmount = Amount.fromString("KUDOS", "0.00")
+
+        SendScreen(
+            balance = mockBalance,
+            amount = mockAmount,
+            onAdd = { },
+            onRemoveLast = { },
+            onChoosePurpose = { },
+            onSend = { },
+            onHome = { },
+            onChest = { }
+        )
+    }
+}
+
+/**
+ * Preview: Tablet-sized device with XOF currency
+ * Demonstrates the layout on larger screens
+ */
+@Preview(
+    showBackground = true,
+    device = "spec:width=800dp,height=1280dp,dpi=320",
+    name = "Tablet - XOF"
+)
+@Composable
+fun SendScreenPreviewTablet() {
+    MaterialTheme {
+        val mockBalance = Amount.fromString("XOF", "50000")
+        val mockAmount = Amount.fromString("XOF", "0")
+
+        SendScreen(
+            balance = mockBalance,
+            amount = mockAmount,
+            onAdd = { },
+            onRemoveLast = { },
+            onChoosePurpose = { },
+            onSend = { },
+            onHome = { },
+            onChest = { }
+        )
+    }
+}
+
+/**
+ * Preview: With amount already selected
+ * Shows how stacks of different denominations appear side-by-side
+ */
+@Preview(
+    showBackground = true,
+    device = "id:pixel_5",
+    name = "With Amount Selected"
+)
+@Composable
+fun SendScreenWithAmountPreview() {
+    MaterialTheme {
+        val mockBalance = Amount.fromString("EUR", "500.00")
+        val mockAmount = Amount.fromString("EUR", "87.50")
+
+        SendScreen(
+            balance = mockBalance,
+            amount = mockAmount,
+            onAdd = { },
+            onRemoveLast = { },
+            onChoosePurpose = { },
+            onSend = { },
+            onHome = { },
+            onChest = { }
+        )
     }
 }

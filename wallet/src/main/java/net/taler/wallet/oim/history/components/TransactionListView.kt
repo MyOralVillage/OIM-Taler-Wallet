@@ -40,8 +40,8 @@ import net.taler.database.TranxHistory
 import net.taler.database.filter.PurposeFilter
 import net.taler.wallet.BuildConfig
 import net.taler.wallet.oim.history.filter.PurposeGrid
-import net.taler.wallet.oim.res_mapping_extensions.Background
-import net.taler.wallet.oim.res_mapping_extensions.UIIcons
+import net.taler.wallet.oim.utils.resourceMappers.Background
+import net.taler.wallet.oim.utils.resourceMappers.UIIcons
 import java.time.format.DateTimeFormatter
 
 @Composable

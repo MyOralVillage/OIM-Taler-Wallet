@@ -22,7 +22,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,11 +34,8 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -64,11 +60,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.taler.wallet.balances.BalanceState
 import net.taler.wallet.compose.TalerSurface
-import net.taler.wallet.oim.res_mapping_extensions.Background
-import net.taler.wallet.oim.res_mapping_extensions.UIIcons
-import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.oim.utils.resourceMappers.Background
+import net.taler.wallet.oim.utils.resourceMappers.UIIcons
+import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
 import net.taler.wallet.oim.send.components.StackedNotes
-import net.taler.wallet.systemBarsPaddingBottom
 import net.taler.wallet.oim.main.components.NotePreviewOverlay
 import net.taler.wallet.oim.send.components.NotesGalleryOverlay
 
@@ -409,7 +404,7 @@ private fun WithdrawTestButton(
     }
 }
 
-// ----------------- Banknote stack code and functions unchanged -----------------
+// ----------------- Banknote stack code -----------------
 
 @Composable
 private fun NotesOnTable(

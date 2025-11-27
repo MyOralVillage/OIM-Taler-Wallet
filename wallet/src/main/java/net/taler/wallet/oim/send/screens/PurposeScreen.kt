@@ -24,7 +24,7 @@ import net.taler.database.data_models.tranxPurpLookup
 import net.taler.wallet.oim.send.components.WoodTableBackground
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.res.painterResource
-import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
+import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
 
 /**
  * Card representing a single transaction purpose.

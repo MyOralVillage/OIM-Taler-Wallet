@@ -104,7 +104,7 @@ import net.taler.wallet.oim.main.OIMChestScreen
 import net.taler.wallet.oim.main.OIMHomeScreen
 import net.taler.wallet.oim.main.OIMReceiveScreen
 import net.taler.wallet.oim.main.rememberOimReceiveFlowState
-import net.taler.wallet.oim.res_mapping_extensions.UIIcons
+import net.taler.wallet.oim.utils.resourceMappers.UIIcons
 import net.taler.wallet.settings.SettingsFragment
 import net.taler.wallet.transactions.Transaction
 import net.taler.wallet.transactions.TransactionMajorState

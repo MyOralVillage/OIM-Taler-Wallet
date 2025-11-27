@@ -1,4 +1,4 @@
-package net.taler.wallet.oim.res_mapping_extensions
+package net.taler.wallet.oim.utils.resourceMappers
 
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable

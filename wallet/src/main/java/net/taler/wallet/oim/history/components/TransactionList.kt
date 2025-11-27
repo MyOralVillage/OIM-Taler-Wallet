@@ -16,7 +16,6 @@
 
 package net.taler.wallet.oim.history.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -30,23 +29,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.taler.common.R.drawable.incoming_transaction
-import net.taler.common.R.drawable.outgoing_transaction
 import net.taler.database.data_models.Amount
 import net.taler.database.data_models.EDUC_CLTH
 import net.taler.database.data_models.FilterableDirection
 import net.taler.database.data_models.TranxPurp
-import net.taler.wallet.oim.history.components.Bills
-import net.taler.wallet.oim.res_mapping_extensions.resourceMapper
-import net.taler.wallet.oim.res_mapping_extensions.resourceMapper // Amount
+import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
 import net.taler.wallet.oim.send.components.ColumnNotes
 import java.time.LocalDate
 
