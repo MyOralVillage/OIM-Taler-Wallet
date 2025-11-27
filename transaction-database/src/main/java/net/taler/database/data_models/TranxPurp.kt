@@ -15,9 +15,7 @@
  */
 package net.taler.database.data_models
 
-import android.graphics.Color
 import kotlinx.serialization.Serializable
-import androidx.core.graphics.toColorInt
 
 // colours associated with each purpose
 private const val TRX_GRP_HEALTHCARE_COLOUR   = 0x95F010BA
@@ -52,7 +50,7 @@ sealed interface TranxPurp : Filterable<TranxPurp> {
     override fun compareTo(other: TranxPurp): Int = cmp.compareTo(other.cmp)
 
     /** @return the colour integer */
-    fun colourInt(): Int = colourHex.toColorInt()
+    fun colourInt(): Int = colourHex.toInt()
 }
 
 

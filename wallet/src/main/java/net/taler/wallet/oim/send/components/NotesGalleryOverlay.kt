@@ -124,10 +124,9 @@ fun NotesGalleryOverlay(
             // White card popup
             Card(
                 modifier = Modifier
-                    .widthIn(max = cardMaxWidth)
-                    .fillMaxWidth(0.95f)
-                    .wrapContentHeight() // Allow height to adapt
-                    .heightIn(max = 600.dp) // Cap max height
+                    .wrapContentSize()  // Changed from fillMaxSize to wrapContentSize
+                    .widthIn(max = cardMaxWidth)  // Limit maximum width
+                    .heightIn(max = 600.dp)  // Limit maximum height to prevent overflow
                     .alpha(overlayAlpha)
                     .graphicsLayer {
                         scaleX = cardScale

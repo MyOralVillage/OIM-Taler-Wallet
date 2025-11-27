@@ -64,7 +64,18 @@ fun SendScreen(
     onChest: () -> Unit = {},
 ) {
     var displayAmount by remember { mutableStateOf(amount) }
-    LaunchedEffect(amount) { displayAmount = amount }
+
+    // Store all amounts as a flat list
+    val allAmounts = remember { mutableStateListOf<Amount>() }
+
+    // Reset everything when external amount changes (e.g., after send completes)
+    LaunchedEffect(amount) {
+        displayAmount = amount
+        // If amount is reset to 0, clear the piles
+        if (BigDecimal(amount.amountStr) == BigDecimal.ZERO) {
+            allAmounts.clear()
+        }
+    }
 
     // Arithmetic helpers
     fun plus(a: Amount, b: Amount): Amount {
@@ -102,17 +113,26 @@ fun SendScreen(
             val sourceRes: List<Int>,
             val targetRes: Int
         )
+        var consolidationAnim by remember { mutableStateOf<ConsolidationAnim?>(null) }
 
         // Regular note flight state
         data class Pending(val value: Amount, val bmp: Int, val start: Offset, val denomKey: String)
         var pending by remember { mutableStateOf<Pending?>(null) }
 
-        // Store all amounts as a flat list, but render them as consolidated piles
-        val allAmounts = remember { mutableStateListOf<Amount>() }
-
-        // Derived state: consolidated view of amounts
+        // Derived state: consolidated view of amounts with error handling
         val consolidatedAmounts = remember(allAmounts.size) {
-            derivedStateOf { allAmounts.toList().consolidate() }
+            derivedStateOf {
+                if (allAmounts.isEmpty()) {
+                    emptyList()
+                } else {
+                    try {
+                        allAmounts.toList().consolidate()
+                    } catch (e: Exception) {
+                        // Fallback: if consolidation fails, return original amounts
+                        allAmounts.toList()
+                    }
+                }
+            }
         }
 
         val density = LocalDensity.current
@@ -183,7 +203,14 @@ fun SendScreen(
                                 color = OimColours.OUTGOING_COLOUR,
                                 shape = RoundedCornerShape(12.dp)
                             )
-                            .clickable { onSend() },
+                            .clickable {
+                                // Only allow send if amount > 0
+                                if (BigDecimal(displayAmount.amountStr) > BigDecimal.ZERO) {
+                                    // Clear the piles before calling onSend
+                                    allAmounts.clear()
+                                    onSend()
+                                }
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         Image(

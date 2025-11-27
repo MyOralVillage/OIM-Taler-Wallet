@@ -18,9 +18,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.taler.database.data_models.Amount
+import net.taler.database.data_models.EDUC_CLTH
+import net.taler.database.data_models.HLTH_MEDS
 import net.taler.database.data_models.TranxPurp
 import net.taler.wallet.oim.resourceMappers.UIIcons
 import net.taler.wallet.oim.resourceMappers.resourceMapper
@@ -68,14 +71,6 @@ fun QrScreen(
             Modifier.fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-//            Image(
-//                bitmap = UIIcons("chest_open").resourceMapper(),
-//                contentDescription = "Done / back to chest",
-//                modifier = Modifier
-//                    .size(60.dp)
-//                    .clickable { onHome() },
-//                contentScale = ContentScale.Fit
-//            )
             OimTopBarCentered(
                 balance = balance,
                 onChestClick = onHome,
@@ -94,7 +89,7 @@ fun QrScreen(
                     shape = RoundedCornerShape(12.dp),
                     shadowElevation = 8.dp,
                     modifier = Modifier
-                        .size(270.dp)
+                        .size(200.dp)
                         .aspectRatio(1f)
                 ) {
                     if (talerUri == null) {
@@ -171,19 +166,41 @@ fun QrScreen(
                             Image(
                                 painter = painterResource(purpose.resourceMapper()),
                                 contentDescription = null,
-                                modifier = Modifier.size(150.dp),
-                                contentScale = ContentScale.Fit
+                                modifier = Modifier.size(240.dp),  // Increased from 150.dp
+                                contentScale = ContentScale.FillBounds
                             )
                         }
                     } else {
                         Box(
                             modifier = Modifier
-                                .size(150.dp)
+                                .size(240.dp)
                                 .alpha(0f)
                         )
                     }
                 }
             }
         }
+    }
+}
+
+/**
+ * Preview: QR Screen with loading state
+ */
+@Preview(
+    showBackground = true,
+    widthDp = 1000,
+    heightDp = 700
+)
+@Composable
+fun QrScreenLoadingPreview() {
+    MaterialTheme {
+        QrScreen(
+            talerUri = null,  // Loading state
+            amount = Amount.fromString("EUR", "25.50"),
+            balance = Amount.fromString("EUR", "100.00"),
+            purpose = HLTH_MEDS,
+            onBack = { },
+            onHome = { }
+        )
     }
 }

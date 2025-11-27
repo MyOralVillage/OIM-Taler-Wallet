@@ -44,8 +44,6 @@ fun TransactionsListView(balance: Amount, onHome: () -> Unit) {
             .fillMaxSize()
             .statusBarsPadding()
     ) {
-        // Background
-        BackgroundImage()
 
         // Main content in a Column like SendScreen
         Column(
@@ -53,21 +51,13 @@ fun TransactionsListView(balance: Amount, onHome: () -> Unit) {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // OIM Top Bar at the top
-            OimTopBarCentered(
-                balance = balance,
-                onChestClick = onHome,
-                colour = OimColours.TRX_HIST_COLOUR,
-            )
 
-            // Scrollable content below
-            Column(
+            // Scrollable content below - use weight(1f) instead of fillMaxSize()
+            MainContent(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-            ) {
-                MainContent()
-            }
+                    .fillMaxWidth()
+                    .weight(1f)
+            )
         }
     }
 }
@@ -128,19 +118,8 @@ private fun BackgroundImage() {
 }
 
 @Composable
-private fun MainLayout() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-    ) {
-        MainContent()
-    }
-}
-
-@Composable
 @OptIn(InternalSerializationApi::class)
-private fun MainContent() {
+private fun MainContent(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var dbTransactions by remember { mutableStateOf<List<Tranx>>(emptyList()) }
 
@@ -152,35 +131,43 @@ private fun MainContent() {
         dbTransactions = TranxHistory.getHistory()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth(0.1f)
-            .verticalScroll(rememberScrollState())
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
+    // Single scrollable Row containing all content
+    Row(
+        modifier = modifier.verticalScroll(rememberScrollState())
     ) {
-        // left column kept empty intentionally
-    }
+        // Left empty column (10% width)
+        Spacer(
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(0.1f)
+        )
 
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth(0.8f)
-            .verticalScroll(rememberScrollState())
-    ) {
-        dbTransactions.forEach { transaction: Tranx ->
-            TransactionCard(
-                amount = transaction.amount.toString(false),
-                currency = transaction.amount.currency,
-                date = transaction.datetime.fmtString(
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                ),
-                purpose = transaction.purpose,
-                dir = transaction.direction,
-                displayAmount = transaction.amount
-            )
+        // Main content column (80% width)
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(0.8f)
+                .padding(vertical = 4.dp)
+        ) {
+            dbTransactions.forEach { transaction: Tranx ->
+                TransactionCard(
+                    amount = transaction.amount.toString(false),
+                    currency = transaction.amount.currency,
+                    date = transaction.datetime.fmtString(
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    ),
+                    purpose = transaction.purpose,
+                    dir = transaction.direction,
+                    displayAmount = transaction.amount
+                )
+            }
         }
+
+        // Right empty column (10% width)
+        Spacer(
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(0.1f)
+        )
     }
 }
-
