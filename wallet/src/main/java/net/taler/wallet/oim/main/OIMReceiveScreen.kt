@@ -3,19 +3,7 @@ package net.taler.wallet.oim.main
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -27,28 +15,25 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.taler.database.data_models.Amount
+import net.taler.database.data_models.EDUC_CLTH
 import net.taler.database.data_models.tranxPurpLookup
-import net.taler.wallet.oim.utils.resourceMappers.Background
-import net.taler.wallet.oim.utils.resourceMappers.UIIcons
-import net.taler.wallet.oim.utils.resourceMappers.resourceMapper
+import net.taler.wallet.balances.BalanceState
+import net.taler.wallet.oim.OimColours
+import net.taler.wallet.oim.OimTopBarCentered
+import net.taler.wallet.oim.resourceMappers.*
 import net.taler.wallet.oim.send.components.NotesGalleryOverlay
 import net.taler.wallet.oim.send.components.StackedNotes
 import net.taler.wallet.oim.send.components.WoodTableBackground
@@ -59,160 +44,184 @@ fun OIMReceiveScreen(
     terms: IncomingTerms?,
     onAccept: () -> Unit,
     onReject: () -> Unit,
+    balance: Amount
 ) {
     var isStackExpanded by remember { mutableStateOf(false) }
     var showStackPreview by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // 1. Background
-        WoodTableBackground(modifier = Modifier.fillMaxSize(), light = false)
+    // Shake offset state (applies to both buttons)
+    var shakeOffset by remember { mutableStateOf(0f) }
 
-        // 2. Content
-        if (terms != null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Spacer(modifier = Modifier.height(20.dp))
+    // Shake function: horizontal wobble
+    fun onChest() {
+        scope.launch {
+            val pattern = listOf(-12f, 12f, -8f, 8f, 0f)
+            for (x in pattern) {
+                shakeOffset = x
+                delay(45)
+            }
+        }
+    }
 
-                    // --- TOP SECTION: Notes (Center) + Incoming Icon (Right) ---
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(250.dp)
-                            .padding(horizontal = 16.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+    ) {
+        // Background
+        WoodTableBackground(modifier = Modifier.fillMaxSize())
+
+        // Main content
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            // OIM Top Bar
+            OimTopBarCentered(
+                balance = balance,
+                colour = OimColours.INCOMING_COLOUR,
+                onChestClick = { onChest() }
+            )
+
+            // Content below the top bar
+            if (terms != null) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Center: Notes Stack
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // Top section: Notes + incoming icon
                         Box(
                             modifier = Modifier
-                                .align(Alignment.TopCenter) // Start from top middle
-                                .padding(top = 20.dp), // Add some top padding
-                            contentAlignment = Alignment.Center
+                                .fillMaxWidth()
+                                .height(250.dp)
+                                .padding(horizontal = 16.dp)
                         ) {
-                            val amount = terms.amountEffective
-                            val bitmaps = remember(amount) { amount.resourceMapper() }
-                            if (bitmaps.isNotEmpty()) {
-                                StackedNotes(
-                                    noteResIds = bitmaps,
-                                    noteHeight = 79.dp,
-                                    noteWidth = 115.dp,
-                                    expanded = isStackExpanded,
-                                    onClick = {
-                                        if (!isStackExpanded) {
-                                            isStackExpanded = true
-                                            scope.launch {
-                                                delay(400) // Wait for unstack animation
-                                                showStackPreview = true
+                            // Notes stack
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .padding(top = 20.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                val amount = terms.amountEffective
+                                val bitmaps = remember(amount) { amount.resourceMapper() }
+
+                                if (bitmaps.isNotEmpty()) {
+                                    StackedNotes(
+                                        noteResIds = bitmaps,
+                                        noteHeight = 79.dp,
+                                        noteWidth = 115.dp,
+                                        expanded = isStackExpanded,
+                                        onClick = {
+                                            if (!isStackExpanded) {
+                                                isStackExpanded = true
+                                                scope.launch {
+                                                    delay(400)
+                                                    showStackPreview = true
+                                                }
                                             }
                                         }
-                                    }
-                                )
-                            } else {
-                                Text(
-                                    text = amount.toString(),
-                                    style = MaterialTheme.typography.displayMedium,
-                                    color = Color.White
+                                    )
+                                } else {
+                                    Text(
+                                        text = amount.toString(),
+                                        style = MaterialTheme.typography.displayMedium,
+                                        color = Color.White
+                                    )
+                                }
+                            }
+
+                            // Incoming icon
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .width(140.dp)
+                                    .height(140.dp),
+                                contentAlignment = Alignment.TopCenter
+                            ) {
+                                Image(
+                                    bitmap = UIIcons("incoming_transaction").resourceMapper(),
+                                    contentDescription = "Incoming transaction",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Fit
                                 )
                             }
                         }
 
-                        // Right: Receive Money Icon
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .width(140.dp) // Increased size slightly
-                                .height(140.dp),
-                            contentAlignment = Alignment.TopCenter
-                        ) {
-                            Image(
-                                bitmap = UIIcons("incoming_transaction").resourceMapper(),
-                                contentDescription = "Incoming transaction",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Fit
-                            )
-                        }
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.weight(1f))
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    // Purpose icon (center bottom)
+                    val summary = terms.contractTerms.summary
+                    val purpose = tranxPurpLookup[summary]
 
-                // --- MIDDLE SECTION: Spacer to push content up ---
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-
-                // --- BOTTOM SECTION: Buttons & Purpose ---
-                
-                // Purpose (Bottom Center)
-                val summary = terms.contractTerms.summary
-                val purpose = tranxPurpLookup[summary]
-                
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 16.dp) // Align with buttons roughly
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.BottomCenter
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 16.dp)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.BottomCenter
                     ) {
-                        if (purpose != null) {
-                            Image(
-                                painter = painterResource(id = purpose.resourceMapper()),
-                                contentDescription = summary,
-                                modifier = Modifier.size(150.dp), // Larger icon
-                                contentScale = ContentScale.Fit
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            if (purpose != null) {
+                                Image(
+                                    painter = painterResource(id = purpose.resourceMapper()),
+                                    contentDescription = summary,
+                                    modifier = Modifier.size(150.dp),
+                                    contentScale = ContentScale.Fit
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
                         }
-                        // Removed text display as requested
                     }
-                }
 
-                // Deny Button (Bottom Left)
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(start = 24.dp, bottom = 24.dp) // Adjusted padding
-                ) {
-                    ActionButton(
-                        icon = Icons.Default.Close,
-                        color = MaterialTheme.colorScheme.error,
-                        enabled = true,
-                        onClick = onReject
-                    )
-                }
+                    // Deny button (bottom-left)
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(start = 24.dp, bottom = 24.dp)
+                            .offset(x = shakeOffset.dp)
+                    ) {
+                        ActionButton(
+                            icon = Icons.Default.Close,
+                            color = OimColours.OUTGOING_COLOUR,
+                            enabled = true,
+                            onClick = onReject
+                        )
+                    }
 
-                // Accept Button (Bottom Right)
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(end = 24.dp, bottom = 24.dp) // Adjusted padding
-                ) {
-                    ActionButton(
-                        icon = Icons.Default.Check,
-                        color = Color(0xFF4CAF50), // Green
-                        enabled = true,
-                        onClick = onAccept
-                    )
+                    // Accept button (bottom-right)
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 24.dp, bottom = 24.dp)
+                            .offset(x = shakeOffset.dp)
+                    ) {
+                        ActionButton(
+                            icon = Icons.Default.Check,
+                            color = OimColours.INCOMING_COLOUR,
+                            enabled = true,
+                            onClick = onAccept
+                        )
+                    }
                 }
             }
         }
 
-        // Loading Overlay (only if terms are null)
+        // Loading overlay
         if (terms == null) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.6f)) // Grey out
-                    .clickable(enabled = true, onClick = {}) // Consume touches
-                    .zIndex(10f), // Ensure on top
+                    .background(Color.Black.copy(alpha = 0.6f))
+                    .clickable(enabled = true, onClick = {})
+                    .zIndex(10f),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(
@@ -221,8 +230,8 @@ fun OIMReceiveScreen(
                 )
             }
         }
-        
-        // Stack Preview Overlay (Gallery)
+
+        // Stack preview overlay
         NotesGalleryOverlay(
             isVisible = showStackPreview,
             onDismiss = {
@@ -245,7 +254,6 @@ private fun ActionButton(
     enabled: Boolean,
     onClick: () -> Unit
 ) {
-    // "Greyed out" visual when disabled, but keep visible
     val containerColor = if (enabled) color else color.copy(alpha = 0.5f)
     val contentColor = if (enabled) Color.White else Color.White.copy(alpha = 0.7f)
 
@@ -254,22 +262,47 @@ private fun ActionButton(
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
-            disabledContainerColor = containerColor, // Keep color but dimmed
+            disabledContainerColor = containerColor,
             contentColor = contentColor,
             disabledContentColor = contentColor
         ),
-        shape = CircleShape, // Circular shape
+        shape = CircleShape,
         modifier = Modifier
-            .size(80.dp) // Fixed size for circle
+            .size(80.dp)
             .shadow(elevation = if (enabled) 12.dp else 0.dp, shape = CircleShape)
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size(40.dp), // Larger icon
+            modifier = Modifier.size(40.dp),
             tint = contentColor
         )
     }
 }
 
+@Preview(
+    showBackground = true,
+    device = "spec:width=920dp,height=460dp,orientation=landscape",
+    name = "OIM Receive Screen - Loading"
+)
+@Composable
+fun OIMReceiveScreenLoadingPreview() {
+    MaterialTheme {
+        OIMReceiveScreen(
+            terms = null,
+            onAccept = { },
+            onReject = { },
+            balance = Amount.fromString("SLE", "100.00")
+        )
+    }
+}
 
+@Preview(
+    showBackground = true,
+    name = "Small Landscape Phone 640x360dp (xhdpi)",
+    device = "spec:width=640dp,height=360dp,dpi=320,orientation=landscape"
+)
+@Composable
+fun OIMReceiveScreenPreview_SmallPhoneXhdpi() {
+    OIMReceiveScreenLoadingPreview()
+}

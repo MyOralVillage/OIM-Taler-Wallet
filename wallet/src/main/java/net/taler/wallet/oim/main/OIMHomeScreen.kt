@@ -8,7 +8,7 @@
  *
  * GNU Taler is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-* A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>.
@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,7 +30,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import net.taler.database.data_models.Amount
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.oim.resourceMappers.Background
 import net.taler.wallet.oim.resourceMappers.UIIcons
@@ -50,15 +53,16 @@ fun OIMHomeScreenContent(
     onChestClick: () -> Unit,
     onBackToTalerClick: () -> Unit = {}
 ) {
-
-    // OIM mode only valid in portrait -> scale to 75% of width
+    // OIM mode only valid in portrait -> scale to 50% of width
     val configuration = LocalWindowInfo.current
     val width = configuration.containerSize.width
     val chestSize = (width * 0.5f).dp
 
     TalerSurface {
         Box(
-            modifier = modifier.fillMaxSize().statusBarsPadding()
+            modifier = modifier
+                .fillMaxSize()
+                .statusBarsPadding()
         ) {
             // Background
             Image(
@@ -68,20 +72,9 @@ fun OIMHomeScreenContent(
                 contentScale = ContentScale.Crop
             )
 
-            // Top white bar
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(56.dp) // typical top bar height
-//                    .background(Color.White)
-//                    .align(Alignment.TopCenter)
-//                    .windowInsetsPadding(WindowInsets.statusBars)
-//            )
-
             // Content layer
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             ) {
                 // Chest
                 Box(
@@ -101,4 +94,30 @@ fun OIMHomeScreenContent(
             }
         }
     }
+}
+
+@Preview(
+    showBackground = true,
+    device = "spec:width=920dp,height=460dp,orientation=landscape",
+    name = "OIM Home Screen"
+)
+@Composable
+fun OIMHomeScreenPreview() {
+    MaterialTheme {
+        OIMHomeScreenContent(
+            onScanQrClick = { },
+            onChestClick = { },
+            onBackToTalerClick = { }
+        )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    name = "Small Landscape Phone 640x360dp (xhdpi)",
+    device = "spec:width=640dp,height=360dp,dpi=320,orientation=landscape"
+)
+@Composable
+fun OIMHomeScreenPreview_SmallPhoneXhdpi() {
+    OIMHomeScreenPreview()
 }

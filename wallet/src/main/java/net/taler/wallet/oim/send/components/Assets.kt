@@ -16,7 +16,7 @@ import com.google.zxing.*
 import net.taler.wallet.oim.resourceMappers.Background
 
 /**
- * ## Asser loader - WoodTableBackground
+ * ## Asset loader - WoodTableBackground
  *
  * Composable utility for rendering the wooden table texture beneath
  * send screen in the OIM Send flow. Uses the `Tables` drawable

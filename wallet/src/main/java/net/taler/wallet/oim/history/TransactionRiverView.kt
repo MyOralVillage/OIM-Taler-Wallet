@@ -3,11 +3,8 @@
     InternalSerializationApi::class
 )
 
-
 package net.taler.wallet.oim.history
 
-import android.graphics.Paint
-import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,8 +14,9 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Water
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,132 +28,62 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.serialization.InternalSerializationApi
-import net.taler.database.data_models.FDtm
 import net.taler.common.Amount as CommonAmount
 import net.taler.database.TranxHistory
-import net.taler.database.data_models.Amount
-import net.taler.database.data_models.EDUC_CLTH
-import net.taler.database.data_models.EXPN_FARM
-import net.taler.database.data_models.FilterableDirection
 import net.taler.database.data_models.Tranx
 import net.taler.wallet.BuildConfig
-import net.taler.wallet.oim.OimColours
-import net.taler.wallet.oim.OimTopBarCentered
-import net.taler.wallet.oim.resourceMappers.Tile
-import net.taler.wallet.oim.resourceMappers.UIIcons
-import net.taler.wallet.oim.resourceMappers.resourceMapper
-import net.taler.wallet.oim.send.components.NotesGalleryOverlay
-import net.taler.wallet.oim.send.components.StackedNotes
+import net.taler.wallet.oim.resourceMappers.*
 import net.taler.wallet.oim.send.components.WoodTableBackground
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
+import kotlinx.coroutines.delay
+import kotlinx.serialization.InternalSerializationApi
+import net.taler.database.data_models.FilterableDirection
+import net.taler.database.data_models.*
+import net.taler.wallet.oim.OimColours
+import net.taler.wallet.oim.OimTopBarCentered
+import kotlin.math.sin
+import android.graphics.Paint
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalWindowInfo
+import net.taler.wallet.oim.send.screens.SendScreenWithAmountPreview
+import android.graphics.Color as AndroidColor
 
 @Composable
 fun TransactionHistoryView(
     modifier: Modifier = Modifier,
     onHome: () -> Unit = {},
-    balanceLabel: Amount,
-    balanceAmount: CommonAmount? = null,
+    balanceAmount: Amount,
     onSendClick: () -> Unit = {},
     onReceiveClick: () -> Unit = {},
+    previewTransactions: List<Tranx>? = null, // For preview/testing only
 ) {
     var showRiver by rememberSaveable { mutableStateOf(true) }
-
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-    ) {
-        // Background for the entire view
-        WoodTableBackground(
-            modifier = Modifier.fillMaxSize(),
-            light = false
-        )
-
-        // Main content in a Column like SendScreen
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            // OIM Top Bar at the top
-            OimTopBarCentered(
-                balance = balanceLabel,
-                onChestClick = onHome,
-                colour = OimColours.TRX_HIST_COLOUR
-            )
-
-            // Content below the top bar
-            Box(modifier = Modifier.fillMaxSize()) {
-                if (showRiver) {
-                    OimRiverTransactionsView(
-                        modifier = Modifier.fillMaxSize(),
-                        balanceAmount = balanceAmount,
-                        onSendClick = onSendClick,
-                        onReceiveClick = onReceiveClick,
-                    )
-                } else {
-                    TransactionsListView(
-                        balance = balanceLabel,
-                        onHome = onHome
-                    )
-                }
-            }
-        }
-
-        // FAB on top of everything
-        FloatingActionButton(
-            onClick = { showRiver = !showRiver },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp),
-            containerColor = Color.White,
-            contentColor = OimColours.TRX_HIST_COLOUR,
-            shape = MaterialTheme.shapes.large
-        ) {
-            Icon(
-                imageVector = if (showRiver) Icons.AutoMirrored.Filled.List else Icons.Default.Water,
-                contentDescription = if (showRiver) "Show list" else "Show river",
-                modifier = Modifier.size(32.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun OimRiverTransactionsView(
-    modifier: Modifier = Modifier,
-    transactions: List<Tranx>? = null,
-    balanceAmount: CommonAmount? = null,
-    onSendClick: () -> Unit = {},
-    onReceiveClick: () -> Unit = {},
-) {
     val context = LocalContext.current
-    var txns by remember { mutableStateOf(transactions ?: emptyList()) }
+    var txns by remember { mutableStateOf<List<Tranx>>(previewTransactions ?: emptyList()) }
 
-    LaunchedEffect(transactions) {
-        if (transactions == null) {
-            if (BuildConfig.DEBUG) TranxHistory.initTest(context) else TranxHistory.init(context)
+    LaunchedEffect(previewTransactions) {
+        if (previewTransactions == null) {
+            if (BuildConfig.DEBUG) TranxHistory.initTest(context)
+            else TranxHistory.init(context)
             txns = TranxHistory.getHistory()
         }
     }
@@ -163,75 +91,85 @@ fun OimRiverTransactionsView(
     var selected by remember { mutableStateOf<Tranx?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
-    var isStackExpanded by remember { mutableStateOf(false) }
-    var showStackPreview by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = modifier.fillMaxSize()
-    ) {
+    Box(modifier = modifier.fillMaxSize().statusBarsPadding()) {
+        // Wood background
+        WoodTableBackground(
+            modifier = Modifier.fillMaxSize(),
+            light = false
+        )
+
         Column(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 80.dp)  // Adjusted for top bar that's now outside
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-            ) {
-                RiverSceneCanvasPerEvent(
-                    transactions = txns,
-                    onTransactionClick = {
-                        selected = it
-                        scope.launch { sheetState.show() }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .padding(
-                            start = 120.dp,
-                            end = 120.dp,
-                            top = 12.dp,
-                            bottom = 12.dp
-                        )
-                )
+            // OIM Top Bar - stays on both screens
+            OimTopBarCentered(
+                balance = balanceAmount,
+                onChestClick = onHome,
+                colour = OimColours.TRX_HIST_COLOUR
+            )
 
+
+            // Content area with side buttons
+            Box(modifier = Modifier) {
+                // Main content (river or list)
+                if (showRiver) {
+                    RiverSceneCanvasPerEvent(
+                        transactions = txns,
+                        onTransactionClick = {
+                            selected = it
+                            scope.launch { sheetState.show() }
+                        },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(start = 104.dp) // Space for buttons
+                    )
+                } else {
+                    TransactionsListContent(
+                        transactions = txns,
+                        onTransactionClick = {
+                            selected = it
+                            scope.launch { sheetState.show() }
+                        },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(start = 104.dp) // Space for buttons
+                    )
+                }
+
+                // LEFT SIDE: Receive (top) + Toggle (middle) + Send (bottom)
                 Column(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .fillMaxHeight()
-                        .padding(start = 8.dp, top = 24.dp, bottom = 24.dp),
-                    verticalArrangement = Arrangement.SpaceBetween,
+                        .padding(horizontal=5.dp,vertical = 15.dp),
+                    verticalArrangement = Arrangement.SpaceAround,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // TOP = RECEIVE
                     HistorySideButton(
                         bitmap = UIIcons("receive").resourceMapper(),
                         bgColor = OimColours.INCOMING_COLOUR,
-                        onClick = onReceiveClick
+                        onClick = onReceiveClick,
+                        size = LocalWindowInfo.current.containerSize
                     )
+
+                    // MIDDLE = TOGGLE VIEW
+                    HistorySideButton(
+                        bitmap =    if (showRiver) UIIcons("river").resourceMapper()
+                                    else UIIcons("timeline").resourceMapper(),
+                        bgColor = Color.Transparent,
+                        onClick = { showRiver = !showRiver },
+                        contentDescription = if (showRiver) "Show list" else "Show river",
+                        size = LocalWindowInfo.current.containerSize
+                    )
+                    // BOTTOM = SEND
                     HistorySideButton(
                         bitmap = UIIcons("send").resourceMapper(),
                         bgColor = OimColours.OUTGOING_COLOUR,
-                        onClick = onSendClick
-                    )
-                }
-
-                if (balanceAmount != null) {
-                    BalanceStackedNotes(
-                        amount = balanceAmount,
-                        isStackExpanded = isStackExpanded,
-                        onExpand = {
-                            if (!isStackExpanded) {
-                                isStackExpanded = true
-                                scope.launch {
-                                    delay(400)
-                                    showStackPreview = true
-                                }
-                            }
-                        },
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .padding(end = 12.dp)
+                        onClick = onSendClick,
+                        size = LocalWindowInfo.current.containerSize
                     )
                 }
             }
@@ -244,22 +182,7 @@ fun OimRiverTransactionsView(
         }
     }
 
-    if (balanceAmount != null) {
-        val noteResIds = remember(balanceAmount) { balanceAmount.resourceMapper() }
-        NotesGalleryOverlay(
-            isVisible = showStackPreview,
-            onDismiss = {
-                showStackPreview = false
-                scope.launch {
-                    delay(200)
-                    isStackExpanded = false
-                }
-            },
-            drawableResIds = noteResIds,
-            noteHeight = 115.dp
-        )
-    }
-
+    // Transaction details modal
     if (selected != null) {
         val t = selected!!
         ModalBottomSheet(
@@ -284,62 +207,59 @@ fun OimRiverTransactionsView(
     }
 }
 
-/** Small square button used on the left of the river (history screen only). */
+/** Side button with bitmap icon */
 @Composable
 private fun HistorySideButton(
     bitmap: ImageBitmap,
     bgColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    size: Dp = 88.dp,
+    size : IntSize,
+            contentDescription: String? = null
 ) {
     Box(
         modifier = modifier
-            .size(size)
-            .clip(RoundedCornerShape(18.dp))
+            .size((size.height * 0.06f).dp)
+            .clip(RoundedCornerShape(19.dp))
             .background(bgColor.copy(alpha = 0.9f))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Image(
             bitmap = bitmap,
-            contentDescription = null,
-            modifier = Modifier.size(size * 0.7f)
+            contentDescription = contentDescription,
+            modifier = Modifier.size((size.height * 0.06f).dp)
         )
     }
 }
 
-@Composable
-private fun BalanceNotes(
-    amount: CommonAmount,
-    modifier: Modifier = Modifier,
-    maxPerRow: Int = 3,
-) {
-    val drawables = remember(amount) { amount.resourceMapper() }
-    val rows = remember(drawables, maxPerRow) { drawables.chunked(maxPerRow) }
 
+@Composable
+private fun TransactionsListContent(
+    transactions: List<Tranx>,
+    onTransactionClick: (Tranx) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
     ) {
-        rows.forEachIndexed { idx, row ->
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                row.forEach { resId ->
-                    Image(
-                        painter = painterResource(id = resId),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .width(56.dp)
-                            .height(56.dp)
-                    )
-                }
-            }
-            if (idx != rows.lastIndex) {
-                Spacer(modifier = Modifier.height(4.dp))
-            }
+        transactions.forEach { transaction ->
+            TransactionCard(
+                amount = transaction.amount.toString(false),
+                currency = transaction.amount.currency,
+                date = transaction.datetime.fmtString(
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                ),
+                purpose = transaction.purpose,
+                dir = transaction.direction,
+                displayAmount = transaction.amount,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onTransactionClick(transaction) }
+                    .padding(vertical = 4.dp)
+            )
         }
     }
 }
@@ -350,71 +270,68 @@ private fun RiverSceneCanvasPerEvent(
     onTransactionClick: (Tranx) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val hitRects = remember { mutableStateListOf<Pair<Rect, Tranx>>() }
     val scrollState = rememberScrollState()
 
-    val farmRes  = Tile("farm").resourceMapper()
+    // Textures
+    val farmRes = Tile("farm").resourceMapper()
     val blankRes = Tile("blank").resourceMapper()
     val riverRes = Tile("river").resourceMapper()
-    val lakeRes  = Tile("lake").resourceMapper()
+    val lakeRes = Tile("lake").resourceMapper()
 
-    val farmBitmap  = ImageBitmap.imageResource(farmRes)
+    val farmBitmap = ImageBitmap.imageResource(farmRes)
     val blankBitmap = ImageBitmap.imageResource(blankRes)
     val riverBitmap = ImageBitmap.imageResource(riverRes)
-    val lakeBitmap  = ImageBitmap.imageResource(lakeRes)
+    val lakeBitmap = ImageBitmap.imageResource(lakeRes)
 
-    // layout constants (dp -> will be converted inside canvas)
-    val minFarmWidthDp = 110.dp          // still wide enough for date, but allows more variation
-    val farmSpacingDp = 24.dp
-    val perTxnWidthBase = 170.dp
-    val perTxnWidth = max(perTxnWidthBase, minFarmWidthDp + farmSpacingDp)
+    val n = max(transactions.size, 1)
+    val perTxnWidth = 180.dp
+    val minCanvasWidth = 1000.dp
+    val desiredWidth = perTxnWidth * n
+    val canvasWidth = if (desiredWidth < minCanvasWidth) minCanvasWidth else desiredWidth
 
-    Row(
-        modifier = modifier.horizontalScroll(scrollState)
+    // Store hit areas - needs to be remembered across recompositions
+    val hitAreas = remember(transactions.size) { mutableStateListOf<Pair<Rect, Tranx>>() }
+
+    Box(
+        modifier = modifier
+            .horizontalScroll(scrollState)
+            .pointerInput(transactions) {
+                detectTapGestures { offset ->
+                    // Find which transaction was tapped
+                    hitAreas.firstOrNull { (rect, _) ->
+                        rect.contains(offset)
+                    }?.let { (_, transaction) ->
+                        onTransactionClick(transaction)
+                    }
+                }
+            }
     ) {
-        val n = max(transactions.size, 1)
-        val minCanvasWidth = 1000.dp
-        val desiredWidth = perTxnWidth * n
-        val canvasWidth =
-            if (desiredWidth < minCanvasWidth) minCanvasWidth else desiredWidth
-
         Canvas(
             modifier = Modifier
                 .width(canvasWidth)
                 .fillMaxHeight()
-                .pointerInput(transactions) {
-                    detectTapGestures { offset ->
-                        hitRects.firstOrNull { it.first.contains(offset) }
-                            ?.let { onTransactionClick(it.second) }
-                    }
-                }
         ) {
-            hitRects.clear()
+            hitAreas.clear()
 
             val w = size.width
             val h = size.height
 
-            // strip at the very top reserved for dates
-            val dateStripHeightPx = 32.dp.toPx()
+            // Reserve space at top for dates
+            val dateStripHeight = 40.dp.toPx()
 
-            // ----- RIVER GEOMETRY -----
-            val riverBaseline = h * 0.55f       // bottom of the river
-            val landBottom = riverBaseline
-            val yellowTop = riverBaseline
+            val landBottom = h * 0.58f
+            val riverBaseline = landBottom
+            val yellowTop = landBottom
             val yellowBottom = h
 
-            // backgrounds
-            drawTiledImageInRect(
-                image = blankBitmap,
-                rect = Rect(
-                    left = 0f,
-                    top = 0f,
-                    right = size.width,
-                    bottom = landBottom
-                )
-
+            // ---------- BACKGROUNDS ----------
+            // Farm tiled background on top
+            drawFarm(
+                image = farmBitmap,
+                rect = Rect(0f, dateStripHeight, w, landBottom)
             )
-            drawTiledImageInRect(
+            // Blank background on bottom
+            drawFarm(
                 image = blankBitmap,
                 rect = Rect(0f, yellowTop, w, yellowBottom)
             )
@@ -422,29 +339,23 @@ private fun RiverSceneCanvasPerEvent(
             val nTx = transactions.size
             if (nTx == 0) return@Canvas
 
-            // ----- AMOUNT PROPORTIONS -----
+            // ---------- RIVER THICKNESS LOGIC ----------
             val maxSingleMaj = transactions.maxOfOrNull {
                 val maj = it.amount.value.toDouble() +
                         it.amount.fraction.toDouble() / 100_000_000.0
                 abs(maj)
-            }
-                ?.takeIf { it > 0.0 } ?: 1.0
+            }?.takeIf { it > 0.0 } ?: 1.0
 
-            val amountProportions = transactions.map { t ->
-                val maj = t.amount.value.toDouble() +
-                        t.amount.fraction.toDouble() / 100_000_000.0
-                (abs(maj) / maxSingleMaj).toFloat()
-            }
-
-            // ----- RIVER THICKNESS (dynamic) -----
-            val minTh = h * 0.03f
-            val maxTh = h * 0.12f
-            var currentTh = h * 0.06f
+            val minTh = h * 0.028f
+            val maxTh = h * 0.11f
+            var currentTh = h * 0.055f
             val thicknessAtPoints = mutableListOf<Float>()
             thicknessAtPoints += currentTh
 
-            transactions.forEachIndexed { idx, t ->
-                val proportion = amountProportions[idx]
+            transactions.forEach { t ->
+                val maj = t.amount.value.toDouble() +
+                        t.amount.fraction.toDouble() / 100_000_000.0
+                val proportion = (abs(maj) / maxSingleMaj).toFloat()
                 val delta = (maxTh - minTh) * 0.6f * proportion
 
                 currentTh = if (t.direction.getValue()) {
@@ -460,80 +371,15 @@ private fun RiverSceneCanvasPerEvent(
             val usableW = w - leftPad
             val step = usableW / nTx
 
-            val minFarmWidthPx = minFarmWidthDp.toPx()
-            val farmSpacingPx = farmSpacingDp.toPx()
-
-            // ----- FARMS: same height, variable width, with spacing -----
-            transactions.forEachIndexed { idx, t ->
-                val xCenter = leftPad + idx * step + step / 2f
-                val proportion = amountProportions[idx]
-
-                val farmTop = dateStripHeightPx
-                val farmHeight = landBottom - farmTop
-
-                val minWidthFactor = 0.6f
-                val maxWidthFactor = 1.7f
-                val widthFactor = (minWidthFactor +
-                        (maxWidthFactor - minWidthFactor) * proportion)
-                    .coerceIn(minWidthFactor, maxWidthFactor)
-
-                var farmWidth = step * widthFactor
-                farmWidth = max(farmWidth, minFarmWidthPx)
-
-                val maxAllowedWidth = max(step - farmSpacingPx, minFarmWidthPx)
-                farmWidth = min(farmWidth, maxAllowedWidth)
-
-                val farmRect = Rect(
-                    left = xCenter - farmWidth / 2f,
-                    top = farmTop,
-                    right = xCenter + farmWidth / 2f,
-                    bottom = farmTop + farmHeight
-                )
-
-                drawImageStretchInRect(
-                    image = farmBitmap,
-                    rect = farmRect
-                )
-
-                hitRects += farmRect to t
-
-                val baseDate = t.datetime.fmtString(
-                    DateTimeFormatter.ofPattern("yyyy/MM/dd")
-                )
-                val parts = baseDate.split("/")
-                val year = parts.getOrNull(0) ?: "----"
-                val month = parts.getOrNull(1) ?: "--"
-                val day = parts.getOrNull(2) ?: "--"
-                val dateStr = "☀️ $day / 🌙 $month / ⭐ $year"
-
-                drawIntoCanvas { canvas ->
-                    val paint = Paint().apply {
-                        color = AndroidColor.WHITE
-                        textSize = 14.dp.toPx()
-                        isAntiAlias = true
-                        textAlign = Paint.Align.CENTER
-                    }
-
-                    // baseline a bit above the farm top
-                    val textY = dateStripHeightPx - 6.dp.toPx()
-                    canvas.nativeCanvas.drawText(
-                        dateStr,
-                        xCenter,
-                        textY,
-                        paint
-                    )
-                }
-            }
-
-            // ----- RIVER PATH: dynamic thickness, flat bottom -----
+            // ---------- RIVER PATH ----------
             val topPath = Path()
             val bottomPath = Path()
-
             for (i in 0..nTx) {
                 val x = leftPad + i * step
                 val thisTh = thicknessAtPoints[i]
-                val topY = riverBaseline - thisTh
-                val bottomY = riverBaseline
+                val wave = sin(i / max(1f, nTx.toFloat()) * 5f) * (h * 0.01f)
+                val topY = riverBaseline - thisTh + wave
+                val bottomY = riverBaseline + wave
 
                 if (i == 0) {
                     topPath.moveTo(x, topY)
@@ -548,154 +394,171 @@ private fun RiverSceneCanvasPerEvent(
                 addPath(topPath)
                 for (i in nTx downTo 0) {
                     val x = leftPad + i * step
-                    val bottomY = riverBaseline
+                    val wave = sin(i / max(1f, nTx.toFloat()) * 5f) * (h * 0.01f)
+                    val bottomY = riverBaseline + wave
                     lineTo(x, bottomY)
                 }
                 close()
             }
 
+            // Fill river with river texture
             clipPath(river) {
-                drawTiledImageInRect(
+                drawFarm(
                     image = riverBitmap,
                     rect = Rect(0f, 0f, w, h)
                 )
             }
             drawPath(river, color = Color(0xFF005188), style = Stroke(2.dp.toPx()))
 
-            // ----- LAKES: big, attached to bottom of river -----
+            // ---------- GROUP TRANSACTIONS BY DATE ----------
+            val dateFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+            val transactionsByDate = transactions.groupBy {
+                it.datetime.fmtString(dateFormat)
+            }
+
+            // Track which dates we've already drawn
+            val drawnDates = mutableSetOf<String>()
+
+            // ---------- CLICKABLE FARMS (INCOMING) & LAKES (OUTGOING) ----------
             transactions.forEachIndexed { idx, t ->
-                if (!t.direction.getValue()) {
-                    val xCenter = leftPad + idx * step + step / 2f
-                    val proportion = amountProportions[idx]
+                val x = leftPad + idx * step + step / 2f
+                val dateStr = t.datetime.fmtString(dateFormat)
 
-                    val baseLakeHeight = h * 0.34f
-                    val minLakeFactor = 0.9f
-                    val maxLakeFactor = 1.5f
-                    val lakeFactor = (minLakeFactor +
-                            (maxLakeFactor - minLakeFactor) * proportion)
-                        .coerceIn(minLakeFactor, maxLakeFactor)
+                if (t.direction.getValue()) {
+                    // INCOMING = CLICKABLE FARM AREA (drawn on top of farm background)
+                    val farmWidth = step * 0.8f
+                    val farmHeight = (landBottom - dateStripHeight) * 0.7f
+                    val farmTop = landBottom - farmHeight
 
-                    val lakeHeight = baseLakeHeight * lakeFactor
-                    val lakeWidth = lakeHeight * 1.35f
+                    val farmRect = Rect(
+                        left = x - farmWidth / 2f,
+                        top = farmTop,
+                        right = x + farmWidth / 2f,
+                        bottom = landBottom
+                    )
 
+                    // Draw a semi-transparent overlay to show it's clickable
+                    // This makes the farm areas more visible and indicates interactivity
+                    drawRect(
+                        color = Color(0x30FFD700), // Semi-transparent gold
+                        topLeft = androidx.compose.ui.geometry.Offset(farmRect.left, farmRect.top),
+                        size = androidx.compose.ui.geometry.Size(farmRect.width, farmRect.height)
+                    )
+
+                    // DEBUG: Draw border around clickable area
+                    drawRect(
+                        color = Color.Red,
+                        topLeft = androidx.compose.ui.geometry.Offset(farmRect.left, farmRect.top),
+                        size = androidx.compose.ui.geometry.Size(farmRect.width, farmRect.height),
+                        style = Stroke(width = 3.dp.toPx())
+                    )
+
+                    hitAreas += farmRect to t
+                } else {
+                    // OUTGOING = VISIBLE CLICKABLE LAKE
+                    val lakeHeight = h * 0.35f
+                    val lakeWidth = lakeHeight * 1.3f
                     val lakeTop = riverBaseline
 
                     val lakeRect = Rect(
-                        left = xCenter - lakeWidth / 2f,
+                        left = x - lakeWidth / 2f,
                         top = lakeTop,
-                        right = xCenter + lakeWidth / 2f,
-                        bottom = lakeTop + lakeHeight
+                        right = x + lakeWidth / 2f,
+                        bottom = (lakeTop + lakeHeight).coerceAtMost(h)
                     )
 
-                    drawImageFitInRect(
+                    drawLake(
                         image = lakeBitmap,
                         rect = lakeRect
                     )
 
-                    hitRects += lakeRect to t
+//                    // DEBUG: Draw border around clickable area
+//                    drawRect(
+//                        color = Color.Blue,
+//                        topLeft = androidx.compose.ui.geometry.Offset(lakeRect.left, lakeRect.top),
+//                        size = androidx.compose.ui.geometry.Size(lakeRect.width, lakeRect.height),
+//                        style = Stroke(width = 3.dp.toPx())
+//                    )
+//
+//                    hitAreas += lakeRect to t
                 }
+
+                // ---------- DATE LABELS (Only draw once per date) ----------
+//                if (!drawnDates.contains(dateStr)) {
+//                    drawnDates.add(dateStr)
+//
+//                    drawIntoCanvas { canvas ->
+//                        val paint = Paint().apply {
+//                            color = AndroidColor.WHITE
+//                            textSize = 13.dp.toPx()
+//                            isAntiAlias = true
+//                            textAlign = Paint.Align.CENTER
+//                        }
+//
+//                        // Format: ☀️ day / 🌙 month / ⭐ year
+//                        val parts = dateStr.split("/")
+//                        val year = parts.getOrNull(0) ?: "----"
+//                        val month = parts.getOrNull(1) ?: "--"
+//                        val day = parts.getOrNull(2) ?: "--"
+//                        val formattedDate = "☀️ $day / 🌙 $month / ⭐ $year"
+//
+//                        // Measure text width for background
+//                        val textWidth = paint.measureText(formattedDate)
+//                        val textY = dateStripHeight * 0.6f
+//                        val padding = 8.dp.toPx()
+//
+//                        // Draw semi-transparent white background
+//                        val bgPaint = Paint().apply {
+//                            color = AndroidColor.WHITE
+//                            alpha = 50 // Very slight white background (0-255 scale)
+//                            isAntiAlias = true
+//                        }
+//
+//                        canvas.nativeCanvas.drawRoundRect(
+//                            x - textWidth / 2f - padding,
+//                            textY - 16.dp.toPx(),
+//                            x + textWidth / 2f + padding,
+//                            textY + 6.dp.toPx(),
+//                            4.dp.toPx(),
+//                            4.dp.toPx(),
+//                            bgPaint
+//                        )
+//
+//                        // Draw date text
+//                        canvas.nativeCanvas.drawText(
+//                            formattedDate,
+//                            x,
+//                            textY,
+//                            paint
+//                        )
+//                    }
+//                }
             }
         }
     }
 }
 
 @Composable
-private fun BalanceStackedNotes(
-    amount: CommonAmount,
-    isStackExpanded: Boolean,
-    onExpand: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val noteResIds = remember(amount) { amount.resourceMapper() }
-
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        StackedNotes(
-            noteResIds = noteResIds,
-            noteHeight = 60.dp,
-            noteWidth = 86.dp,
-            expanded = isStackExpanded,
-            onClick = onExpand,
-            notesPerRow = 2,
-            stacksPerRow = 2
-        )
-    }
-}
-
-@Composable
-private fun SideOimActionButton(
-    iconName: String,
-    contentDescription: String,
-    backgroundColor: Color,
+private fun FarmDrawer (
+    image: ImageBitmap,
+    rect:  Rect,
     onClick: () -> Unit,
-) {
-    FloatingActionButton(
-        onClick = onClick,
-        modifier = Modifier.size(64.dp),
-        containerColor = backgroundColor,
-        contentColor = Color.White,
-        shape = MaterialTheme.shapes.large
-    ) {
-        Icon(
-            bitmap = UIIcons(iconName).resourceMapper(),
-            contentDescription = contentDescription,
-            tint = Color.Unspecified,
-            modifier = Modifier.size(40.dp)
-        )
-    }
-}
 
-@Composable
-private fun NotesOnTable(
-    amount: CommonAmount,
-    maxPerRow: Int = 4,
-    dpi: Dp = 72.dp,
-    horizontalGap: Dp = 8.dp,
-    verticalGap: Dp = 8.dp,
 ) {
-    val drawables = remember(amount) { amount.resourceMapper() }
-    val rows = remember(drawables, maxPerRow) { drawables.chunked(maxPerRow) }
-
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        rows.forEach { row ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(horizontalGap)
-            ) {
-                row.forEach { resId ->
-                    Image(
-                        painter = painterResource(id = resId),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .width(dpi)
-                            .height(dpi)
-                    )
+    Canvas(
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures { offset ->
+                    if (rect.contains(offset)) {
+                        onClick()
+                    }
                 }
             }
-            Spacer(modifier = Modifier.height(verticalGap))
-        }
-    }
+    ) {drawFarm(image,rect)}
 }
 
-@Composable
-private fun DayNightStrip(modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        repeat(4) { idx ->
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("☀️ ${20 + idx * 2}", style = MaterialTheme.typography.bodySmall)
-                Text("🌙 9", style = MaterialTheme.typography.bodySmall)
-            }
-        }
-    }
-}
-
-private fun DrawScope.drawTiledImageInRect(
+private fun DrawScope.drawFarm(
     image: ImageBitmap,
     rect: Rect
 ) {
@@ -717,21 +580,7 @@ private fun DrawScope.drawTiledImageInRect(
     }
 }
 
-// Stretch image to fill rect (used for farms so height is uniform visually)
-private fun DrawScope.drawImageStretchInRect(
-    image: ImageBitmap,
-    rect: Rect
-) {
-    drawImage(
-        image = image,
-        srcSize = IntSize(image.width, image.height),
-        dstOffset = IntOffset(rect.left.toInt(), rect.top.toInt()),
-        dstSize = IntSize(rect.width.toInt(), rect.height.toInt())
-    )
-}
-
-// Fit the whole image into a rect while preserving aspect ratio (used for lakes)
-private fun DrawScope.drawImageFitInRect(
+private fun DrawScope.drawLake(
     image: ImageBitmap,
     rect: Rect
 ) {
@@ -756,40 +605,72 @@ private fun DrawScope.drawImageFitInRect(
     )
 }
 
-@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+@Preview(
+    showBackground = true,
+    showSystemUi = false,
+    name = "Transaction History - River View",
+    device = "spec:width=920dp,height=460dp,orientation=landscape"
+)
 @Composable
-fun TransactionHistoryViewPreview() {
+fun TransactionHistoryPreview() {
     MaterialTheme {
-        // Provide a fake balance and some dummy transactions
-        val fakeAmount = CommonAmount(
-            value = 100,
-            fraction = 50_000_000, // 0.5 fraction
-            currency = "USD"
-        )
+        // Create a specific date for testing
+        val sameDate = FDtm() // Same date for multiple transactions
 
         val fakeTranx = listOf(
             Tranx(
                 amount = CommonAmount("XOF", 10000L, 0),
-                datetime = FDtm(),
+                datetime = sameDate, // Same date
                 direction = FilterableDirection.INCOMING,
                 purpose = EDUC_CLTH,
-                TID = "1234"
+                TID = "1"
             ),
             Tranx(
-                amount = Amount("EUR", 200L, 0),
-                datetime = FDtm(),
+                amount = Amount("EUR", 5000L, 0),
+                datetime = sameDate, // Same date as previous
                 direction = FilterableDirection.OUTGOING,
                 purpose = EXPN_FARM,
-                TID = "4567"
+                TID = "2"
+            ),
+            Tranx(
+                amount = Amount("SLE", 15000L, 0),
+                datetime = FDtm(), // Different date
+                direction = FilterableDirection.INCOMING,
+                purpose = EDUC_CLTH,
+                TID = "3"
+            ),
+            Tranx(
+                amount = Amount("XOF", 8000L, 0),
+                datetime = FDtm(), // Different date
+                direction = FilterableDirection.OUTGOING,
+                purpose = EXPN_FARM,
+                TID = "4"
+            ),
+            Tranx(
+                amount = Amount("SLE", 20000L, 0),
+                datetime = FDtm(), // Different date
+                direction = FilterableDirection.INCOMING,
+                purpose = EDUC_CLTH,
+                TID = "5"
             )
         )
 
         TransactionHistoryView(
-            balanceLabel = Amount("SLE", 200L, 0),
-            balanceAmount = fakeAmount,
+            balanceAmount = Amount("SLE", 100L, 50_000_000),
             onHome = {},
             onSendClick = {},
-            onReceiveClick = {}
+            onReceiveClick = {},
+            previewTransactions = fakeTranx
         )
     }
+}
+
+@Preview(
+    showBackground = true,
+    name = " Small Landscape Phone 640x360dp (xhdpi)",
+    device = "spec:width=640dp,height=360dp,dpi=320,orientation=landscape"
+)
+@Composable
+fun TransactionHistoryPreview_SmallPhoneXhdpi() {
+    TransactionHistoryPreview()
 }

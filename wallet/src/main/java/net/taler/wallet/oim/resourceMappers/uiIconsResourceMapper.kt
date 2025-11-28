@@ -45,39 +45,44 @@ internal class UIIcons(val buttonName: String, val iso: String? = null) {
      * Maps a string-based button identifier into the corresponding [ImageBitmap] resource.
      *
      * ### Supported button names and their corresponding resources:
-     * - `"send"`               → `send` bitmap
-     * - `"receive"`            → `receive` bitmap
-     * - `"tranx_hist"`         → `transaction_history` bitmap
-     * - `"deposit"`            → `deposit` bitmap
-     * - `"withdraw"`           → `withdraw_og` bitmap
-     * - `"filter"`             → `filter` bitmap
-     * - `"greenarrowright"`    → `greenarrowright` bitmap
-     * - `"greencheckmark"`     → `greencheck` bitmap
-     * - `"redcross"`           → `redcross` bitmap
-     * - `"country_flag"`       → Result of [`countryFlag`](iso)
-     * - `"chest_open"`         → `chest_open`
-     * - `"chest_closed"`       → `chest_closed`
-     * - `"incoming_transaction"` -> `incoming_transaction`
-     *
+     * - `"send"`                   → `send` bitmap
+     * - `"receive"`                → `receive` bitmap
+     * - `"tranx_hist"`             → `transaction_history` bitmap
+     * - `"deposit"`                → `deposit` bitmap
+     * - `"withdraw"`               → `withdraw_og` bitmap
+     * - `"filter"`                 → `filter` bitmap
+     * - `"greenarrowright"`        → `greenarrowright` bitmap
+     * - `"greencheckmark"`         → `greencheck` bitmap
+     * - `"redcross"`               → `redcross` bitmap
+     * - `"country_flag"`           → Result of [`countryFlag`](iso)
+     * - `"chest_open"`             → `chest_open`
+     * - `"chest_closed"`           → `chest_closed`
+     * - `"incoming_transaction"`   → incoming_transaction`
+     * - `"accounting_book"`
+     * - `"river"`
+     * - `"timeline"`
      * @return The corresponding [ImageBitmap] for the given button name.
      * @throws IllegalArgumentException if the button name does not match any of the supported types.
      */
     @Composable
     fun resourceMapper(): ImageBitmap =
         when (this.buttonName.lowercase().trim()) {
-            "send"              -> ImageBitmap.imageResource(send)
-            "receive"           -> ImageBitmap.imageResource(receive)
-            "tranx_hist"        -> ImageBitmap.imageResource(transaction_history)
-            "deposit"           -> ImageBitmap.imageResource(deposit)
-            "withdraw"          -> ImageBitmap.imageResource(withdraw_og)
-            "filter"            -> ImageBitmap.imageResource(filter)
-            "greenarrowright"   -> ImageBitmap.imageResource(greenarrowright)
-            "greencheckmark"    -> ImageBitmap.imageResource(greencheck)
-            "redcross"          -> ImageBitmap.imageResource(redcross)
-            "country_flag"      -> countryFlag(iso)
-            "chest_open"        -> ImageBitmap.imageResource(chest_open)
-            "chest_closed"      -> ImageBitmap.imageResource(chest_closed)
-            "incoming_transaction" -> ImageBitmap.imageResource(incoming_transaction)
+            "send"                  -> ImageBitmap.imageResource(send)
+            "receive"               -> ImageBitmap.imageResource(receive)
+            "tranx_hist"            -> ImageBitmap.imageResource(transaction_history)
+            "deposit"               -> ImageBitmap.imageResource(deposit)
+            "withdraw"              -> ImageBitmap.imageResource(withdraw_og)
+            "filter"                -> ImageBitmap.imageResource(filter)
+            "greenarrowright"       -> ImageBitmap.imageResource(greenarrowright)
+            "greencheckmark"        -> ImageBitmap.imageResource(greencheck)
+            "redcross"              -> ImageBitmap.imageResource(redcross)
+            "country_flag"          -> countryFlag(iso)
+            "chest_open"            -> ImageBitmap.imageResource(chest_open)
+            "chest_closed"          -> ImageBitmap.imageResource(chest_closed)
+            "incoming_transaction"  -> ImageBitmap.imageResource(incoming_transaction)
+            "accounting_book"       -> ImageBitmap.imageResource(accounting_book)
+            "river"                 -> ImageBitmap.imageResource(river)
+            "timeline"              -> ImageBitmap.imageResource(timeline)
             else ->
                 throw IllegalArgumentException("Invalid button: $buttonName")
         }

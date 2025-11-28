@@ -24,6 +24,7 @@ import net.taler.database.data_models.tranxPurpLookup
 import net.taler.wallet.oim.send.components.WoodTableBackground
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.res.painterResource
+import net.taler.wallet.oim.history.TransactionHistoryPreview
 import net.taler.wallet.oim.resourceMappers.resourceMapper
 
 /**
@@ -52,7 +53,9 @@ fun PurposeCard(
                 shape = RoundedCornerShape(10.dp)
             ),
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor =
+            if (isSelected) Color(tranxPurp.colourInt()).copy(alpha=0.6f)
+            else (Color.White.copy(alpha=0.21f))),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(
@@ -95,27 +98,6 @@ fun PurposeScreen(
     Box(Modifier.fillMaxSize().statusBarsPadding()) {
         WoodTableBackground()
 
-        // Top-left back button
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal=16.dp, vertical=8.dp)
-            ) {
-                FilledTonalButton(
-                    onClick = onBack,
-                    modifier = Modifier
-                        .background(
-                            color = Color(0x00000000)
-                        )
-                ) {
-                    Icon(
-                        Icons.Filled.ArrowBackIosNew,
-                        contentDescription = "Home",
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-            }
-
             Column(
                 Modifier
                     .fillMaxSize()
@@ -151,12 +133,12 @@ fun PurposeScreen(
             }
         }
     }
-}
 
 /**
  * Preview for PurposeScreen.
  */
-@Preview(showBackground = true, device="spec:width=411dp,height=891dp,orientation=landscape")
+@Preview(showBackground = true,device = "spec:width=920dp,height=460dp,orientation=landscape"
+)
 @Composable
 fun PurposeScreenPreview() {
     MaterialTheme {
@@ -166,4 +148,14 @@ fun PurposeScreenPreview() {
             onDone = {}
         )
     }
+}
+
+@Preview(
+    showBackground = true,
+    name = " Small Landscape Phone 640x360dp (xhdpi)",
+    device = "spec:width=640dp,height=360dp,dpi=320,orientation=landscape"
+)
+@Composable
+fun PurposeScreenPreview_SmallPhoneXhdpi() {
+    PurposeScreenPreview()
 }

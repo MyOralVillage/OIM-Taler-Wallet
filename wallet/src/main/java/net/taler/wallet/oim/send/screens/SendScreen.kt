@@ -34,6 +34,7 @@ import net.taler.wallet.oim.resourceMappers.XOF_BILLS
 import net.taler.wallet.oim.resourceMappers.resourceMapper
 import net.taler.wallet.oim.resourceMappers.consolidate
 import kotlinx.coroutines.delay
+import net.taler.wallet.oim.history.TransactionHistoryPreview
 import kotlin.random.Random
 
 /**
@@ -410,131 +411,19 @@ fun SendScreen(
 }
 
 /**
- * Preview: Standard Pixel 5 device with EUR currency
- * Shows the initial state with no amount selected
- */
-@Preview(
-    showBackground = true,
-    device = "id:pixel_5",
-    name = "Pixel 5 - EUR"
-)
-@Composable
-fun SendScreenPreview() {
-    MaterialTheme {
-        val mockBalance = Amount.fromString("EUR", "500.00")
-        val mockAmount = Amount.fromString("EUR", "0.00")
-
-        SendScreen(
-            balance = mockBalance,
-            amount = mockAmount,
-            onAdd = { },
-            onRemoveLast = { },
-            onChoosePurpose = { },
-            onSend = { },
-            onHome = { },
-            onChest = { }
-        )
-    }
-}
-
-/**
- * Preview: High DPI device with CHF currency
- * Demonstrates how notes scale on high-density screens
- */
-@Preview(
-    showBackground = true,
-    device = "spec:width=411dp,height=891dp,dpi=420",
-    name = "High DPI - CHF"
-)
-@Composable
-fun SendScreenPreviewHighDPI() {
-    MaterialTheme {
-        val mockBalance = Amount.fromString("CHF", "1000.00")
-        val mockAmount = Amount.fromString("CHF", "0.00")
-
-        SendScreen(
-            balance = mockBalance,
-            amount = mockAmount,
-            onAdd = { },
-            onRemoveLast = { },
-            onChoosePurpose = { },
-            onSend = { },
-            onHome = { },
-            onChest = { }
-        )
-    }
-}
-
-/**
- * Preview: Low DPI device with KUDOS currency
- * Shows how the interface adapts to lower-resolution screens
- */
-@Preview(
-    showBackground = true,
-    device = "spec:width=320dp,height=640dp,dpi=240",
-    name = "Low DPI - KUDOS"
-)
-@Composable
-fun SendScreenPreviewLowDPI() {
-    MaterialTheme {
-        val mockBalance = Amount.fromString("KUDOS", "250.00")
-        val mockAmount = Amount.fromString("KUDOS", "0.00")
-
-        SendScreen(
-            balance = mockBalance,
-            amount = mockAmount,
-            onAdd = { },
-            onRemoveLast = { },
-            onChoosePurpose = { },
-            onSend = { },
-            onHome = { },
-            onChest = { }
-        )
-    }
-}
-
-/**
- * Preview: Tablet-sized device with XOF currency
- * Demonstrates the layout on larger screens
- */
-@Preview(
-    showBackground = true,
-    device = "spec:width=800dp,height=1280dp,dpi=320",
-    name = "Tablet - XOF"
-)
-@Composable
-fun SendScreenPreviewTablet() {
-    MaterialTheme {
-        val mockBalance = Amount.fromString("XOF", "50000")
-        val mockAmount = Amount.fromString("XOF", "0")
-
-        SendScreen(
-            balance = mockBalance,
-            amount = mockAmount,
-            onAdd = { },
-            onRemoveLast = { },
-            onChoosePurpose = { },
-            onSend = { },
-            onHome = { },
-            onChest = { }
-        )
-    }
-}
-
-/**
  * Preview: With amount already selected
  * Shows how stacks of different denominations appear side-by-side
  */
 @Preview(
     showBackground = true,
-    device = "id:pixel_5",
+    device = "spec:width=920dp,height=460dp,orientation=landscape",
     name = "With Amount Selected"
 )
 @Composable
 fun SendScreenWithAmountPreview() {
     MaterialTheme {
         val mockBalance = Amount.fromString("EUR", "500.00")
-        val mockAmount = Amount.fromString("EUR", "87.50")
+        val mockAmount = Amount.fromString("EUR", "0")
 
         SendScreen(
             balance = mockBalance,
@@ -547,4 +436,14 @@ fun SendScreenWithAmountPreview() {
             onChest = { }
         )
     }
+}
+
+@Preview(
+    showBackground = true,
+    name = " Small Landscape Phone 640x360dp (xhdpi)",
+    device = "spec:width=640dp,height=360dp,dpi=320,orientation=landscape"
+)
+@Composable
+fun TransactionHistoryPreview_SmallPhoneXhdpi() {
+    SendScreenWithAmountPreview()
 }

@@ -9,6 +9,9 @@ All of the purposes are based off of the official OIM Salome library.
 - electricity.webp
 - water.webp
 - phone.webp
+- accounting_book.webp
+- timeline.webp
+- river.webp
 <br>
 ### The following were designed by Google Gemini:
 - gas.webp

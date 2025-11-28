@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -15,6 +16,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +33,7 @@ import net.taler.wallet.oim.send.components.WoodTableBackground
 import net.taler.wallet.oim.send.components.generateQrBitmap
 import net.taler.wallet.oim.OimColours
 import net.taler.wallet.oim.OimTopBarCentered
+import net.taler.wallet.oim.history.TransactionHistoryPreview
 
 /**
  * ## QR Screen
@@ -76,20 +79,21 @@ fun QrScreen(
                 onChestClick = onHome,
                 colour = OimColours.OUTGOING_COLOUR
             )
+
             Row(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 16.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // LEFT: QR
+                // LEFT: QR (largest element)
                 Surface(
                     color = Color.White,
                     shape = RoundedCornerShape(12.dp),
                     shadowElevation = 8.dp,
                     modifier = Modifier
-                        .size(200.dp)
+                        .size(((LocalWindowInfo.current.containerSize.height)/4).dp)
                         .aspectRatio(1f)
                 ) {
                     if (talerUri == null) {
@@ -117,66 +121,62 @@ fun QrScreen(
                     }
                 }
 
-                // RIGHT: centered amount + purpose
-                Column(
+                // CENTER: Amount box
+                Box(
                     modifier = Modifier
-                        .fillMaxHeight()
-                        .padding(start = 24.dp)
-                        .weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                        .size((LocalWindowInfo.current.containerSize.height/6).dp)
+                        .shadow(8.dp, shape = RoundedCornerShape(12.dp))
+                        .background(
+                            OimColours.OUTGOING_COLOUR,
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(16.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .shadow(8.dp, shape = RoundedCornerShape(12.dp))
-                            .background(
-                                OimColours.OUTGOING_COLOUR,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .padding(16.dp) // inner padding inside the box
-                    ) { Column(
-                        modifier = Modifier,
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
                             text = amount.amountStr,
-                            color = Color.White.copy(alpha=0.85f),
+                            color = Color.White.copy(alpha = 0.85f),
                             fontWeight = FontWeight.Medium,
-                            fontSize = 56.sp,
+                            fontSize = (LocalWindowInfo.current.containerSize.height/24).sp,
                         )
+
                         Text(
                             text = amount.spec?.name ?: amount.currency,
                             color = Color.White.copy(alpha = 0.85f),
                             fontWeight = FontWeight.Medium,
                             fontStyle = FontStyle.Italic,
-                            fontSize = 26.sp
+                            fontSize = (LocalWindowInfo.current.containerSize.height/24).sp
                         )
                     }
-                    }
-                    Spacer(Modifier.height(24.dp))
+                }
 
-                    if (purpose != null) {
-                        Surface(
-                            color = Color(purpose.colourInt()),
-                            shape = RoundedCornerShape(16.dp),
-                            shadowElevation = 4.dp
-                        ) {
-                            Image(
-                                painter = painterResource(purpose.resourceMapper()),
-                                contentDescription = null,
-                                modifier = Modifier.size(240.dp),  // Increased from 150.dp
-                                contentScale = ContentScale.FillBounds
-                            )
-                        }
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .size(240.dp)
-                                .alpha(0f)
+                // RIGHT: Purpose icon (same size as amount)
+                if (purpose != null) {
+                    Surface(
+                        modifier = Modifier.size(
+                            (LocalWindowInfo.current.containerSize.height/6).dp
+                        ),
+                        color = Color(purpose.colourInt()),
+                        shape = RoundedCornerShape(12.dp),
+                        shadowElevation = 4.dp
+                    ) {
+                        Image(
+                            painter = painterResource(purpose.resourceMapper()),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Fit
                         )
                     }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(200.dp)
+                            .alpha(0f)
+                    )
                 }
             }
         }
@@ -187,9 +187,7 @@ fun QrScreen(
  * Preview: QR Screen with loading state
  */
 @Preview(
-    showBackground = true,
-    widthDp = 1000,
-    heightDp = 700
+    device = "spec:width=920dp,height=460dp,orientation=landscape"
 )
 @Composable
 fun QrScreenLoadingPreview() {
@@ -203,4 +201,13 @@ fun QrScreenLoadingPreview() {
             onHome = { }
         )
     }
+}
+@Preview(
+    showBackground = true,
+    name = " Small Landscape Phone 640x360dp (xhdpi)",
+    device = "spec:width=640dp,height=360dp,dpi=320,orientation=landscape"
+)
+@Composable
+fun QRLoadingPreview_SmallPhoneXhdpi() {
+    QrScreenLoadingPreview()
 }

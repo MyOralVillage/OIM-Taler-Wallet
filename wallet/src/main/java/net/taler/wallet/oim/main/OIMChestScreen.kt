@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,11 +54,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.taler.common.Amount
 import net.taler.wallet.balances.BalanceState
 import net.taler.wallet.compose.TalerSurface
 import net.taler.wallet.oim.OimColours
@@ -67,12 +70,12 @@ import net.taler.wallet.oim.resourceMappers.resourceMapper
 import net.taler.wallet.oim.send.components.StackedNotes
 import net.taler.wallet.oim.main.components.NotePreviewOverlay
 import net.taler.wallet.oim.send.components.NotesGalleryOverlay
-import androidx.compose.ui.tooling.preview.Preview
+
 /** Reusable button composable with toggle + delay */
 @Composable
 private fun ButtonBox(
     bitmap: ImageBitmap,
-    bgColor: Color,
+    bgColor: Color = Color.Unspecified,
     onClick: () -> Unit,
     size: Dp,
     iconSize: Dp
@@ -84,7 +87,7 @@ private fun ButtonBox(
         modifier = Modifier
             .size(size)
             .clip(RoundedCornerShape(8.dp))
-            .background(bgColor.copy(alpha = if (isActive) 0.9f else 0.6f))
+            .background(bgColor)
             .clickable {
                 coroutineScope.launch {
                     isActive = true
@@ -92,12 +95,12 @@ private fun ButtonBox(
                     onClick()
                 }
             },
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Image(
             bitmap = bitmap,
             contentDescription = null,
-            modifier = Modifier.size(iconSize)
+            modifier = Modifier.size(iconSize).fillMaxSize(),
         )
     }
 }
@@ -124,7 +127,6 @@ fun OIMChestScreenContent(
     onWithdrawTestKudosClick: () -> Unit,
     balanceState: BalanceState = BalanceState.None,
 ) {
-    /** Main composable surface for the OIM Chest Screen. */
     TalerSurface {
         Box(
             modifier = modifier
@@ -138,7 +140,7 @@ fun OIMChestScreenContent(
             val historyButtonSize = 70.dp
             val historyIconSize = 60.dp
             val centerContentTopPadding = 60.dp
-            val centerContentBottomPadding =20.dp
+            val centerContentBottomPadding = 20.dp
 
             var selectedNoteResId by remember { mutableStateOf<Int?>(null) }
             var isStackExpanded by remember { mutableStateOf(false) }
@@ -178,7 +180,7 @@ fun OIMChestScreenContent(
                 }
             }
 
-            /** Wooden background  */
+            // Wooden background
             Image(
                 painter = painterResource(Background(LocalContext.current).resourceMapper()),
                 contentDescription = "Wooden background",
@@ -186,11 +188,8 @@ fun OIMChestScreenContent(
                 contentScale = ContentScale.Crop
             )
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                /** Top row: Send (left), Chest (center), Receive (right) */
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Top row: Send (left), Chest (center), Receive (right)
                 Row(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
@@ -199,8 +198,7 @@ fun OIMChestScreenContent(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
-                    // top right "send" button; shaded red
+                    // Top left "send" button; shaded red
                     ButtonBox(
                         UIIcons("send").resourceMapper(),
                         OimColours.OUTGOING_COLOUR,
@@ -209,7 +207,7 @@ fun OIMChestScreenContent(
                         topIconSize
                     )
 
-                    // top center "chest open" button; no shade
+                    // Top center "chest open" button; no shade
                     ButtonBox(
                         UIIcons("chest_open").resourceMapper(),
                         Color.Unspecified,
@@ -218,7 +216,7 @@ fun OIMChestScreenContent(
                         centerIconSize
                     )
 
-                    // top right "receive" button; green shade
+                    // Top right "receive" button; green shade
                     ButtonBox(
                         UIIcons("receive").resourceMapper(),
                         OimColours.INCOMING_COLOUR,
@@ -226,11 +224,9 @@ fun OIMChestScreenContent(
                         topButtonSize,
                         topIconSize
                     )
-
                 }
 
-
-                /** Center area — shows balance and "Withdraw Test KUDOS" button. */
+                // Center area — shows balance and banknotes
                 Column(
                     modifier = Modifier
                         .align(Alignment.Center)
@@ -242,15 +238,8 @@ fun OIMChestScreenContent(
                         ),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
-
                     if (amountForNotes != null) {
-                        // Only notes/coins visuals; no numbers above/below.
                         Spacer(modifier = Modifier.height(12.dp))
-//                         NotesOnTable(
-//                            amount = amountForNotes,
-//                            onNoteClick = { resId -> selectedNoteResId = resId }
-//                         )
                         StackedNotes(
                             noteResIds = amountForNotes.resourceMapper(),
                             noteHeight = 79.dp,
@@ -269,10 +258,9 @@ fun OIMChestScreenContent(
                     } else {
                         Spacer(modifier = Modifier.height(16.dp))
                     }
-
                 }
 
-                /** Withdraw Test button anchored bottom end for better spacing */
+                // Withdraw Test button anchored bottom end
                 WithdrawTestButton(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -280,7 +268,7 @@ fun OIMChestScreenContent(
                     onClick = onWithdrawTestKudosClick,
                 )
 
-                /** Bottom row: Transaction History button (ledger icon) */
+                // Bottom left: Transaction History button (ledger icon)
                 Row(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
@@ -297,8 +285,9 @@ fun OIMChestScreenContent(
                             .clip(RoundedCornerShape(8.dp))
                             .background(
                                 OimColours.TRX_HIST_COLOUR.copy(
-                                alpha = if (isHistActive) 0.9f else 0.6f
-                            ))
+                                    alpha = if (isHistActive) 0.9f else 0.6f
+                                )
+                            )
                             .clickable {
                                 coroutineScope.launch {
                                     isHistActive = true
@@ -318,13 +307,11 @@ fun OIMChestScreenContent(
             }
 
             // Full-screen preview overlay
-            // Full-screen preview overlay
             if (selectedNoteResId != null) {
                 NotePreviewOverlay(
                     noteResId = selectedNoteResId!!,
                     onDismiss = { selectedNoteResId = null }
                 )
-
             }
 
             NotesGalleryOverlay(
@@ -374,13 +361,11 @@ private fun WithdrawTestButton(
     }
 }
 
-// ----------------- Banknote stack code -----------------
-
 @Composable
 private fun NotesOnTable(
-    amount: net.taler.common.Amount,
+    amount: Amount,
     maxPerRow: Int = 4,
-    dpi : Dp = 72.dp,
+    dpi: Dp = 72.dp,
     horizontalGap: Dp = 8.dp,
     verticalGap: Dp = 8.dp,
     onNoteClick: (Int) -> Unit = {},
@@ -411,4 +396,33 @@ private fun NotesOnTable(
             Spacer(modifier = Modifier.height(verticalGap))
         }
     }
+}
+
+@Preview(
+    showBackground = true,
+    device = "spec:width=920dp,height=460dp,orientation=landscape",
+    name = "OIM Chest Screen"
+)
+@Composable
+fun OIMChestScreenPreview() {
+    MaterialTheme {
+        OIMChestScreenContent(
+            onBackClick = { },
+            onSendClick = { },
+            onRequestClick = { },
+            onTransactionHistoryClick = { },
+            onWithdrawTestKudosClick = { },
+            balanceState = BalanceState.None
+        )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    name = "Small Landscape Phone 640x360dp (xhdpi)",
+    device = "spec:width=640dp,height=360dp,dpi=320,orientation=landscape"
+)
+@Composable
+fun OIMChestScreenPreview_SmallPhoneXhdpi() {
+    OIMChestScreenPreview()
 }

@@ -17,6 +17,8 @@
 package net.taler.wallet
 import android.view.Menu
 import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import android.view.LayoutInflater
@@ -114,7 +116,10 @@ import net.taler.wallet.transactions.TransactionStateFilter.Nonfinal
 import kotlin.math.roundToInt
 import net.taler.wallet.R.id.*
 import androidx.core.view.MenuProvider
+import kotlinx.serialization.InternalSerializationApi
+import net.taler.database.data_models.Amount
 import net.taler.wallet.oim.history.TransactionHistoryView
+import net.taler.wallet.oim.send.app.OimSendApp
 
 /**
  * Main fragment of the Taler wallet application.
@@ -143,7 +148,7 @@ class MainFragment: Fragment() {
      * Sets up the navigation structure and handles switching between standard and OIM modes.
      */
     @SuppressLint("SourceLockedOrientationActivity")
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, InternalSerializationApi::class)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -213,16 +218,13 @@ class MainFragment: Fragment() {
                     val activity = (requireActivity() as AppCompatActivity)
                     LaunchedEffect(Unit) {
                         activity.requestedOrientation =
-                            android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                         activity.supportActionBar?.hide()
                     }
                     BackHandler(true) {
                         oimScreen = null
                         activity.requestedOrientation =
-                            android
-                                .content
-                                .pm
-                                .ActivityInfo
+                            ActivityInfo
                                 .SCREEN_ORIENTATION_UNSPECIFIED
                         activity.supportActionBar?.show()
                     }
@@ -242,24 +244,24 @@ class MainFragment: Fragment() {
                                 oimScreen = null
                                 val activity = (requireActivity() as AppCompatActivity)
                                 activity.requestedOrientation =
-                                    android
-                                        .content
-                                        .pm
-                                        .ActivityInfo
+                                    ActivityInfo
                                         .SCREEN_ORIENTATION_UNSPECIFIED
                                 activity.supportActionBar?.show()
                             },
                             onReviewTos = reviewTos,
                         )
                         OimScreen.CHEST -> run {
-
-                            BackHandler(true) { oimScreen = OimScreen.HOME }
-
                             val receiveFlow = rememberOimReceiveFlowState(
                                 model = model,
                                 onReviewTos = reviewTos,
                             )
+                            val bs = balanceState
 
+                            val selectedBalance = (bs as? BalanceState.Success)?.balances?.firstOrNull()
+
+                            val amountForNotes = remember(selectedBalance) {
+                                selectedBalance?.available ?: Amount.zero(currency="KUDOS")
+                            }
                             Box(modifier = Modifier.fillMaxSize()) {
                                 OIMChestScreen(
                                     model = model,
@@ -283,7 +285,8 @@ class MainFragment: Fragment() {
                                         OIMReceiveScreen(
                                             terms = terms,
                                             onAccept = { terms?.let { receiveFlow.confirmTerms(it) } },
-                                            onReject = { terms?.let { receiveFlow.rejectTerms(it) } }
+                                            onReject = { terms?.let { receiveFlow.rejectTerms(it) } },
+                                            balance = amountForNotes
                                         )
                                     }
                                 }
@@ -292,7 +295,7 @@ class MainFragment: Fragment() {
                         OimScreen.SEND -> {
                             BackHandler(true) { oimScreen = OimScreen.CHEST }
 
-                            net.taler.wallet.oim.send.app.OimSendApp(
+                            OimSendApp(
                                 model = model,
                                 onHome = {
                                     oimScreen = OimScreen.HOME
@@ -302,40 +305,24 @@ class MainFragment: Fragment() {
 
                         OimScreen.HISTORY -> {
                             BackHandler(true) { oimScreen = OimScreen.CHEST }
-
                             val receiveFlow = rememberOimReceiveFlowState(
                                 model = model,
                                 onReviewTos = reviewTos,
                             )
-
                             val bs = balanceState
 
-                            val selectedBalance = when (bs) {
-                                is BalanceState.Success -> {
-                                    bs.balances.firstOrNull { it.currency == "KUDOS" }
-                                        ?: bs.balances.firstOrNull { it.currency == "TESTKUDOS" }
-                                        ?: bs.balances.firstOrNull()
-                                }
-                                else -> null
-                            }
+                            val selectedBalance = (bs as? BalanceState.Success)?.balances?.firstOrNull()
 
                             val amountForNotes = remember(selectedBalance) {
-                                val a = selectedBalance?.available
-                                if (a != null) {
-                                    when (selectedBalance.currency) {
-                                        "KUDOS", "TESTKUDOS", "KUD"
-                                            -> a.withCurrency("SLE")
-                                        else -> a
-                                    }
-                                } else null
+                                selectedBalance?.available ?: Amount.zero(currency="KUDOS")
                             }
-
                             Box(modifier = Modifier.fillMaxSize()) {
                                 TransactionHistoryView(
                                     onHome = { oimScreen = OimScreen.CHEST },
                                     balanceAmount = amountForNotes,
                                     onSendClick = { oimScreen = OimScreen.SEND },
                                     onReceiveClick = receiveFlow.launchReceiveScan,
+                                    modifier = Modifier,
                                 )
 
                                 val terms = receiveFlow.dialogTerms
@@ -349,7 +336,8 @@ class MainFragment: Fragment() {
                                         OIMReceiveScreen(
                                             terms = terms,
                                             onAccept = { terms?.let { receiveFlow.confirmTerms(it) } },
-                                            onReject = { terms?.let { receiveFlow.rejectTerms(it) } }
+                                            onReject = { terms?.let { receiveFlow.rejectTerms(it) } },
+                                            balance = amountForNotes
                                         )
                                     }
                                 }
@@ -380,8 +368,8 @@ class MainFragment: Fragment() {
                                             .size(buttonSize)
                                             .background(
                                                 MaterialTheme
-                                                    .colorScheme
-                                                    .surfaceVariant.copy(alpha = 0.9f),
+                                                .colorScheme
+                                                .surfaceVariant.copy(alpha = 0.9f),
                                                 CircleShape
                                             ),
                                         onClick = {
@@ -413,24 +401,35 @@ class MainFragment: Fragment() {
 
 
                                     // Right -> OIM Mode Button
+                                    var enterOimAfterLandscape by remember { mutableStateOf(false)}
                                     IconButton(
                                         modifier = Modifier
                                             .size(buttonSize)
                                             .background(
                                                 MaterialTheme
-                                                    .colorScheme
-                                                    .surfaceVariant.copy(alpha = 0.9f),
+                                                .colorScheme
+                                                .surfaceVariant.copy(alpha = 0.9f),
                                                 CircleShape
                                             ),
                                         onClick = {
                                             val activity = requireActivity() as AppCompatActivity
-                                            oimScreen = OimScreen.HOME
-                                            activity.requestedOrientation =
-                                                android
-                                                    .content
-                                                    .pm
-                                                    .ActivityInfo
+                                            if (
+                                                activity
+                                                .resources
+                                                .configuration
+                                                .orientation
+                                                !=
+                                                Configuration
+                                                .ORIENTATION_LANDSCAPE
+                                                )
+                                            {
+                                                enterOimAfterLandscape = true
+                                                activity.requestedOrientation =
+                                                    ActivityInfo
                                                     .SCREEN_ORIENTATION_LANDSCAPE
+                                            } else {
+                                                oimScreen = OimScreen.HOME
+                                            }
                                         }
                                     ) {
                                         Icon(
@@ -516,7 +515,7 @@ class MainFragment: Fragment() {
                 if (oimScreen == null) {
                     val disableActions = remember(balanceState, online) {
                         !online ||
-                                (balanceState as? BalanceState.Success)?.balances?.isEmpty() ?: true
+                        (balanceState as? BalanceState.Success)?.balances?.isEmpty() ?: true
                     }
                     TalerActionsModal(
                         showSheet = showSheet,

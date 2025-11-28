@@ -58,11 +58,9 @@ fun TransactionCard(
     displayAmount: Amount
 ) {
     val badgeColor =
-        if (dir.getValue()) OimColours.INCOMING_COLOUR.copy(alpha=0.3f)
-        else OimColours.OUTGOING_COLOUR.copy(alpha=0.3f)
-    val textColor =
         if (dir.getValue()) OimColours.INCOMING_COLOUR
         else OimColours.OUTGOING_COLOUR
+    val textColor = Color.White
 
     var showNotesDialog by remember { mutableStateOf(false) }
 
@@ -76,7 +74,8 @@ fun TransactionCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = if (purpose == null) Color.White else Color(purpose.colourInt())),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -127,7 +126,7 @@ fun TransactionCard(
             // Icons and Amount
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
