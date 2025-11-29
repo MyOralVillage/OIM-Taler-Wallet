@@ -7,7 +7,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -22,9 +26,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.taler.database.data_models.Amount
 import net.taler.database.data_models.HLTH_MEDS
 import net.taler.database.data_models.TranxPurp
+import net.taler.wallet.oim.notes.NotePreviewOverlay
+import net.taler.wallet.oim.notes.NotesGalleryOverlay
 import net.taler.wallet.oim.utils.res_mappers.resourceMapper
 import net.taler.wallet.oim.utils.assets.WoodTableBackground
 import net.taler.wallet.oim.utils.assets.generateQrBitmap
@@ -54,18 +62,24 @@ fun QrScreen(
     amount: Amount,
     balance: Amount,
     purpose: TranxPurp?,
-    onBack: () -> Unit,          // still here for signature compatibility
+    onBack: () -> Unit,
     onHome: () -> Unit = {}
 ) {
+    // States for the note preview and gallery overlays
+    var selectedNoteResId by remember { mutableStateOf<Int?>(null) }
+    var showStackPreview by remember { mutableStateOf(false) }
+    var isStackExpanded by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
     Box(
         Modifier
             .fillMaxSize()
             .statusBarsPadding()
     ) {
-        // background
+        // Background
         WoodTableBackground(modifier = Modifier.fillMaxSize())
 
-        // main row: QR left, info right
+        // Main column
         Column(
             Modifier.fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -83,7 +97,7 @@ fun QrScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // LEFT: QR (largest element)
+                // LEFT: QR
                 Surface(
                     color = Color.White,
                     shape = RoundedCornerShape(12.dp),
@@ -117,40 +131,38 @@ fun QrScreen(
                     }
                 }
 
-                // CENTER: Amount box
+                // CENTER: Notes display
                 Box(
                     modifier = Modifier
                         .size((LocalWindowInfo.current.containerSize.height/8).dp)
-                        .shadow(8.dp, shape = RoundedCornerShape(12.dp))
-                        .background(
-                            OimColours.OUTGOING_COLOUR,
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .padding(16.dp)
+                        .padding(8.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = amount.amountStr,
-                            color = Color.White.copy(alpha = 0.85f),
-                            fontWeight = FontWeight.Medium,
-                            fontSize = (LocalWindowInfo.current.containerSize.width/48).sp
-                        )
+                    // The notes gallery - always visible, expandable on click
+                    NotesGalleryOverlay(
+                        isVisible = true,
+                        onDismiss = {
+                            if (isStackExpanded) {
+                                isStackExpanded = false
+                                scope.launch {
+                                    delay(200)
+                                    showStackPreview = false
+                                }
+                            }
+                        },
+                        drawableResIds = amount.resourceMapper(),
+                        noteHeight = 115.dp
+                    )
 
-                        Text(
-                            text = amount.spec?.name ?: amount.currency,
-                            color = Color.White.copy(alpha = 0.85f),
-                            fontWeight = FontWeight.Medium,
-                            fontStyle = FontStyle.Italic,
-                            fontSize = (LocalWindowInfo.current.containerSize.width/48).sp
+                    // Full-screen preview overlay (shown when a note is selected)
+                    selectedNoteResId?.let {
+                        NotePreviewOverlay(
+                            noteResId = it,
+                            onDismiss = { selectedNoteResId = null }
                         )
                     }
                 }
 
-                // RIGHT: Purpose icon (same size as amount)
+                // RIGHT: Purpose icon
                 if (purpose != null) {
                     Surface(
                         modifier = Modifier.size(
@@ -178,6 +190,7 @@ fun QrScreen(
         }
     }
 }
+
 
 /**
  * Preview: QR Screen with loading state
