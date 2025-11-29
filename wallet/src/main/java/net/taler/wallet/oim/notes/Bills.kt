@@ -30,9 +30,9 @@ import androidx.compose.ui.unit.dp
 import net.taler.common.R
 import net.taler.database.data_models.Amount
 import net.taler.wallet.oim.utils.res_mappers.resourceMapper
-
+/** simple preview  */
 @Composable
-fun Bills(
+private fun Bills(
     amount: Amount,
     modifier: Modifier = Modifier,
     billWidth: Int = 280,
