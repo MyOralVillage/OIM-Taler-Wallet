@@ -17,24 +17,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.taler.database.data_models.Amount
-import net.taler.wallet.oim.send.components.*
 import java.math.BigDecimal
 import androidx.compose.material.icons.filled.MoneyOff
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.layout.ContentScale
-import net.taler.wallet.oim.OimColours
-import net.taler.wallet.oim.OimTopBarCentered
-import net.taler.wallet.oim.resourceMappers.CHF_BILLS
-import net.taler.wallet.oim.resourceMappers.EUR_BILLS_CENTS
-import net.taler.wallet.oim.resourceMappers.SLE_BILLS_CENTS
-import net.taler.wallet.oim.resourceMappers.UIIcons
-import net.taler.wallet.oim.resourceMappers.XOF_BILLS
-import net.taler.wallet.oim.resourceMappers.resourceMapper
-import net.taler.wallet.oim.resourceMappers.consolidate
-import kotlinx.coroutines.delay
-import net.taler.wallet.oim.history.TransactionHistoryPreview
+import net.taler.wallet.oim.utils.assets.OimColours
+import net.taler.wallet.oim.notes.NoteFlyer
+import net.taler.wallet.oim.notes.NotesStrip
+import net.taler.wallet.oim.utils.assets.WoodTableBackground
+import net.taler.wallet.oim.top_bar.OimTopBarCentered
+import net.taler.wallet.oim.utils.res_mappers.CHF_BILLS
+import net.taler.wallet.oim.utils.res_mappers.EUR_BILLS_CENTS
+import net.taler.wallet.oim.utils.res_mappers.SLE_BILLS_CENTS
+import net.taler.wallet.oim.utils.res_mappers.UIIcons
+import net.taler.wallet.oim.utils.res_mappers.XOF_BILLS
+import net.taler.wallet.oim.utils.res_mappers.resourceMapper
+import net.taler.wallet.oim.utils.res_mappers.consolidate
 import kotlin.random.Random
 
 /**

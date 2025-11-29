@@ -2,7 +2,6 @@ package net.taler.wallet.oim.send.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,16 +23,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.taler.database.data_models.Amount
-import net.taler.database.data_models.EDUC_CLTH
 import net.taler.database.data_models.HLTH_MEDS
 import net.taler.database.data_models.TranxPurp
-import net.taler.wallet.oim.resourceMappers.UIIcons
-import net.taler.wallet.oim.resourceMappers.resourceMapper
-import net.taler.wallet.oim.send.components.WoodTableBackground
-import net.taler.wallet.oim.send.components.generateQrBitmap
-import net.taler.wallet.oim.OimColours
-import net.taler.wallet.oim.OimTopBarCentered
-import net.taler.wallet.oim.history.TransactionHistoryPreview
+import net.taler.wallet.oim.utils.res_mappers.resourceMapper
+import net.taler.wallet.oim.utils.assets.WoodTableBackground
+import net.taler.wallet.oim.utils.assets.generateQrBitmap
+import net.taler.wallet.oim.utils.assets.OimColours
+import net.taler.wallet.oim.top_bar.OimTopBarCentered
 
 /**
  * ## QR Screen
@@ -83,8 +79,8 @@ fun QrScreen(
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                    .padding(horizontal = 4.dp, vertical = 20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // LEFT: QR (largest element)
@@ -93,7 +89,7 @@ fun QrScreen(
                     shape = RoundedCornerShape(12.dp),
                     shadowElevation = 8.dp,
                     modifier = Modifier
-                        .size(((LocalWindowInfo.current.containerSize.height)/4).dp)
+                        .size(((LocalWindowInfo.current.containerSize.height)/8).dp)
                         .aspectRatio(1f)
                 ) {
                     if (talerUri == null) {
@@ -124,7 +120,7 @@ fun QrScreen(
                 // CENTER: Amount box
                 Box(
                     modifier = Modifier
-                        .size((LocalWindowInfo.current.containerSize.height/6).dp)
+                        .size((LocalWindowInfo.current.containerSize.height/8).dp)
                         .shadow(8.dp, shape = RoundedCornerShape(12.dp))
                         .background(
                             OimColours.OUTGOING_COLOUR,
@@ -141,7 +137,7 @@ fun QrScreen(
                             text = amount.amountStr,
                             color = Color.White.copy(alpha = 0.85f),
                             fontWeight = FontWeight.Medium,
-                            fontSize = (LocalWindowInfo.current.containerSize.height/24).sp,
+                            fontSize = (LocalWindowInfo.current.containerSize.width/48).sp
                         )
 
                         Text(
@@ -149,7 +145,7 @@ fun QrScreen(
                             color = Color.White.copy(alpha = 0.85f),
                             fontWeight = FontWeight.Medium,
                             fontStyle = FontStyle.Italic,
-                            fontSize = (LocalWindowInfo.current.containerSize.height/24).sp
+                            fontSize = (LocalWindowInfo.current.containerSize.width/48).sp
                         )
                     }
                 }

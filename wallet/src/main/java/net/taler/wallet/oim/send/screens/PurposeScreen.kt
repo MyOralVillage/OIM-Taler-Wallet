@@ -1,7 +1,6 @@
 package net.taler.wallet.oim.send.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,8 +8,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,11 +18,10 @@ import androidx.compose.ui.unit.dp
 import net.taler.database.data_models.Amount
 import net.taler.database.data_models.TranxPurp
 import net.taler.database.data_models.tranxPurpLookup
-import net.taler.wallet.oim.send.components.WoodTableBackground
+import net.taler.wallet.oim.utils.assets.WoodTableBackground
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.res.painterResource
-import net.taler.wallet.oim.history.TransactionHistoryPreview
-import net.taler.wallet.oim.resourceMappers.resourceMapper
+import net.taler.wallet.oim.utils.res_mappers.resourceMapper
 
 /**
  * Card representing a single transaction purpose.
