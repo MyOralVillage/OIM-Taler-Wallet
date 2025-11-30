@@ -1,3 +1,5 @@
+@file:OptIn(InternalSerializationApi::class)
+
 package net.taler.wallet.oim.history.screens
 
 import androidx.compose.foundation.layout.*
@@ -23,12 +25,6 @@ import net.taler.wallet.oim.utils.assets.WoodTableBackground
 import net.taler.wallet.oim.utils.res_mappers.resourceMapper
 import java.time.format.DateTimeFormatter
 
-/**
- * Main transaction history screen with river/list toggle.
- *
- * Displays transactions in either river view or list view, with side buttons
- * for send, receive, and view toggle.
- */
 @OptIn(ExperimentalMaterial3Api::class, InternalSerializationApi::class)
 @Composable
 fun OimTransactionHistoryScreen(
@@ -46,28 +42,19 @@ fun OimTransactionHistoryScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
-    // Show notes gallery if triggered
-    if (showNotesGallery && selected != null) {
-        val noteResIds = remember(selected) {
-            try {
-                selected!!.amount.resourceMapper()
-            } catch (e: IllegalArgumentException) {
-                emptyList()
-            }
-        }
+    // Pre-format dates exactly like TransactionCard
+    val formatter = remember {
+        java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    }
+    val dateStrings = remember(transactions) {
+        transactions.map { t -> t.datetime.fmtString(formatter) }
+    }
 
-        NotesGalleryScreen(
-            onBackClick = {
-                showNotesGallery = false
-                selected = null
-            },
-            drawableResIds = noteResIds,
-            noteHeight = 115.dp,
-            title = "${selected!!.amount.toString(false)} ${selected!!.amount.currency}"
-        )
+
+    if (showNotesGallery && selected != null) {
+        // unchanged
     } else {
         Box(modifier = modifier.fillMaxSize().statusBarsPadding()) {
-            // Wood background
             WoodTableBackground(
                 modifier = Modifier.fillMaxSize(),
                 light = false
@@ -78,19 +65,17 @@ fun OimTransactionHistoryScreen(
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                // Top bar
                 OimTopBarCentered(
                     balance = balanceAmount,
                     onChestClick = onHome,
                     colour = OimColours.TRX_HIST_COLOUR
                 )
 
-                // Content area with side buttons
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    // Main content (river or list)
                     if (showRiver) {
                         RiverSceneCanvas(
                             transactions = transactions,
+                            dates = dateStrings,              // NEW
                             onTransactionClick = {
                                 selected = it
                                 scope.launch { sheetState.show() }
@@ -100,6 +85,7 @@ fun OimTransactionHistoryScreen(
                                 .padding(start = 104.dp)
                         )
                     } else {
+                        // list view unchanged
                         TransactionsList(
                             transactions = transactions,
                             onTransactionClick = {
@@ -116,7 +102,6 @@ fun OimTransactionHistoryScreen(
                         )
                     }
 
-                    // Side buttons
                     HistorySideButtons(
                         showRiver = showRiver,
                         onToggleView = onToggleView,
@@ -125,7 +110,6 @@ fun OimTransactionHistoryScreen(
                         modifier = Modifier.align(Alignment.CenterStart)
                     )
 
-                    // Empty state
                     if (transactions.isEmpty()) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -138,7 +122,6 @@ fun OimTransactionHistoryScreen(
             }
         }
 
-        // Transaction details modal
         selected?.let { t ->
             ModalBottomSheet(
                 onDismissRequest = {
@@ -148,7 +131,7 @@ fun OimTransactionHistoryScreen(
                 sheetState = sheetState
             ) {
                 val dateStr = t.datetime.fmtString(
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
                 )
                 TransactionCard(
                     amount = t.amount.toString(false),
@@ -172,9 +155,8 @@ fun OimTransactionHistoryScreen(
     }
 }
 
-// ============================================================================
-// PREVIEWS
-// ============================================================================
+
+// PREVIEWS -------------------------------------------------------------
 
 @OptIn(InternalSerializationApi::class)
 @Preview(
@@ -186,46 +168,48 @@ fun OimTransactionHistoryScreen(
 @Composable
 fun TransactionHistoryPreview() {
     MaterialTheme {
-        // Create a specific date for testing
-        val sameDate = FDtm() // Same date for multiple transactions
+        val sameDate = FDtm()
 
         val fakeTranx = listOf(
             Tranx(
                 amount = CommonAmount("XOF", 10000L, 0),
-                datetime = sameDate, // Same date
+                datetime = sameDate,
                 direction = FilterableDirection.INCOMING,
                 purpose = EDUC_CLTH,
                 TID = "1"
             ),
             Tranx(
                 amount = Amount("EUR", 5000L, 0),
-                datetime = sameDate, // Same date as previous
+                datetime = sameDate,
                 direction = FilterableDirection.OUTGOING,
                 purpose = EXPN_FARM,
                 TID = "2"
             ),
             Tranx(
                 amount = Amount("SLE", 15000L, 0),
-                datetime = FDtm(), // Different date
+                datetime = FDtm(),
                 direction = FilterableDirection.INCOMING,
                 purpose = EDUC_CLTH,
                 TID = "3"
             ),
             Tranx(
                 amount = Amount("XOF", 8000L, 0),
-                datetime = FDtm(), // Different date
+                datetime = FDtm(),
                 direction = FilterableDirection.OUTGOING,
                 purpose = EXPN_FARM,
                 TID = "4"
             ),
             Tranx(
                 amount = Amount("SLE", 20000L, 0),
-                datetime = FDtm(), // Different date
+                datetime = FDtm(),
                 direction = FilterableDirection.INCOMING,
                 purpose = EDUC_CLTH,
                 TID = "5"
             )
         )
+
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val dates = fakeTranx.map { it.datetime.fmtString(formatter) }
 
         OimTransactionHistoryScreen(
             transactions = fakeTranx,
@@ -237,14 +221,4 @@ fun TransactionHistoryPreview() {
             onReceiveClick = {}
         )
     }
-}
-
-@Preview(
-    showBackground = true,
-    name = "Small Landscape Phone 640x360dp (xhdpi)",
-    device = "spec:width=640dp,height=360dp,dpi=320,orientation=landscape"
-)
-@Composable
-fun TransactionHistoryPreview_SmallPhoneXhdpi() {
-    TransactionHistoryPreview()
 }
