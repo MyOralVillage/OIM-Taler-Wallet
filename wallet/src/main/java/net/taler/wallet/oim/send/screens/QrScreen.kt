@@ -33,6 +33,7 @@ import net.taler.database.data_models.HLTH_MEDS
 import net.taler.database.data_models.TranxPurp
 import net.taler.wallet.oim.notes.NotePreviewOverlay
 import net.taler.wallet.oim.notes.NotesGalleryOverlay
+import net.taler.wallet.oim.notes.StackedNotes
 import net.taler.wallet.oim.utils.res_mappers.resourceMapper
 import net.taler.wallet.oim.utils.assets.WoodTableBackground
 import net.taler.wallet.oim.utils.assets.generateQrBitmap
@@ -92,19 +93,22 @@ fun QrScreen(
 
             Row(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .padding(horizontal = 4.dp, vertical = 20.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // LEFT: QR
+
+                // LEFT: QR (fixed square)
+                val qrSize = (LocalWindowInfo.current.containerSize.height * 0.34f).dp
+
                 Surface(
                     color = Color.White,
                     shape = RoundedCornerShape(12.dp),
                     shadowElevation = 8.dp,
                     modifier = Modifier
-                        .size(((LocalWindowInfo.current.containerSize.height)/8).dp)
-                        .aspectRatio(1f)
+                        .size(qrSize)
+                        .padding(end = 12.dp)
                 ) {
                     if (talerUri == null) {
                         Column(
@@ -123,51 +127,42 @@ fun QrScreen(
                         Image(
                             bitmap = qrBitmap.asImageBitmap(),
                             contentDescription = "Taler QR",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .aspectRatio(1f),
+                            modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Fit
                         )
                     }
                 }
 
-                // CENTER: Notes display
-                Box(
+                // CENTER: Notes (closer spacing, smaller size, wrap content)
+                Column(
                     modifier = Modifier
-                        .size((LocalWindowInfo.current.containerSize.height/8).dp)
-                        .padding(8.dp)
+                        .wrapContentWidth()
+                        .padding(end = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // The notes gallery - always visible, expandable on click
-                    NotesGalleryOverlay(
-                        isVisible = true,
-                        onDismiss = {
-                            if (isStackExpanded) {
-                                isStackExpanded = false
+                    StackedNotes(
+                        noteResIds = amount.resourceMapper(),
+                        noteHeight = 32.dp,   // smaller = closer
+                        noteWidth = 90.dp,    // smaller width, less horizontal pressure
+                        expanded = isStackExpanded,
+                        onClick = {
+                            if (!isStackExpanded) {
+                                isStackExpanded = true
                                 scope.launch {
-                                    delay(200)
-                                    showStackPreview = false
+                                    delay(400)
+                                    showStackPreview = true
                                 }
                             }
-                        },
-                        drawableResIds = amount.resourceMapper(),
-                        noteHeight = 115.dp
+                        }
                     )
-
-                    // Full-screen preview overlay (shown when a note is selected)
-                    selectedNoteResId?.let {
-                        NotePreviewOverlay(
-                            noteResId = it,
-                            onDismiss = { selectedNoteResId = null }
-                        )
-                    }
                 }
 
-                // RIGHT: Purpose icon
+                // RIGHT: Purpose — takes **ALL remaining space**
                 if (purpose != null) {
                     Surface(
-                        modifier = Modifier.size(
-                            (LocalWindowInfo.current.containerSize.height/6).dp
-                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()    // fills everything remaining
+                            .aspectRatio(1f),  // stays square
                         color = Color(purpose.colourInt()),
                         shape = RoundedCornerShape(12.dp),
                         shadowElevation = 4.dp
@@ -179,14 +174,9 @@ fun QrScreen(
                             contentScale = ContentScale.Fit
                         )
                     }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(200.dp)
-                            .alpha(0f)
-                    )
                 }
             }
+
         }
     }
 }
