@@ -50,110 +50,130 @@ fun OimTransactionHistoryScreen(
         transactions.map { t -> t.datetime.fmtString(formatter) }
     }
 
-
+    // ==== 1. NOTES GALLERY FULL-SCREEN STATE ====
     if (showNotesGallery && selected != null) {
-        // unchanged
-    } else {
-        Box(modifier = modifier.fillMaxSize().statusBarsPadding()) {
-            WoodTableBackground(
-                modifier = Modifier.fillMaxSize(),
-                light = false
+        val noteResIds = remember(selected) {
+            try {
+                selected!!.amount.resourceMapper()
+            } catch (e: IllegalArgumentException) {
+                emptyList()
+            }
+        }
+
+        NotesGalleryScreen(
+            onBackClick = {
+                showNotesGallery = false
+                selected = null
+            },
+            drawableResIds = noteResIds,
+            noteHeight = 115.dp,
+            title = "${selected!!.amount.toString(false)} ${selected!!.amount.currency}"
+        )
+        return
+    }
+
+    // ==== 2. NORMAL HISTORY UI (RIVER / LIST + SHEET) ====
+    Box(modifier = modifier.fillMaxSize().statusBarsPadding()) {
+        WoodTableBackground(
+            modifier = Modifier.fillMaxSize(),
+            light = false
+        )
+
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            OimTopBarCentered(
+                balance = balanceAmount,
+                onChestClick = onHome,
+                colour = OimColours.TRX_HIST_COLOUR
             )
 
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-            ) {
-                OimTopBarCentered(
-                    balance = balanceAmount,
-                    onChestClick = onHome,
-                    colour = OimColours.TRX_HIST_COLOUR
+            Box(modifier = Modifier.fillMaxWidth()) {
+                if (showRiver) {
+                    RiverSceneCanvas(
+                        transactions = transactions,
+                        dates = dateStrings,
+                        onTransactionClick = {
+                            selected = it
+                            scope.launch { sheetState.show() }
+                        },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(start = 104.dp)
+                    )
+                } else {
+                    TransactionsList(
+                        transactions = transactions,
+                        onTransactionClick = {
+                            selected = it
+                            scope.launch { sheetState.show() }
+                        },
+                        onAmountClick = {
+                            selected = it
+                            showNotesGallery = true
+                        },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(start = 104.dp)
+                    )
+                }
+
+                HistorySideButtons(
+                    showRiver = showRiver,
+                    onToggleView = onToggleView,
+                    onSendClick = onSendClick,
+                    onReceiveClick = onReceiveClick,
+                    modifier = Modifier.align(Alignment.CenterStart)
                 )
 
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    if (showRiver) {
-                        RiverSceneCanvas(
-                            transactions = transactions,
-                            dates = dateStrings,              // NEW
-                            onTransactionClick = {
-                                selected = it
-                                scope.launch { sheetState.show() }
-                            },
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(start = 104.dp)
-                        )
-                    } else {
-                        // list view unchanged
-                        TransactionsList(
-                            transactions = transactions,
-                            onTransactionClick = {
-                                selected = it
-                                scope.launch { sheetState.show() }
-                            },
-                            onAmountClick = {
-                                selected = it
-                                showNotesGallery = true
-                            },
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(start = 104.dp)
-                        )
-                    }
-
-                    HistorySideButtons(
-                        showRiver = showRiver,
-                        onToggleView = onToggleView,
-                        onSendClick = onSendClick,
-                        onReceiveClick = onReceiveClick,
-                        modifier = Modifier.align(Alignment.CenterStart)
-                    )
-
-                    if (transactions.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("No transactions yet", color = Color.White)
-                        }
+                if (transactions.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No transactions yet", color = Color.White)
                     }
                 }
             }
         }
+    }
 
-        selected?.let { t ->
-            ModalBottomSheet(
-                onDismissRequest = {
+    // Bottom sheet for transaction details
+    selected?.let { t ->
+        ModalBottomSheet(
+            onDismissRequest = {
+                scope.launch { sheetState.hide() }
+                    .invokeOnCompletion { selected = null }
+            },
+            sheetState = sheetState
+        ) {
+            val dateStr = t.datetime.fmtString(
+                java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            )
+            TransactionCard(
+                amount = t.amount.toString(false),
+                currency = t.amount.currency,
+                date = dateStr,
+                purpose = t.purpose,
+                dir = t.direction,
+                displayAmount = t.amount,
+                onAmountClick = {
+                    // hide sheet, then show gallery
                     scope.launch { sheetState.hide() }
-                        .invokeOnCompletion { selected = null }
+                        .invokeOnCompletion {
+                            showNotesGallery = true
+                        }
                 },
-                sheetState = sheetState
-            ) {
-                val dateStr = t.datetime.fmtString(
-                    java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                )
-                TransactionCard(
-                    amount = t.amount.toString(false),
-                    currency = t.amount.currency,
-                    date = dateStr,
-                    purpose = t.purpose,
-                    dir = t.direction,
-                    displayAmount = t.amount,
-                    onAmountClick = {
-                        scope.launch { sheetState.hide() }
-                            .invokeOnCompletion {
-                                showNotesGallery = true
-                            }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 24.dp)
-                )
-            }
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp)
+            )
         }
     }
 }
+
 
 
 // PREVIEWS -------------------------------------------------------------
