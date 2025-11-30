@@ -19,13 +19,10 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.taler.database.data_models.Amount
@@ -40,23 +37,6 @@ import net.taler.wallet.oim.utils.assets.generateQrBitmap
 import net.taler.wallet.oim.utils.assets.OimColours
 import net.taler.wallet.oim.top_bar.OimTopBarCentered
 
-/**
- * ## QR Screen
- *
- * Displays a Taler payment QR code for peer-to-peer transfers.
- * Shows the amount, currency, and optional transaction purpose.
- * Handles a loading state while the QR code is being generated.
- *
- * The screen includes navigation controls (Home and Back buttons) and
- * a table-textured background via [WoodTableBackground].
- *
- * @param talerUri The Taler payment URI to encode as a QR code.
- *                 Pass `null` to show a loading state while preparing.
- * @param amount The payment amount and currency to display.
- * @param purpose Optional transaction purpose icon to show next to the QR code.
- * @param onBack Callback invoked when the Back button is pressed.
- * @param onHome Optional callback invoked when the Home button is pressed.
- */
 @Composable
 fun QrScreen(
     talerUri: String?,
@@ -66,7 +46,6 @@ fun QrScreen(
     onBack: () -> Unit,
     onHome: () -> Unit = {}
 ) {
-    // States for the note preview and gallery overlays
     var selectedNoteResId by remember { mutableStateOf<Int?>(null) }
     var showStackPreview by remember { mutableStateOf(false) }
     var isStackExpanded by remember { mutableStateOf(false) }
@@ -77,10 +56,9 @@ fun QrScreen(
             .fillMaxSize()
             .statusBarsPadding()
     ) {
-        // Background
         WoodTableBackground(modifier = Modifier.fillMaxSize())
 
-        // Main column
+        // MAIN CONTENT COLUMN
         Column(
             Modifier.fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -93,57 +71,82 @@ fun QrScreen(
 
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp, vertical = 20.dp),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .padding(vertical = 20.dp, horizontal = 5.dp),
             ) {
+                // FIXED: Larger QR container
+                val configuration = LocalConfiguration.current
+                val screenHeightDp = configuration.screenHeightDp.dp
+                val qrSize = screenHeightDp * 0.32f          // increased from 0.24 → 0.32
 
-                // LEFT: QR (fixed square)
-                val qrSize = (LocalWindowInfo.current.containerSize.height * 0.34f).dp
-
-                Surface(
-                    color = Color.White,
-                    shape = RoundedCornerShape(12.dp),
-                    shadowElevation = 8.dp,
-                    modifier = Modifier
-                        .size(qrSize)
-                        .padding(end = 12.dp)
+                Column(
+                    modifier = Modifier,
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    if (talerUri == null) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(10.dp),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            CircularProgressIndicator()
-                            Spacer(Modifier.height(12.dp))
-                            Text("Preparing payment…", color = Color.Black)
+                    // --- QR code box ---
+                    Surface(
+                        color = Color.White,
+                        shape = RoundedCornerShape(12.dp),
+                        shadowElevation = 8.dp,
+                        modifier = Modifier.size(qrSize)
+                    ) {
+                        if (talerUri == null) {
+                            Column(
+                                Modifier.fillMaxSize().padding(10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                CircularProgressIndicator()
+                                Spacer(Modifier.height(12.dp))
+                                Text("Preparing payment…", color = Color.Black)
+                            }
+                        } else {
+                            val qrBitmap = remember(talerUri) { generateQrBitmap(talerUri, 1024) }
+                            Image(
+                                bitmap = qrBitmap.asImageBitmap(),
+                                contentDescription = "Taler QR",
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxSize()
+                            )
                         }
-                    } else {
-                        val qrBitmap = remember(talerUri) { generateQrBitmap(talerUri, 1024) }
-                        Image(
-                            bitmap = qrBitmap.asImageBitmap(),
-                            contentDescription = "Taler QR",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit
-                        )
+                    }
+
+                    Spacer(Modifier.height(20.dp))
+
+                    // --- Purpose BELOW QR ---
+                    if (purpose != null) {
+                        val purposeSize = qrSize * 0.55f      // slightly over half the QR size
+
+                        Surface(
+                            modifier = Modifier.size(purposeSize),
+                            color = Color(purpose.colourInt()),
+                            shape = RoundedCornerShape(16.dp),
+                            shadowElevation = 6.dp
+                        ) {
+                            Image(
+                                painter = painterResource(purpose.resourceMapper()),
+                                contentDescription = null,
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
                     }
                 }
 
-                // CENTER: Notes (closer spacing, smaller size, wrap content)
+                // --- Amount Notes Column ---
                 Column(
                     modifier = Modifier
+                        .weight(2f)
                         .wrapContentWidth()
-                        .padding(end = 12.dp),
+                        .padding(vertical = 15.dp),
+                    verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     StackedNotes(
                         noteResIds = amount.resourceMapper(),
-                        noteHeight = 32.dp,   // smaller = closer
-                        noteWidth = 90.dp,    // smaller width, less horizontal pressure
+                        noteHeight = 60.dp,
+                        noteWidth = 90.dp,
                         expanded = isStackExpanded,
                         onClick = {
                             if (!isStackExpanded) {
@@ -156,44 +159,40 @@ fun QrScreen(
                         }
                     )
                 }
-
-                // RIGHT: Purpose — takes **ALL remaining space**
-                if (purpose != null) {
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()    // fills everything remaining
-                            .aspectRatio(1f),  // stays square
-                        color = Color(purpose.colourInt()),
-                        shape = RoundedCornerShape(12.dp),
-                        shadowElevation = 4.dp
-                    ) {
-                        Image(
-                            painter = painterResource(purpose.resourceMapper()),
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-                }
             }
-
         }
+
+        // ------------- OVERLAYS (NOW ABOVE EVERYTHING) ---------------
+
+        if (selectedNoteResId != null) {
+            NotePreviewOverlay(
+                noteResId = selectedNoteResId!!,
+                onDismiss = { selectedNoteResId = null }
+            )
+        }
+
+        NotesGalleryOverlay(
+            isVisible = showStackPreview,
+            onDismiss = {
+                showStackPreview = false
+                scope.launch {
+                    delay(200)
+                    isStackExpanded = false
+                }
+            },
+            drawableResIds = amount.resourceMapper(),
+            noteHeight = 115.dp
+        )
     }
 }
 
-
-/**
- * Preview: QR Screen with loading state
- */
-@Preview(
-    device = "spec:width=920dp,height=460dp,orientation=landscape"
-)
+@Preview(device = "spec:width=920dp,height=460dp,orientation=landscape")
 @Composable
 fun QrScreenLoadingPreview() {
     MaterialTheme {
         QrScreen(
-            talerUri = null,  // Loading state
-            amount = Amount.fromString("EUR", "25.50"),
+            talerUri = null,
+            amount = Amount.fromString("EUR", "999.99"),
             balance = Amount.fromString("EUR", "100.00"),
             purpose = HLTH_MEDS,
             onBack = { },
@@ -201,6 +200,7 @@ fun QrScreenLoadingPreview() {
         )
     }
 }
+
 @Preview(
     showBackground = true,
     name = " Small Landscape Phone 640x360dp (xhdpi)",
