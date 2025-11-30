@@ -170,8 +170,7 @@ fun SendScreen(
             // total amount + buttons
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -191,7 +190,7 @@ fun SendScreen(
                 }
 
                 Column(
-                    modifier = Modifier,
+                    modifier = Modifier.padding(vertical = 2.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -199,7 +198,7 @@ fun SendScreen(
                     // SEND BUTTON
                     Box(
                         modifier = Modifier
-                            .size(70.dp)
+                            .size(45.dp)
                             .background(
                                 color = OimColours.OUTGOING_COLOUR,
                                 shape = RoundedCornerShape(12.dp)
@@ -237,7 +236,7 @@ fun SendScreen(
                             containerColor = OimColours.INCOMING_COLOUR
                         ),
                         contentPadding = PaddingValues(0.dp),
-                        modifier = Modifier.size(70.dp)
+                        modifier = Modifier.size(45.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.MoneyOff,
@@ -291,7 +290,7 @@ fun SendScreen(
 
             // strip of notes at the bottom
             NotesStrip(
-                noteThumbHeight = 100.dp,
+                noteThumbHeight = with(density) {remember(screenHeight) {(screenHeight * 0.2f)}},
                 notes = noteThumbnails,
                 enabledStates = affordableNotes,
                 onAddRequest = { billAmount, startCenter ->
@@ -311,7 +310,11 @@ fun SendScreen(
 
         // Calculate pile positions for consolidated view (left to right, largest to smallest)
         val consolidated = consolidatedAmounts.value
-        val sortedDenoms = consolidated.map { it.amountStr }.distinct().sortedByDescending { BigDecimal(it) }
+        val sortedDenoms =
+            consolidated
+            .map { it.amountStr }
+            .distinct()
+            .sortedByDescending { BigDecimal(it) }
 
         // Group consolidated amounts by denomination
         val pilesByDenom = consolidated.groupBy { it.amountStr }
