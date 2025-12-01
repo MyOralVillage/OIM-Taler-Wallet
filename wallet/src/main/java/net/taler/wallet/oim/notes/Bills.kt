@@ -1,5 +1,3 @@
-package net.taler.wallet.oim.notes
-
 /*
  * This file is part of GNU Taler
  * (C) 2025 Taler Systems S.A.
@@ -15,6 +13,19 @@ package net.taler.wallet.oim.notes
  * You should have received a copy of the GNU General Public License along with
  * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
  */
+package net.taler.wallet.oim.notes
+
+/**
+ * NOTES MODULE – LEGACY BILL / COIN PREVIEW
+ *
+ * Provides a simple stacked rendering of bills and coins for a given [Amount].
+ * The composable splits the underlying drawables into “bill” and “coin”
+ * groups and layers them in a single box with offsets to create a physical
+ * pile effect. It is currently used for previews / debugging rather than
+ * the main OIM flows, but remains a useful reference for denomination
+ * handling and visual layout experiments.
+ */
+
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*

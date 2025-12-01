@@ -1,4 +1,39 @@
+/*
+ * This file is part of GNU Taler
+ * (C) 2025 Taler Systems S.A.
+ *
+ * GNU Taler is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3, or (at your option) any later version.
+ *
+ * GNU Taler is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
+ */
 package net.taler.wallet.oim.notes
+
+/**
+ * NOTES MODULE – CORE SEND-FLOW NOTE ANIMATIONS & STRIP
+ *
+ * Collects the reusable building blocks that power the animated money
+ * experience in the OIM send flow:
+ *
+ *  - [NoteFlyer]   – animates a single note flying from the picker strip
+ *                    into the central pile.
+ *  - [NotesPile]   – renders a scattered pile of landed notes and opens
+ *                    a gallery on tap.
+ *  - [NotesStrip]  – horizontally scrollable row of note thumbnails used
+ *                    as the denomination picker at the bottom of Send.
+ *
+ * These composables are intentionally UI-only: they expose callbacks
+ * (e.g., `onAddRequest`, `onRemoveLast`) and leave amount arithmetic and
+ * transaction logic to higher-level screens like [SendScreen].
+ */
+
+
 
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Animatable

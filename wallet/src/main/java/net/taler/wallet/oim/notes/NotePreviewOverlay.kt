@@ -1,4 +1,36 @@
+/*
+ * This file is part of GNU Taler
+ * (C) 2025 Taler Systems S.A.
+ *
+ * GNU Taler is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3, or (at your option) any later version.
+ *
+ * GNU Taler is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
+ */
 package net.taler.wallet.oim.notes
+
+/**
+ * NOTES MODULE – SINGLE NOTE FULL-SCREEN PREVIEW
+ *
+ * Renders a single banknote as a modal, full-screen overlay with a dimmed
+ * background and a close affordance. This is used when the user wants to
+ * inspect one note at a larger size (e.g., from galleries or stacks).
+ *
+ * Behaviour:
+ *  - Tapping anywhere on the backdrop or close button dismisses the overlay.
+ *  - The component is purely visual and stateless beyond the [onDismiss] call.
+ *
+ * Integrated from:
+ *  - Notes galleries (overlay + screen)
+ *  - Any future flows that expose a zoomed-in note view.
+ */
+
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

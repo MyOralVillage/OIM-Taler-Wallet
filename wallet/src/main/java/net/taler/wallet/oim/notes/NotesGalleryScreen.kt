@@ -1,4 +1,35 @@
+/*
+ * This file is part of GNU Taler
+ * (C) 2025 Taler Systems S.A.
+ *
+ * GNU Taler is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3, or (at your option) any later version.
+ *
+ * GNU Taler is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * GNU Taler; see the file COPYING.  If not, see <http://www.gnu.org/licenses/>
+ */
 package net.taler.wallet.oim.notes
+
+/**
+ * NOTES MODULE – DEDICATED NOTES GALLERY SCREEN
+ *
+ * Full-screen, scaffold-based version of the notes gallery, used when the
+ * user explicitly navigates to a separate screen to inspect all notes for
+ * a transaction or balance.
+ *
+ * Differences from [NotesGalleryOverlay]:
+ *  - Uses a Material 3 [Scaffold] with a top app bar and back navigation.
+ *  - The grid occupies the full content area instead of a modal card.
+ *  - Better suited to navigation-driven flows and deep links.
+ *
+ * Accepts either [ImageBitmap]s or drawable resource IDs and arranges them
+ * in a vertically scrollable grid with dynamic sizing.
+ */
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
