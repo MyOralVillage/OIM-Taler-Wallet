@@ -1,5 +1,30 @@
 package net.taler.wallet.oim.send.screens
 
+/**
+ * SEND MODULE – PURPOSE SELECTION UI
+ *
+ * This file implements the visual grid used to choose a transaction purpose
+ * during the send flow.
+ *
+ * MAIN COMPOSABLES:
+ *  - PurposeCard():
+ *      • Displays a single TranxPurp as a square card with its icon.
+ *      • Highlights the selected state via border colour and background tint.
+ *      • Invokes an `onClick` callback when tapped.
+ *
+ *  - PurposeScreen():
+ *      • Shows all available purposes from `tranxPurpLookup` in a
+ *        scrollable LazyVerticalGrid.
+ *      • Tracks the currently selected TranxPurp in local state.
+ *      • Immediately calls `onDone(purpose)` when a purpose is chosen.
+ *
+ * INTEGRATION:
+ *  - Used from the send flow orchestration in `SendApp` / `SendScreen`,
+ *    after the user has picked an amount.
+ *  - Uses shared visual assets: `WoodTableBackground` and purpose icons
+ *    via `TranxPurp.resourceMapper()`.
+ */
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable

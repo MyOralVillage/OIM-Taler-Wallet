@@ -1,5 +1,43 @@
 package net.taler.wallet.oim.send.screens
 
+/**
+ * SEND MODULE – INTERACTIVE BANKNOTE AMOUNT PICKER
+ *
+ * This file implements `SendScreen`, the main interactive screen for building
+ * up a send amount using visual banknotes instead of a plain numeric keypad.
+ *
+ * USER EXPERIENCE:
+ *  - The user taps note thumbnails in a bottom `NotesStrip` to add currency
+ *    notes to the table.
+ *  - Notes “fly” into animated piles (`NoteFlyer`) in the center of the screen.
+ *  - Piles are grouped and consolidated by denomination using `consolidate()`
+ *    (e.g., multiple small notes combine into larger ones).
+ *  - The total send amount is shown prominently next to the send and undo
+ *    controls.
+ *
+ * MAIN COMPOSABLE:
+ *  - SendScreen():
+ *      • Displays the current balance in `OimTopBarCentered`.
+ *      • Maintains a flat `allAmounts` list backing the visual piles and
+ *        consolidated view.
+ *      • Computes `displayAmount` from the underlying notes, using helper
+ *        `plus` / `minus` functions.
+ *      • Shows:
+ *          - A red send button (only enabled when amount > 0) that clears
+ *            piles and calls `onSend()`.
+ *          - An undo button that removes the last-added note and calls
+ *            `onRemoveLast()`.
+ *          - A dynamic `NotesStrip` that only enables notes affordable with
+ *            the remaining balance.
+ *
+ * INTEGRATION:
+ *  - Consumes `Amount` from the database layer and chooses currency-specific
+ *    bill sets via `CHF_BILLS`, `XOF_BILLS`, `EUR_BILLS_CENTS`,
+ *    `SLE_BILLS_CENTS`, etc.
+ *  - Used by the send flow controller (`SendApp`) as the primary amount-entry
+ *    step before moving on to purpose selection and QR confirmation.
+ */
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

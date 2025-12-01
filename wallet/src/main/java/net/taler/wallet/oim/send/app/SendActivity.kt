@@ -1,6 +1,31 @@
 package net.taler.wallet.oim.send.app
 
-
+/**
+ * SEND MODULE – ANDROID ENTRY ACTIVITIES
+ *
+ * This file declares the Android `ComponentActivity` hosts for the OIM send
+ * flow:
+ *
+ *  - OimSendActivity:
+ *      • Default entry point when the user starts a send operation from the
+ *        main wallet UI.
+ *      • Instantiates a shared [MainViewModel] via `viewModels()`.
+ *      • Sets the Compose content to [SendApp], wiring `onHome` to `finish()`
+ *        so returning from the flow simply closes the activity.
+ *
+ *  - SendActivity:
+ *      • Alternate host for the same [SendApp] UI, intended for cases where
+ *        the send flow is launched from a different navigation context
+ *        (e.g., deep links, plugins, or embedded modules).
+ *      • Currently mirrors OimSendActivity’s behaviour, also finishing the
+ *        activity when `onHome` is invoked.
+ *
+ * INTEGRATION:
+ *  - Both activities delegate all business logic and UI state management to
+ *    [MainViewModel] and the composable shell in `SendApp.kt`.
+ *  - Navigation back to the rest of the app is handled externally once these
+ *    activities call `finish()`.
+ */
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

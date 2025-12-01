@@ -1,6 +1,40 @@
  package net.taler.wallet.oim.send.app
 
-import android.widget.Toast
+ /**
+  * SEND MODULE – COMPOSABLE FLOW CONTROLLER
+  *
+  * This file defines [SendApp], the top-level composable that coordinates the
+  * entire OIM peer-to-peer send experience. It is responsible for:
+  *
+  *  - Loading account + balance information from [MainViewModel] and choosing
+  *    an active [ScopeInfo] (KUDOS / TESTKUDOS).
+  *  - Managing UX state across three internal screens via [Screen]:
+  *        • Send   – interactive banknote picker ([SendScreen])
+  *        • Purpose – transaction purpose selection ([PurposeScreen])
+  *        • Qr     – Taler URI / QR confirmation ([QrScreen])
+  *  - Driving the peer push payment lifecycle through [peerManager]:
+  *        • checking fees with [CheckFeeResult],
+  *        • initiating [TransactionPeerPushDebit],
+  *        • monitoring [pushState] and [selectedTransaction],
+  *        • handling throttling / rate-limit errors with retry + backoff logic.
+  *  - Recording outgoing transactions into the test transaction history via
+  *    [TranxHistory] (OUTGOING direction with an optional [TranxPurp]).
+  *  - Exposing a single `onHome` callback that resets internal state,
+  *    clears peer/transaction selection, and returns control to the host
+  *    Activity.
+  *
+  * HELPER EXTENSIONS:
+  *  - [Amount.toCommonAmount] converts DB-layer amounts into Taler’s common
+  *    [net.taler.common.Amount] format.
+  *  - [TalerErrorInfo.isThrottled] inspects error hints/messages to detect
+  *    rate-limit (429/throttle) conditions used by the retry logic.
+  *
+  * ENTRYPOINT:
+  *  - Used by [OimSendActivity] and [SendActivity] as the root composable for
+  *    the OIM send flow.
+  */
+
+ import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveable

@@ -1,5 +1,34 @@
 package net.taler.wallet.oim.send.screens
 
+/**
+ * SEND MODULE – QR CONFIRMATION AND NOTES SCREEN
+ *
+ * This file defines `QrScreen`, the final visual step of the send flow where
+ * the user sees:
+ *  - a Taler payment QR code for the outgoing transaction,
+ *  - the selected purpose card beneath the QR,
+ *  - a visual stack of banknote images representing the amount, with
+ *    overlays for inspecting individual notes.
+ *
+ * MAIN COMPOSABLE:
+ *  - QrScreen():
+ *      • Accepts a `talerUri` (or null while it is loading), the `amount`
+ *        being sent, the current `balance`, and an optional `purpose`.
+ *      • Shows a centered QR code; if `talerUri` is null, displays a loading
+ *        indicator and “Preparing payment…” message instead.
+ *      • Renders the selected purpose as a coloured card below the QR.
+ *      • Shows a `StackedNotes` column driven by `amount.resourceMapper()`,
+ *        and opens:
+ *          - `NotePreviewOverlay` for a single note,
+ *          - `NotesGalleryOverlay` for the whole stack.
+ *
+ * INTEGRATION:
+ *  - Uses `OimTopBarCentered` for the shared header with balance and chest icon.
+ *  - Uses `WoodTableBackground` and `OimColours.OUTGOING_COLOUR` to visually
+ *    match the rest of the send flow.
+ *  - Typically navigated to after amount + purpose selection is done.
+ */
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
