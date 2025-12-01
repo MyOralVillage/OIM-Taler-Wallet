@@ -34,7 +34,15 @@ This repository is responsible for the Android version of Orali Money which has 
 - Build System: Gradle (Android Gradle Plugin 9.x)
 - Dependencies: AndroidX, Compose UI, OIM Graphic Library
 
-## Installation
+## Installation 
+### **For non developers**
+[Please navigate to our  most recent release page and download one of the debug APKs.](https://github.com/csc301-2025-f/project-9-Orali-Project-for-Android/releases/)
+
+- x86_64 (for Windows emulation)
+- arm64 (for native Android phones or MacOS emulation)
+- armeabi/x86 (for deprecated Android phones; *this is rarely needed*)
+
+The OIM mode for Android is still in pre-release, therefore there is no official signed release on FDroid/Play store/Nightly as of now. Since full apk optimizations are not run for debugs, the APK sizes are on the larger side (around 40mb).   
 
 ### 1. Clone the Repository
 
@@ -437,7 +445,7 @@ No assets were supplied for TESTKUDOS. Using generic placeholders would confuse 
 
 ## Automated Testing and Deployment
 
-This repository does not have automated testing as this repository contained much legacy code and we were instructed to minimize changes made to the codebase.
+This repository does not have automated testing. The Taler wallet depends on legacy code to run, and large scale unit testing was out of the scope of this project.
 
 Orali Money contains developer releases on this repository and will have official releases on the F-Droid store.
 
@@ -447,7 +455,7 @@ We follow [Kotlin style guidelines](https://developer.android.com/kotlin/style-g
 
 ## Contact
 
-Our partners are **My Oral Village** and **Taler Systems**, more specifically:
+Our partners are **My Oral Village** and **Taler Systems**:
 
 - Brett Matthews (Founder, My Oral Village) – [Primary Partner Contact]
 - David Myhre (Director of Partnerships, My Oral Village)
