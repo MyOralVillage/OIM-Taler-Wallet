@@ -49,16 +49,17 @@ This repository is responsible for the Android version of Orali Money which has 
 
 - x86_64 (for Windows emulation)
 - arm64 (for native Android phones or MacOS emulation)
-- armeabi/x86 (for deprecated Android phones; *this is rarely needed*)
+- armeabi/x86 (for deprecated Android phones; *these are rarely needed*)
 
 The OIM mode for Android is still in pre-release, therefore there is no official signed release on FDroid/Play store/Nightly as of now. Since full apk optimizations are not run for debugs, the APK sizes are on the larger side (around 40mb).   
 
-### 1. Clone the Repository
+### **For developers**
+#### 1. Clone the Repository
 
 <details>
     <summary> By HTTPS </summary>
 
-#### HTTPS
+##### HTTPS
 
 ```bash
 git clone https://github.com/csc301-2025-f/project-9-Orali-Project-for-Android.git
@@ -71,7 +72,7 @@ Note that you may need to authenticate with your GitHub credentials.
 <details>
     <summary> By SSH </summary>
 
-#### SSH
+##### SSH
 
 ```bash
 git clone git@github.com:csc301-2025-f/project-9-Orali-Project-for-Android.git
@@ -79,14 +80,14 @@ cd project-9-Orali-Project-for-Android
 ```
 </details>
 
-### 2. Build the Project
+#### 2. Build the Project
 
 Ensure the Java Development Kit 17 (JDK 17) is installed before running the Gradle commands below.
 
 <details>
     <summary> Windows (Command Prompt and Powershell) </summary>
 
-#### Windows (Command Prompt)
+##### Windows (Command Prompt)
 
 ```cmd
 gradlew.bat :wallet:build
@@ -103,7 +104,7 @@ gradlew.bat :wallet:build
 <details>
     <summary> Linux and Mac </summary>
 
-#### Linux / Mac
+##### Linux / Mac
 ```bash
 ./gradlew :wallet:build
 ```
