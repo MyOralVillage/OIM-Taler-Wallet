@@ -1,5 +1,31 @@
 package net.taler.wallet.oim.history.app
 
+/**
+ * HISTORY MODULE – ANDROID ENTRY ACTIVITIES
+ *
+ * This file declares the Android `ComponentActivity` hosts for the OIM
+ * transaction history feature:
+ *
+ *  - HistoryActivity:
+ *      • Standalone activity used when history is opened directly.
+ *      • Creates a shared MainViewModel instance via `viewModels()`.
+ *      • Observes BalanceState from `model.balanceManager` and converts the
+ *        first available balance into an `Amount` value.
+ *      • Injects that balance and navigation callbacks into `HistoryApp`.
+ *
+ *  - HistoryHostActivity:
+ *      • Structurally identical to HistoryActivity, but intended to embed
+ *        the same `HistoryApp` UI inside a different navigation context or
+ *        host feature.
+ *
+ * INTEGRATION:
+ *  - Both activities delegate all Compose UI to `HistoryApp` in the
+ *    `net.taler.wallet.oim.history.app` package.
+ *  - Navigation callbacks (`onHome`, `onSendClick`, `onReceiveClick`) simply
+ *    call `finish()`, letting the main app / MainFragment decide what to show
+ *    next after history is closed.
+ */
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent

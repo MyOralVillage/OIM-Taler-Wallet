@@ -1,6 +1,44 @@
 @file:OptIn(InternalSerializationApi::class)
-
 package net.taler.wallet.oim.history.components
+
+/**
+ * HISTORY MODULE – RIVER VIEW CANVAS
+ *
+ * This file implements the full “River View” used in OIM to visualize
+ * transaction history as an animated landscape. Incoming transactions form
+ * farms (on land), outgoing transactions form lakes (downstream), and the
+ * river path dynamically varies thickness based on amounts.
+ *
+ * MAIN COMPOSABLE:
+ *  - RiverSceneCanvas(): Draws a horizontal scrolling Canvas that displays:
+ *      • dynamically sized farms for incoming funds,
+ *      • lakes for outgoing funds,
+ *      • a flowing river whose thickness changes with transaction magnitude,
+ *      • date labels formatted as ☀️🌙⭐ and positioned relative to items,
+ *      • fully clickable hit-areas that map each farm/lake to its Tranx.
+ *
+ * RENDERING LOGIC:
+ *  - Uses drawImageStretchToRect() to ensure all farms share consistent height.
+ *  - Uses tiled textures for soil, stretched textures for farms, and scaled
+ *    aspect-correct textures for lakes.
+ *  - River thickness is computed cumulatively to reflect inflow/outflow over time.
+ *  - Hit-testing is implemented by tracking Rect → Tranx pairs for tap detection.
+ *
+ * DATA CONNECTIONS:
+ *  - Consumes List<Tranx> from database models (net.taler.database.data_models).
+ *  - Uses resource-mapped assets from Tile("farm"/"river"/"lake").
+ *  - Connected to OimTransactionHistoryScreen where this canvas replaces the
+ *    traditional list view.
+ *
+ * UI BEHAVIOUR:
+ *  - Fully horizontal-scrollable.
+ *  - Each transaction’s farm/lake is clickable, triggering onTransactionClick().
+ *  - Canvas width scales with number of transactions.
+ *
+ * PREVIEW:
+ *  - RiverCanvasPreview() provides a rendering example with fake transactions.
+ */
+
 
 import android.graphics.Paint
 import androidx.compose.foundation.Canvas

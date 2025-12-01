@@ -1,5 +1,33 @@
 package net.taler.wallet.oim.history.app
 
+/**
+ * HISTORY MODULE – COMPOSABLE APP SHELL
+ *
+ * This file defines `HistoryApp`, the top-level composable that wires the
+ * transaction history UX to the rest of the wallet:
+ *
+ *  - Loads transaction data from the local database via `TranxHistory`
+ *    (initTest in DEBUG builds, init in release).
+ *  - Holds the current list of `Tranx` in Compose state.
+ *  - Manages the view-mode toggle (RiverSceneCanvas vs TransactionsList)
+ *    using a `showRiver` boolean saved with `rememberSaveable`.
+ *  - Forwards balance + navigation callbacks into
+ *    `OimTransactionHistoryScreen`, which renders the actual UI.
+ *
+ * IMPORT / DATA CONNECTIONS:
+ *  - Uses `MainViewModel` only as a dependency passed in from the hosting
+ *    Activity; business logic and balances are computed there.
+ *  - Reads transaction history through `TranxHistory` from the database layer.
+ *  - Delegates all rendering and interaction to
+ *    `net.taler.wallet.oim.history.screens.OimTransactionHistoryScreen`.
+ *
+ * USAGE:
+ *  - Called from `HistoryActivity` and `HistoryHostActivity` as the single
+ *    Composable root for the OIM transaction history flow.
+ *  - Supports `previewTransactions` so designers/devs can render the UI
+ *    without hitting the real database.
+ */
+
 import android.annotation.SuppressLint
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable

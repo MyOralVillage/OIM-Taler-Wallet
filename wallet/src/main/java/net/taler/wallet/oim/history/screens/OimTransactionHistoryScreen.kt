@@ -1,6 +1,40 @@
 @file:OptIn(InternalSerializationApi::class)
-
 package net.taler.wallet.oim.history.screens
+
+/**
+ * HISTORY MODULE – MAIN TRANSACTION HISTORY SCREEN
+ *
+ * This file defines the top-level composable screen for OIM’s transaction
+ * history. It orchestrates:
+ *  - switching between the RiverSceneCanvas (river view) and TransactionsList
+ *    (timeline/list view),
+ *  - displaying the user’s balance and navigation via OimTopBarCentered,
+ *  - showing transaction details in a bottom sheet,
+ *  - opening the notes gallery for a transaction using NotesGalleryScreen.
+ *
+ * MAIN COMPOSABLE:
+ *  - OimTransactionHistoryScreen():
+ *      • Accepts a list of Tranx and the current balance Amount.
+ *      • Uses `showRiver` + onToggleView to swap between river and list UIs.
+ *      • Wires HistorySideButtons to toggle view, send, and receive flows.
+ *      • Derives formatted date strings shared with TransactionCard/RiverSceneCanvas.
+ *      • Tracks `selected` Tranx to:
+ *          - show a ModalBottomSheet with a TransactionCard preview, or
+ *          - push a full-screen NotesGalleryScreen for that transaction’s notes.
+ *
+ * INTEGRATION:
+ *  - Acts as the main entry point for the OIM history feature from the app shell.
+ *  - Connects to:
+ *      • net.taler.database.data_models.* for Tranx and Amount models,
+ *      • history.components (RiverSceneCanvas, TransactionsList,
+ *        TransactionCard, HistorySideButtons),
+ *      • notes.NotesGalleryScreen for viewing note images,
+ *      • top_bar.OimTopBarCentered for the balance/header UI,
+ *      • OimColours + WoodTableBackground for theming.
+ *  - Intended to be hosted by the navigation layer as the dedicated
+ *    “Transaction History” route/screen for the OIM wallet.
+ */
+
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

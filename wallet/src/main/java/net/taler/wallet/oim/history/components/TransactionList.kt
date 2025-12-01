@@ -1,5 +1,29 @@
 package net.taler.wallet.oim.history.components
 
+/**
+ * HISTORY MODULE – TRANSACTIONS LIST VIEW
+ *
+ * This file provides the list-based (timeline) history view for OIM. It wraps
+ * a LazyColumn of TransactionCard composables, one per Tranx, and wires up
+ * click behaviour.
+ *
+ * MAIN COMPOSABLE:
+ *  - TransactionsList():
+ *      • Takes a List<Tranx> from the history layer.
+ *      • Formats the Tranx datetime as "yyyy-MM-dd" for TransactionCard.
+ *      • Forwards direction, purpose and amount into each card.
+ *      • Exposes:
+ *          - onTransactionClick(Tranx) for row/card taps,
+ *          - onAmountClick(Tranx)? for amount-badge taps (e.g. notes popup).
+ *
+ * INTEGRATION:
+ *  - Used by OimTransactionHistoryScreen when the user selects the
+ *    standard list/timeline view instead of RiverSceneCanvas.
+ *  - Shares the same fake data setup in the Preview to keep UI and river
+ *    view previews consistent.
+ */
+
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items

@@ -1,4 +1,28 @@
 package net.taler.wallet.oim.history.components
+/**
+ * HISTORY MODULE – SIDE BUTTON COMPONENTS
+ *
+ * This file defines the composables used for the vertical action bar displayed
+ * on the OIM transaction history screen. These buttons allow users to:
+ *  - switch between the River View and the Timeline/List View,
+ *  - open the send flow,
+ *  - open the receive flow.
+ *
+ * MAIN COMPOSABLES:
+ *  - HistorySideButtons(): Lays out the three-column sidebar containing
+ *    Receive, Toggle-View, and Send buttons. It sizes icons dynamically
+ *    based on the current window height using LocalWindowInfo.
+ *
+ *  - HistorySideButton(): The reusable UI component for each individual button.
+ *    Displays a bitmap icon with rounded background, click behaviour, and
+ *    responsive sizing.
+ *
+ * INTEGRATION:
+ *  - Used directly inside OimTransactionHistoryScreen.
+ *  - Connected to UIIcons + OimColours for theming and consistent icon mapping.
+ *  - Acts as the main interaction entry point for switching between the
+ *    RiverCanvas view and the standard TransactionList view.
+ */
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

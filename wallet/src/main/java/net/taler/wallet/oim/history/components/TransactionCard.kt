@@ -1,5 +1,30 @@
 package net.taler.wallet.oim.history.components
 
+/**
+ *Components – TRANSACTION CARD
+ *
+ * This file defines the card UI for a single transaction in the OIM history
+ * timeline view. Each card shows:
+ *  - the transaction date formatted as ☀️ day / 🌙 month / ⭐ year,
+ *  - an icon for direction (incoming / outgoing),
+ *  - an optional icon for purpose/category,
+ *  - a coloured amount badge that can be clicked separately.
+ *
+ * MAIN COMPOSABLES:
+ *  - TransactionCard(): Reusable card used by TransactionsList and previews.
+ *    Exposes:
+ *      • dir + purpose + displayAmount from database models,
+ *      • onClick for tapping the whole card (open details),
+ *      • onAmountClick for tapping only the amount badge (e.g. open notes).
+ *
+ * INTEGRATION:
+ *  - Consumes Amount, TranxPurp and FilterableDirection from the DB layer.
+ *  - Uses OimColours + resourceMapper() for consistent icon and colour theming.
+ *  - Rendered inside TransactionsList, which is then hosted by
+ *    OimTransactionHistoryScreen as the list-based alternative to RiverSceneCanvas.
+ */
+
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
