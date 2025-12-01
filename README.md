@@ -36,19 +36,13 @@ This repository is responsible for the Android version of Orali Money which has 
 3. Transaction History (Column)
 4. Transaction History (River)
 
-## Development Prerequisites
-
-- OS: Android 8+
-- Language/Frameworks: Kotlin, Jetpack Compose
-- Build System: Gradle (Android Gradle Plugin 9.x)
-- Dependencies: AndroidX, Compose UI, OIM Graphic Library
 
 ## Installation 
 ### **For non developers**
 [Please navigate to our  most recent release page and download one of the debug APKs.](https://github.com/csc301-2025-f/project-9-Orali-Project-for-Android/releases/)
 
 - x86_64 (for Windows emulation)
-- arm64 (for native Android phones or MacOS emulation)
+- arm64 (for native Android phones (Android 8+) or MacOS emulation)
 - armeabi/x86 (for deprecated Android phones; *these are rarely needed*)
 
 The OIM mode for Android is still in pre-release, therefore there is no official signed release on FDroid/Play store/Nightly as of now. Since full apk optimizations are not run for debugs, the APK sizes are on the larger side (around 40mb).   
@@ -109,6 +103,45 @@ gradlew.bat :wallet:build
 ./gradlew :wallet:build
 ```
 </details>
+
+## Tech Stack
+**Languages**
+- Kotlin (JVM 17)
+- Jetpack Compose (UI)
+- Kotlin Serialization
+
+**Build & Tooling**
+- Gradle
+- Android Gradle Plugin 8.9.2
+- Protobuf (Lite runtime)
+- Git (commit-based nightly versioning)
+
+**Android**
+- minSdk 26
+- targetSdk 35
+- compileSdk 35
+- ViewBinding + Compose
+- Product Flavors: `fdroid`, `google`, `nightly`
+- ABI Splits: `armeabi-v7a`, `arm64-v8a`, `x86`, `x86_64`
+
+**Major Libraries**
+- Compose BOM 2025.05.00  
+- Material3  
+- ConstraintLayout  
+- Lifecycle ViewModel + LiveData  
+- Navigation Component (Safe Args plugin)  
+- DataStore + Protobuf  
+- Coil (images)  
+- ZXing (QR)  
+- Markwon (Markdown rendering)  
+- Ktor Client (Networking)  
+- Qtart AAR (Crypto / Logic)  
+- JNA  
+- Apache Commons Text  
+
+**Testing**
+- JUnit 4.13.2  
+- org.json  
 
 ## Design Rationale
 
@@ -450,6 +483,16 @@ These decisions came from observing real user behavior in the field.
 #### Why TESTKUDOS Uses SLE Notes
 
 No assets were supplied for TESTKUDOS. Using generic placeholders would confuse users and break the visual language. SLE notes already fit the user’s mental model and the app’s visual structure. Reusing SLE notes created a consistent experience without introducing noise or ambiguity.
+
+</details>
+
+
+<details>
+    <summary>  Reserved Space in the Send QR Screen </summary>
+
+## 8. Reserved Space in the Send QR Screen
+
+Several screens in the Send flow, especially the QR screen, appear to have unused space on one side. This is intentional and directly tied to how the notes column behaves during the send process. When users add multiple notes or mix denominations, the vertical stack can grow quite tall or expand horizontally during animations. Older devices with smaller landscape resolutions (such as Tecno, Itel, or older Samsung models) are especially sensitive to layout compression. If the QR code or other UI elements occupied this region, the growing notes column would begin to overlap the QR code, reduce readability, and make certain buttons difficult to tap. The reserved space ensures the layout remains stable for all device classes, prevents clipping during animations, and guarantees that even very large note stacks never interfere with essential UI interactions.
 
 </details>
 
