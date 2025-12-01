@@ -59,17 +59,6 @@ internal fun List<Amount>.consolidate(): List<Amount> {
     // We need to map each resId back to its denomination value
     // This requires knowing which currency we're working with
     when (currency) {
-        "CHF" -> {
-            optimalResIds.forEach { resId ->
-                val denomValue = CHF_BILLS.find { it.second == resId }?.first
-                if (denomValue != null) {
-                    val francs = denomValue / 2
-                    val half = denomValue % 2
-                    val amountStr = if (half == 0) "$francs.00" else "$francs.50"
-                    consolidated.add(Amount.fromString(currency, amountStr))
-                }
-            }
-        }
         "XOF" -> {
             optimalResIds.forEach { resId ->
                 val denomValue = XOF_BILLS.find { it.second == resId }?.first
@@ -78,8 +67,9 @@ internal fun List<Amount>.consolidate(): List<Amount> {
                 }
             }
         }
-        "EUR", "SLE", "KUDOS", "KUD" -> {
+        "EUR", "SLE", "CAD", "KUDOS", "KUD" -> {
             val denomList = when (currency) {
+                "CAD" -> CAD_BILLS_CENTS
                 "EUR" -> EUR_BILLS_CENTS
                 else -> SLE_BILLS_CENTS // SLE, KUDOS, KUD all use same structure
             }
@@ -100,29 +90,6 @@ internal fun List<Amount>.consolidate(): List<Amount> {
     return consolidated.sortedByDescending { BigDecimal(it.amountStr) }
 }
 
-/**
- * Helper function to check if consolidation would reduce the number of notes/coins.
- * Useful for determining when to trigger consolidation animation.
- */
-fun List<Amount>.canConsolidate(): Boolean {
-    val consolidated = this.consolidate()
-    return consolidated.size < this.size
-}
-
-/**
- * Extension to get the total value of a list of amounts
- */
-internal fun List<Amount>.sumAmounts(): Amount {
-    if (this.isEmpty()) return Amount.fromString("", "0")
-
-    val currency = this.first().spec?.name ?: this.first().currency
-    val totalValue = this.fold(BigDecimal.ZERO) { acc, amount ->
-        acc + BigDecimal(amount.amountStr)
-    }
-
-    return Amount.fromString(currency, totalValue.stripTrailingZeros().toPlainString())
-}
-
 /** KUDOS mapped to Leones.
  * toCurrencyFrame returns a composable table
  * representation of a transaction. */
@@ -131,9 +98,9 @@ internal fun Amount.resourceMapper(): List<Int> {
     val result = mutableListOf<Int>()
 
     when (currency) {
-        "CHF" -> {
-            val totalHalfFrancs = value * 2 + (fraction * 2L / Amount.FRACTIONAL_BASE)
-            result.addAll(mapToBills(totalHalfFrancs, CHF_BILLS))
+        "CAD" -> {
+                val totalCents = value * 100 + (fraction * 100L / Amount.FRACTIONAL_BASE)
+                result.addAll(mapToBills(totalCents, CAD_BILLS_CENTS))
         }
         "XOF" -> {
             if (fraction != 0)
@@ -177,18 +144,17 @@ private fun mapToBills(amount: Long, bills: List<Pair<Int, Int>>): List<Int> {
     return result
 }
 
-// === CHF denominations in half-franc units ===
-val CHF_BILLS = listOf(
-    2_000 to R.drawable.chf_hundred_thousand,
-    400  to R.drawable.chf_twenty_thousand,
-    200  to R.drawable.chf_ten_thousand,
-    100  to R.drawable.chf_five_thousand,
-    40   to R.drawable.chf_two_thousand,
-    20   to R.drawable.chf_one_thousand,
-    10   to R.drawable.chf_five_hundred,
-    4     to R.drawable.chf_two_hundred,
-    2     to R.drawable.chf_one_hundred,
-    1       to R.drawable.chf_zero_point_five
+// === CAD denominations in penny units ===
+val CAD_BILLS_CENTS = listOf(
+    10_000 to R.drawable.cad_hundred,
+    2_000  to R.drawable.cad_twenty,
+    1_000  to R.drawable.cad_ten,
+    200    to R.drawable.cad_two,
+    100    to R.drawable.cad_one,
+    25     to R.drawable.cad_zero_point_two_five,
+    10     to R.drawable.cad_zero_point_one,
+    5      to R.drawable.cad_zero_point_zero_five,
+    1      to R.drawable.cad_zero_point_zero_one
 )
 
 // === XOF denominations (integer values only) ===

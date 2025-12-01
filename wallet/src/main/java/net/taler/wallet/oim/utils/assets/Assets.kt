@@ -20,6 +20,7 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -76,4 +77,10 @@ fun generateQrBitmap(text: String, size: Int): Bitmap {
             for (y in 0 until size)
                 setPixel(x, y, if (matrix[x, y]) 0xFF000000.toInt() else 0xFFFFFFFF.toInt())
     }
+}
+
+internal object OimColours {
+    val INCOMING_COLOUR = Color(0xff4caf50)
+    val OUTGOING_COLOUR = Color(0xFFC32909)
+    val TRX_HIST_COLOUR = Color(0x6600838F)
 }

@@ -176,13 +176,16 @@ private fun Bills(
 // Helper function to determine if a drawable is a coin
 private fun isCoin(drawableResId: Int): Boolean {
     return when (drawableResId) {
-        // CHF coins
-        R.drawable.chf_five_hundred,
-        R.drawable.chf_two_hundred,
-        R.drawable.chf_one_hundred,
-        R.drawable.chf_one,
-        R.drawable.chf_zero_point_five,
-            // EUR coins
+
+        // CAD coins
+        R.drawable.cad_two,
+        R.drawable.cad_one,
+        R.drawable.cad_zero_point_two_five,
+        R.drawable.cad_zero_point_one,
+        R.drawable.cad_zero_point_zero_five,
+        R.drawable.cad_zero_point_zero_one,
+
+        // EUR coins
         R.drawable.eur_one,
         R.drawable.eur_two,
         R.drawable.eur_zero_point_five,
@@ -191,19 +194,22 @@ private fun isCoin(drawableResId: Int): Boolean {
         R.drawable.eur_zero_point_zero_five,
         R.drawable.eur_zero_point_zero_two,
         R.drawable.eur_zero_point_zero_one,
-            // SLE coins
+
+        // SLE coins
         R.drawable.sle_zero_point_five,
         R.drawable.sle_zero_point_twenty_five,
         R.drawable.sle_zero_point_one,
         R.drawable.sle_zero_point_zero_five,
         R.drawable.sle_zero_point_zero_one,
-            // XOF coins
+
+        // XOF coins
         R.drawable.xof_two_hundred,
         R.drawable.xof_one_hundred,
         R.drawable.xof_twenty_five,
         R.drawable.xof_ten,
         R.drawable.xof_five,
         R.drawable.xof_one -> true
+
         else -> false
     }
 }

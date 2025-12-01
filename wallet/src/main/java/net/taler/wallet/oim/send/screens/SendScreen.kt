@@ -81,7 +81,7 @@ import net.taler.wallet.oim.notes.NoteFlyer
 import net.taler.wallet.oim.notes.NotesStrip
 import net.taler.wallet.oim.utils.assets.WoodTableBackground
 import net.taler.wallet.oim.top_bar.OimTopBarCentered
-import net.taler.wallet.oim.utils.res_mappers.CHF_BILLS
+import net.taler.wallet.oim.utils.res_mappers.CAD_BILLS_CENTS
 import net.taler.wallet.oim.utils.res_mappers.EUR_BILLS_CENTS
 import net.taler.wallet.oim.utils.res_mappers.SLE_BILLS_CENTS
 import net.taler.wallet.oim.utils.res_mappers.UIIcons
@@ -304,7 +304,7 @@ fun SendScreen(
             // figure out currency and denominations
             val currency = displayAmount.spec?.name ?: displayAmount.currency
             val availableDenominations = when (currency) {
-                "CHF" -> CHF_BILLS
+                "CAD" -> CAD_BILLS_CENTS
                 "XOF" -> XOF_BILLS
                 "EUR" -> EUR_BILLS_CENTS
                 "SLE", "KUDOS", "KUD" -> SLE_BILLS_CENTS
@@ -318,13 +318,8 @@ fun SendScreen(
             val noteThumbnails: List<Pair<Int, Amount>> =
                 availableDenominations.map { (denomValue, resId) ->
                     val amountStr = when (currency) {
-                        "CHF" -> {
-                            val francs = denomValue / 2
-                            val half = denomValue % 2
-                            if (half == 0) "$francs.00" else "$francs.50"
-                        }
                         "XOF" -> denomValue.toString()
-                        "EUR", "SLE", "KUDOS", "KUD" -> {
+                        "CAD", "EUR", "SLE", "KUDOS", "KUD" -> {
                             val whole = denomValue / 100
                             val cents = denomValue % 100
                             "$whole.${cents.toString().padStart(2, '0')}"
