@@ -1,152 +1,109 @@
-# *Please note that...* 
+# Orali Money for Android
 
-## this repo extends the GNU Taler Android Repository
+[We need to add an image here maybe and the CSS properties at the end]: #
 
-This git repository contains code for the GNU Taler Android wallet app,
-non app-specific GNU Taler Android libraries, and an implementation of [OIM](https://myoralvillage.org/our-model-oim/).
+## Contents
 
-This is an **EXPERIMENTAL IMPLEMENTATION** of [the GNU Taler Android wallet](https://git.taler.net/taler-android.git/):
+- [About](#about)
+- [Features](#features)
+- [Development Prerequisites](#development-prerequisites)
+- [Installation](#installation)
+- [Design Rationale](#design-rationale)
+- [Automated Testing and Deployment](#automated-testing-and-deployment)
+- [Coding Guidelines](#coding-guidelines)
+- [Contact](#contact)
+- [License](#license)
 
-See the [Taler manual](https://docs.taler.net) and [Taler wallet](https://www.taler.net/en/wallet.html)
-for more information.
+## About
 
-## this version is *PURELY A PROOF OF CONCEPT!* 
+Orali Money is a collaboration between [GNU Taler](https://www.taler.net/en/index.html) and [My Oral Village](https://myoralvillage.org/) to create a mobile wallet that empowers people traditionally excluded from financial systems.
 
-Under no circumstances should it be
-used for financial transactions, sensitive financial information, nor as a supplement to any existing
-GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT MAY BREAK EXISTING GNU TALER ANDROID BUILDS!**
+This repository is responsible for the Android version of Orali Money which has two interfaces: a standard interface adopted from Taler and an interface built on [OIM (Oral Information Management)](https://myoralvillage.org/our-model-oim/) principles, allowing for illiterate and innumerate adults to interact with the application.
 
-## this version has known issues:
-- Transaction database is hardcoded to test implementation
-- Proper transaction filtering in history is not yet implemented
-- Chests do not dynamically update
-- Protobuf of user settings not fully integrated
-- Withdrawing KUDOS in dev mode sometimes bugs out
-- Transaction database needs to be integrated into wallet-core 
-- Icons need touch-ups and resizing; UI/UX doesn't fully fit screen at the moment
-- Landscape mode is bugged
-- Switching between landscape -> portrait exists OIM mode
-- Transaction history cards do not display bills and show date in a written format instead of icons
-- Transaction history requires filters by amount of currency spent, currency in transaction, or by date 
-- Transaction history should potentially explore pagination 
-- Transaction history might benefit from a default screen when there are no transactions in the system
-- App version is bugged
-- Only KUDOS are properly integrated; currently mapped to Leones (1:1)
-- OIM mode "withdraw test kudos" not linked to Taler backend
----
-# Building and Structure
+## Features
 
-## Installation Instructions
-1. Download the correct APK
-    - for non-debug: please search for the app on FDroid
-    - debug apks reccomended for development; else use regular apk
-    - arm64 for most Android devices (armeabi for legacy devices)
-    - x86_64 for emulation  (x86 for legacy devices)
-3. [Withdraw test kudos](https://bank.demo.taler.net/?lang=en) to begin
-    - if in a debug apk, do: Settigs->Developer mode -> Withdraw demo KUDOS
-    - you may have to play around clicking "Withdraw demo KUDOS" and "Providers", buggy connecting to the backend is a known issue
-3. Click Balance button, then click the blue "Switch to OIM" button
-4. Click on the chest to enter the wallet screen, where you should see the test currency and the features in the corners.
-5. The top left button represents the Receive Money user story. Click this icon to scan a QR Code to accept a incoming payment.
-6. The top right button represents the Send Money user story. Click the icon to be entered into a screen where you can visually select the amount of money to send, along with a purpose for the transaction.
-7. The bottom left Ledger icon represents transaction history. Click the icon to view the transaction history of your past transactions.
-8. The top center chest button, on the Wallet  screen, takes you back to the OIM Home Screen.
-9. Navigation: Use the provided Back to taler button to go back to the Taler Main UI. Use the android Back buttons to go back one screen.
+1. Sending Money
+2. Receiving Money
+3. Transaction History (Column)
+4. Transaction History (River)
 
-## Repo Setup instructions
+## Development Prerequisites
+
+- OS: Android 8+
+- Language/Frameworks: Kotlin, Jetpack Compose
+- Build System: Gradle (Android Gradle Plugin 9.x)
+- Dependencies: AndroidX, Compose UI, OIM Graphic Library
+
+## Installation
 
 ### 1. Clone the Repository
 
-#### HTTPS Method
+<details>
+    <summary> By HTTPS </summary>
+
+#### HTTPS
+
 ```bash
 git clone https://github.com/csc301-2025-f/project-9-Orali-Project-for-Android.git
 cd project-9-Orali-Project-for-Android
 ```
 
-#### SSH Method
+Note that you may need to authenticate with your GitHub credentials.
+</details>
+
+<details>
+    <summary> By SSH </summary>
+
+#### SSH
+
 ```bash
 git clone git@github.com:csc301-2025-f/project-9-Orali-Project-for-Android.git
 cd project-9-Orali-Project-for-Android
 ```
+</details>
 
 ### 2. Build the Project
+
+Ensure the Java Development Kit 17 (JDK 17) is installed before running the Gradle commands below.
+
+<details>
+    <summary> Windows (Command Prompt and Powershell) </summary>
+
+#### Windows (Command Prompt)
+
+```cmd
+gradlew.bat :wallet:build
+```
+
+#### Windows (Powershell)
+
+```powershell
+.\gradlew.bat :wallet:build
+```
+</details>
+
+
+<details>
+    <summary> Linux and Mac </summary>
 
 #### Linux / Mac
 ```bash
 ./gradlew :wallet:build
 ```
+</details>
 
-#### Windows (Command Prompt)
-```cmd
-gradlew.bat :wallet:build
-```
-
-#### Windows (PowerShell)
-```powershell
-.\gradlew.bat :wallet:build
-```
-
-### Notes
-- For SSH method, ensure you have SSH keys configured with GitHub
-- For HTTPS method, you may need to authenticate with your GitHub credentials
-- Make sure you have Java Development Kit 17 (JDK 17) installed before running Gradle commands
-
-## Project Structure
-
-* [**taler-kotlin-android**](/taler-kotlin-android) - a refactored version of the taler-koltin-android library
-* [**transaction-database**](/transaction-database) - a complete, locally saved SQLite database for transaction histories
-* [**wallet**](/wallet) - the GNU Taler wallet Android app with OIM UI and transaction history lookup
-
----
-# Orali Money for Android
-
-## Partner Intro
-Our partners are **My Oral Village** and **Taler Systems**.
-
-**Contacts:**
-- Brett Matthews (Founder, My Oral Village) – [Primary Partner Contact]
-- David Myhre (Director of Partnerships, My Oral Village)
-- Iván Ávalos (Android Developer, Taler Systems)
-- Marc Stibane (iOS Developer, Taler Systems)
-
-**About the organizations:**  
-My Oral Village is a nonprofit dedicated to creating financial tools for illiterate and innumerate populations worldwide.  
-Taler Systems is the developer of GNU Taler, an open-source, privacy-preserving payment system.  
-Together, they are collaborating to build Orali Money: a mobile wallet that empowers people traditionally excluded from financial systems.
-
----
-
-## Description of the project
-**Orali Money for Android** is a mobile wallet designed to make money management accessible for illiterate and innumerate adults.
-
-It enables users to send, receive, and request money through a clear, icon-based interface.  
-The core value lies in its **Oral Information Management (OIM)** system, which replaces text-heavy interfaces with intuitive visuals.
-
-**Problem:** Nearly one billion people are excluded from digital finance because they cannot read numbers or text.  
-Orali Money provides a safe, inclusive financial tool that addresses this barrier.
-
----
-
-## Key Features
-- **Send Money** – Users can easily select how much money they wish to send using icons and banknotes, along with a purpose for the payment, also represented with icons. Upon confirmation, it displays a QR Code for a potential recipient to scan and Receive the payment.
-- **Receive Money** – Users can scan a QR Code to accept a incoming "Send Money" payment. Upon scanning, you will be redirected to a dialog that allows for clear notification when funds arrive, shown visually in their balance. Users can either accept or reject the payment.
-- **Transaction History** – Chronological and visual record of past transactions, designed for easy comprehension with icons and visuals. 
-- **Shareability** – Literate users can easily share the app with loved ones, who can learn to use it in under a week.
-- **Error Handling** – Errors are conveyed with clear icons.
-
----
-
-# Design Rationale
+## Design Rationale
 
 This section explains why OIM was built the way it was. The choices here come from a mix of technical constraints, user research in Sierra Leone, hardware realities in the target communities, and restrictions imposed by the backend environment. Each decision reflects a balance between clarity, usability, and practicality.
 
----
+<details>
+    <summary> Concurrency, Performance, and Real-World Devices </summary>
 
-## 1. Concurrency, Performance, and Real-World Devices
+### 1. Concurrency, Performance, and Real-World Devices
 
 OIM is designed for environments where devices are modest and resources are limited. The goal was to build something that behaves the same way on a modern phone and on older devices such as **Tecno Spark 7**, **Itel A56**, **Tecno Pop series**, **Samsung J2**, **Samsung A10**, and similar models that are still heavily used across West Africa. Many of these phones run with 1 GB or 2 GB of RAM, limited CPU power, and storage that becomes slow when the device fills up. These constraints shaped the entire architecture.
 
-### Minimal Threading for Predictability
+#### Minimal Threading for Predictability
 
 The app uses a mostly single thread model, because the dataset is small and does not justify multiple threads. A simple architecture works better when the hardware is not powerful.
 
@@ -158,7 +115,7 @@ The app uses a mostly single thread model, because the dataset is small and does
 
 This approach reduces surprises and ensures that the interface feels stable even on phones that struggle under heavier workloads.
 
-### How Older Phones Influence the Design
+#### How Older Phones Influence the Design
 
 In the communities where OIM will be used, users often rely on slow devices that are several years old. These devices typically have:
 
@@ -170,7 +127,7 @@ In the communities where OIM will be used, users often rely on slow devices that
 
 Running several asynchronous tasks at once can cause stutters or frame drops. Even lightweight background work can cause delays if the device is already under strain from Android services or Google Play components. Keeping OIM lightweight avoids these issues and keeps the experience smooth.
 
-### Safe Use of Background Work
+#### Safe Use of Background Work
 
 Some operations still run off the main thread, such as small parsing tasks or loading local note images. However:
 
@@ -180,13 +137,16 @@ Some operations still run off the main thread, such as small parsing tasks or lo
 
 This maintains consistent rendering and protects the user from slowdowns.
 
----
+</details>
 
-## 2. The River View and Metaphor Driven Visualization
+<details>
+    <summary> The River View and Metaphor Driven Visualization </summary>
+
+### 2. The River View and Metaphor Driven Visualization
 
 The river view is one of the most distinctive features of OIM. It comes from extensive research performed by our partners in Sierra Leone who studied how individuals with lower levels of literacy or numeracy understand money. Traditional interfaces filled with numbers, charts, or lists create unnecessary barriers. Highly visual metaphors remove those barriers.
 
-### Why a River
+#### Why a River
 
 Money behaves like something that moves, divides, or accumulates. A river already communicates this naturally. It lets users understand financial activity by drawing on everyday environmental knowledge.
 
@@ -197,7 +157,7 @@ Money behaves like something that moves, divides, or accumulates. A river alread
 
 This makes the metaphor powerful and easy to grasp.
 
-### Farms as Incoming Money
+#### Farms as Incoming Money
 
 Incoming transactions are represented as farms. Farms are associated with growth, harvest, and gain. When money arrives, the landscape grows, and the user receives something valuable. This framing helps users understand positive inflow without requiring them to read numerical labels.
 
@@ -205,7 +165,7 @@ Incoming transactions are represented as farms. Farms are associated with growth
 * placement shows when the transaction occurred
 * tapping opens the exact transaction
 
-### Lakes as Outgoing Money
+#### Lakes as Outgoing Money
 
 Outgoing amounts create lakes. A lake is formed by water leaving the main river and gathering elsewhere. This mirrors the idea of money being sent away.
 
@@ -213,17 +173,20 @@ Outgoing amounts create lakes. A lake is formed by water leaving the main river 
 * the shape and placement match the timeline
 * each lake opens its corresponding transaction
 
-### Visual Interaction
+#### Visual Interaction
 
 To support different literacy levels, the river view avoids textual dates. Instead, symbolic date markers appear above each item so users can see approximate timing without needing to read. Every element on the river can be tapped so the visual metaphor stays connected to real financial data. This ensures that the visual storytelling always reflects actual transaction history.
 
----
+</details>
 
-## 3. Landscape Only Layout
+<details>
+    <summary> Landscape Only Layout </summary>
+
+### 3. Landscape Only Layout
 
 OIM does not support portrait mode, and this is intentional. The river metaphor needs horizontal space to breathe. On narrow portrait screens, the metaphor collapses and the UI becomes cramped.
 
-### Why Landscape Is Necessary
+#### Why Landscape Is Necessary
 
 * Farms, lakes, and the river require width for clear spacing.
 * A horizontal layout offers long uninterrupted movement.
@@ -233,17 +196,20 @@ OIM does not support portrait mode, and this is intentional. The river metaphor 
 
 Because everything in the app is designed around spatial storytelling, portrait mode would break the core experience.
 
-### Switching Behavior
+#### Switching Behavior
 
 The main wallet app remains in portrait. Only when the user enters OIM does the device rotate into landscape. Leaving OIM returns the device to portrait. This separation keeps the main app simple while giving OIM the space it needs.
 
----
+</details>
 
-## 4. Backend Limitations and On Device Processing
+<details>
+    <summary> Backend Limitations and On Device Processing </summary>
+
+### 4. Backend Limitations and On Device Processing
 
 The backend that powers OIM is managed by partner organizations and cannot be modified. The OIM team could not change any schema, add metadata, or restructure responses. This imposed several limitations.
 
-### What Could Not Be Changed
+#### What Could Not Be Changed
 
 * backend response format
 * transaction structure
@@ -254,7 +220,7 @@ The backend that powers OIM is managed by partner organizations and cannot be mo
 
 Since the backend could not be touched, the app performs all computation for the river view on the device itself.
 
-### What the Device Computes
+#### What the Device Computes
 
 * transaction grouping
 * scaling
@@ -265,17 +231,20 @@ Since the backend could not be touched, the app performs all computation for the
 
 The river view works fully offline using only the minimal transaction data provided. This allows total independence from backend capabilities while still maintaining visual richness.
 
----
+</details>
 
-## 5. Why the App Does Not Use AI
+<details>
+    <summary> Why the App Does Not Use AI </summary>
+
+### 5. Why the App Does Not Use AI
 
 There were several reasons why AI was intentionally excluded, even though it could help with categorization and insights.
 
-### No Backend Compute
+#### No Backend Compute
 
 The backend environment does not have the CPU or GPU capacity to run even small AI models. There was no space to deploy transformers or even lightweight models.
 
-### Running AI on the Device Is Not Practical
+#### Running AI on the Device Is Not Practical
 
 Most users rely on low budget devices that cannot support quantized neural networks. Running inference on these devices would lead to:
 
@@ -286,7 +255,7 @@ Most users rely on low budget devices that cannot support quantized neural netwo
 
 The risk outweighed the benefit.
 
-### No AI Ready Data
+#### No AI Ready Data
 
 Because backend endpoints cannot be changed, the app receives no metadata about:
 
@@ -298,17 +267,20 @@ Because backend endpoints cannot be changed, the app receives no metadata about:
 
 AI systems need structured data to generate meaningful insights. Without it, they would perform poorly.
 
-### Stability Comes First
+#### Stability Comes First
 
 The project prioritizes predictable behavior. Heavy AI computation contradicts that goal. Simplicity makes the application more reliable.
 
----
+</details>
 
-## 6. Architecture and Code Structure
+<details>
+    <summary> Architecture and Code Structure </summary>
+
+### 6. Architecture and Code Structure
 
 The app uses an architecture that emphasizes clarity and maintainability.
 
-### Separation of Responsibilities
+#### Separation of Responsibilities
 
 * The MainViewModel manages state and data.
 * Screens display the UI and contain no business logic.
@@ -316,7 +288,7 @@ The app uses an architecture that emphasizes clarity and maintainability.
 
 This creates a clean, understandable flow for future contributors.
 
-### Reusable UI Components
+#### Reusable UI Components
 
 The app uses unified components across multiple screens.
 
@@ -329,17 +301,17 @@ Examples include:
 
 Whenever assets or logic change, these updates propagate everywhere automatically.
 
-### Resource Mapping
+#### Resource Mapping
 
 All currency, note denominations, and transaction purposes map through a single place. This prevents errors and simplifies updates.
 
-### Mock Database
+#### Mock Database
 
 During development, the biggest structural limitation was the fact that the backend environment could not be consistently accessed, modified, or extended by the OIM engineering team. The partner organizations controlled the database schema, API endpoints, migration schedule, and infrastructure uptime. This created a situation where development needed to proceed at full speed without depending on backend availability.
 
 Because of this, OIM required a **fully standalone, schema-accurate mock database** that could act as a drop-in replacement for the real database during development. The motivation for this choice was much deeper than simply wanting “offline testing”. It emerged from a combination of practical, operational, and architectural needs.
 
-#### Ensuring Development Continuity
+##### Ensuring Development Continuity
 
 The backend environment was frequently inaccessible due to:
 
@@ -357,7 +329,7 @@ Without a local mock database, UI development would have stalled for days at a t
 
 This decision protected the development timeline and allowed continuous iteration.
 
-#### A Controlled and Repeatable Data Environment
+##### A Controlled and Repeatable Data Environment
 
 The mock database also provided a stable sandbox. The real backend could not guarantee:
 
@@ -375,7 +347,7 @@ The mock DB made it possible to create:
 
 This was essential for building and debugging features like the river view, note stacking animations, and consolidated purpose selection.
 
-#### Compatibility With the Real Schema
+##### Compatibility With the Real Schema
 
 The mock database was engineered to **mirror the real schema exactly**, including:
 
@@ -395,7 +367,7 @@ This ensured that once the backend became available:
 
 The mock DB therefore served as a long-term investment in stability, not just a temporary convenience.
 
-#### Enabling Visual Feature Development Without Backend Support
+##### Enabling Visual Feature Development Without Backend Support
 
 Several features in OIM, such as:
 
@@ -416,7 +388,7 @@ The mock DB allowed local generation of:
 
 Without this, it would have been impossible to test the visual design under realistic workloads.
 
-#### Protecting the Backend From Accidental Load
+##### Protecting the Backend From Accidental Load
 
 During development, UI screens refresh state frequently, especially when testing animation loops or rapid interactions. Running these tests directly against the real backend could have:
 
@@ -428,7 +400,7 @@ During development, UI screens refresh state frequently, especially when testing
 
 The mock DB acted as a safety barrier, absorbing all local experimentation and ensuring the backend remained stable and clean.
 
-#### Future Integration Safety
+##### Future Integration Safety
 
 Because the mock DB is **structurally identical** to the partner database, any future backend improvements or migrations will only require:
 
@@ -437,13 +409,16 @@ Because the mock DB is **structurally identical** to the partner database, any f
 * leaving the composables and ViewModel untouched
 
 This makes the architecture long-lived and maintainable.
----
+</details>
 
-## 7. Visual Choices and Currency Representation
+<details>
+    <summary> Visual Choices and Currency Representation </summary>
+
+### 7. Visual Choices and Currency Representation
 
 Some UI decisions came directly from partner research in Sierra Leone. These choices reflect what users in the region already understand.
 
-### Partner Driven Design
+#### Partner Driven Design
 
 Partners provided representations for:
 
@@ -454,69 +429,35 @@ Partners provided representations for:
 
 These decisions came from observing real user behavior in the field.
 
-### Why TESTKUDOS Uses SLE Notes
+#### Why TESTKUDOS Uses SLE Notes
 
 No assets were supplied for TESTKUDOS. Using generic placeholders would confuse users and break the visual language. SLE notes already fit the user’s mental model and the app’s visual structure. Reusing SLE notes created a consistent experience without introducing noise or ambiguity.
 
----
+</details>
 
+## Automated Testing and Deployment
 
+This repository does not have automated testing as this repository contained much legacy code and we were instructed to minimize changes made to the codebase.
 
-## Development requirements
-**Technical prerequisites:**
-- **OS:** Android 8+
-- **Language/Frameworks:** Kotlin, Jetpack Compose
-- **Build System:** Gradle (Android Gradle Plugin 9.x)
-- **Dependencies:** AndroidX, Compose UI, OIM graphic library
+Orali Money contains developer releases on this repository and will have official releases on the F-Droid store.
 
----
-## Deployment and GitHub Workflow
+## Coding Guidelines
 
-### Branching Strategy
-- **main** – contains only stable, production-ready code. Nothing is merged into `main` without peer review and partner approval.
-- **wip_<feature>** – work-in-progress feature branches (e.g., `wip_D1`, `wip_send-money`). Used for ongoing development.
-- **feature/<name>** – branches created by team members to implement specific features (e.g., `feature/request-money`).
-- **fix/<issue>** – branches for bug fixes.
+We follow [Kotlin style guidelines](https://developer.android.com/kotlin/style-guide) and [Android Best Practices](https://developer.android.com/topic/architecture). In addition, we use [ktlint](https://github.com/pinterest/ktlint).
 
-This structure ensures code is always traceable and organized by purpose.
+## Contact
 
-### Workflow
-1. A developer creates a new branch off of `wip_<feature>` or `main` depending on the scope of work.
-2. Code is committed locally and pushed to the corresponding branch on GitHub.
-3. Once ready, the developer opens a **pull request (PR)**:
-  - PRs are made from `feature/*` or `fix/*` into `wip_<feature>` branches.
-  - After internal review, a PR from `wip_<feature>` into `main` is created.
-4. **Review process:**
-  - At least one teammate reviews the PR for correctness, readability, and alignment with project goals.
-  - Larger changes (UI flows, OIM compliance) require two reviewers, ideally including the partner liaison.
-5. **Merging:**
-  - Once approved, the branch is merged into its target.
-  - Only designated leads  merge into `main`.
+Our partners are **My Oral Village** and **Taler Systems**, more specifically:
 
-### Deployment Process
-- **Build Tool:** Gradle (Android Gradle Plugin). Used for dependency management, modular builds, and APK generation.
-- **Testing:** Each PR is built locally and on GitHub Actions (continuous integration). 
-- The Gradle build ensures the code compiles, unit tests pass, and the APK is generated successfully.
-- **Deployment steps:**
-  1. Merge into `main`.
-  2. Gradle generates a signed APK / Android App Bundle.
-  3. The APK is tested on emulators (Pixel 6, Android 16) and physical devices.
-  4. Once validated, the APK is shared with the partner via GitHub Releases or direct distribution.
+- Brett Matthews (Founder, My Oral Village) – [Primary Partner Contact]
+- David Myhre (Director of Partnerships, My Oral Village)
+- Iván Ávalos (Android Developer, Taler Systems)
+- Marc Stibane (iOS Developer, Taler Systems)
 
-### Justification
-- **Branching model** keeps `main` stable while allowing rapid development in `wip` and `feature` branches.
-- **Pull-request reviews** enforce accountability, reduce bugs, and ensure accessibility/OIM principles are respected.
-- **Gradle** provides a reliable, industry-standard build system for Android projects, supporting CI/CD integration.
-- **GitHub Actions** automates testing and builds, ensuring issues are caught early.
-- **Partner access to GitHub** guarantees transparency and collaboration with external developers(e.g., Iván for Android, Marc for iOS).
+My Oral Village is a nonprofit dedicated to creating financial tools for illiterate and innumerate populations worldwide.
 
-This workflow balances structure with flexibility, making it easy to track progress, avoid conflicts, and deliver a reliable app.
+Taler Systems is the developer of GNU Taler, an open-source, privacy-preserving payment system.
 
----
+## License
 
-## Coding Standards and Guidelines
-We follow **Kotlin style guidelines** and **Google Android best practices**, enforced by `ktlint`.
-
-- camelCase for variables/methods
-- PascalCase for classes
-- Clear comments and documentation where functionality is non-obvious
+- This project is licensed under the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.en.html) either version 3.0 or (at your option) any later version.  
