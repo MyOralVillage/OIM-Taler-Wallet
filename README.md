@@ -1,6 +1,15 @@
 # Orali Money for Android
 
-[We need to add an image here maybe and the CSS properties at the end]: #
+## Please note that...
+
+This is an **EXPERIMENTAL IMPLEMENTATION** of the [the GNU Taler Android wallet](https://git.taler.net/taler-android.git/):
+
+Under no circumstances should it be used for real financial transactions, sensitive financial information, nor as a supplement to any existing
+GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT MAY BREAK EXISTING GNU TALER ANDROID BUILDS!**
+
+See the [Taler manual](https://docs.taler.net) and [Taler wallet](https://www.taler.net/en/wallet.html)
+for more information.
+
 
 ## Contents
 
