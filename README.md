@@ -14,6 +14,7 @@ for more information.
 ## Contents
 
 - [About](#about)
+- [Demos](#demos)
 - [Features](#features)
 - [Development Prerequisites](#development-prerequisites)
 - [Installation](#installation)
@@ -35,6 +36,20 @@ This repository is responsible for the Android version of Orali Money which has 
 2. Receiving Money
 3. Transaction History (Column)
 4. Transaction History (River)
+
+## Demos
+
+### Generating a Transaction QR
+ ![Generating a Transaction QR](./deliverables/send_demo.gif)
+
+### Receiving a Transaction QR
+![Receiving a Transaction QR](./deliverables/receive_demo.gif)
+
+### Transaction History (River View)
+![Transaction History (River view) ](./deliverables/river_view_demo.gif)
+
+### Transaction History (Column View)
+![Transaction History (Column view)](./deliverables/column_view_demo.gif)
 
 
 ## Installation 
