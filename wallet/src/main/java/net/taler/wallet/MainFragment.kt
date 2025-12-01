@@ -258,6 +258,9 @@ class MainFragment: Fragment() {
                             onReviewTos = reviewTos,
                         )
                         OimScreen.CHEST -> run {
+
+                            BackHandler(true) { oimScreen = OimScreen.HOME }
+
                             val receiveFlow = rememberOimReceiveFlowState(
                                 model = model,
                                 onReviewTos = reviewTos,
@@ -417,9 +420,8 @@ class MainFragment: Fragment() {
                                                 !=
                                                 Configuration
                                                     .ORIENTATION_LANDSCAPE
-                                            )
-                                            {
-                                                enterOimAfterLandscape = true
+                                            ) {
+                                                oimScreen = OimScreen.HOME
                                                 activity.requestedOrientation =
                                                     ActivityInfo
                                                         .SCREEN_ORIENTATION_LANDSCAPE
