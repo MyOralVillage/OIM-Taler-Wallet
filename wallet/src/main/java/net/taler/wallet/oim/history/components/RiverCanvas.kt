@@ -15,10 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -90,7 +87,7 @@ fun RiverSceneCanvas(
             val w = size.width
             val h = size.height
 
-            // Date strip
+            // Reserve space at top (for air above farms / dates)
             val dateStripHeight = 40.dp.toPx()
 
             val landBottom = h * 0.58f
@@ -139,8 +136,8 @@ fun RiverSceneCanvas(
             val usableW = w - leftPad
             val step = usableW / nTx
 
-            // ---------- text paint ----------
-            val textPaint = Paint().apply {
+            // ---------- text paint (base) ----------
+            val baseTextPaint = Paint().apply {
                 isAntiAlias = true
                 textSize = 12.sp.toPx()
                 color = android.graphics.Color.WHITE
@@ -149,12 +146,16 @@ fun RiverSceneCanvas(
             }
 
             val maxMajForWidth = maxSingleMaj
-            val minFarmWidth = step * 0.4f
+            val minFarmWidth = step * 0.7f
             val maxFarmWidth = step * 0.95f
-            val farmHeight = (landBottom - dateStripHeight) * 0.7f  // CONSTANT for all farms
+            val farmHeight = (landBottom - dateStripHeight) * 0.9f
 
-            // ---------- FARMS FIRST (so river draws on top) ----------
+            val horizontalPaddingPx = 8.dp.toPx()
+
+            // ---------- FARMS (ONLY INCOMING) ----------
             transactions.forEachIndexed { idx, t ->
+                if (!t.direction.getValue()) return@forEachIndexed  // skip outgoing
+
                 val x = leftPad + idx * step + step / 2f
                 val maj = t.amount.value.toDouble() +
                         t.amount.fraction.toDouble() / 100_000_000.0
@@ -162,10 +163,10 @@ fun RiverSceneCanvas(
                 val raw = dates.getOrNull(idx)
                 val labelText = raw?.takeIf { it.length >= 10 }?.let { ds ->
                     // yyyy-MM-dd
-                    val year = ds.substring(0, 4)
+                    val yearShort = ds.substring(2, 4)      // "25" from "2025"
                     val month = ds.substring(5, 7)
                     val day = ds.substring(8, 10)
-                    "☀️ $day / 🌙 $month / ⭐ $year"
+                    "☀️ $day / 🌙 $month / ⭐ $yearShort"
                 } ?: ""
 
                 // width based on amount
@@ -173,15 +174,10 @@ fun RiverSceneCanvas(
                     .toFloat()
                     .coerceIn(0f, 1f)
 
-                var farmWidth = minFarmWidth +
-                        (maxFarmWidth - minFarmWidth) * amountRatio
-
-                if (labelText.isNotEmpty()) {
-                    val textWidth = textPaint.measureText(labelText)
-                    val minWidthForText = textWidth + 16.dp.toPx()
-                    farmWidth = max(farmWidth, minWidthForText)
-                }
-                farmWidth = farmWidth.coerceIn(minFarmWidth, maxFarmWidth)
+                val farmWidth = (
+                        minFarmWidth +
+                                (maxFarmWidth - minFarmWidth) * amountRatio
+                        ).coerceIn(minFarmWidth, maxFarmWidth)
 
                 val farmTop = landBottom - farmHeight
                 val farmRect = Rect(
@@ -197,15 +193,27 @@ fun RiverSceneCanvas(
                     rect = farmRect
                 )
 
-                // date right above farm
+                // date right above farm – squished to fit inside farm width
                 if (labelText.isNotEmpty()) {
+                    val available = farmWidth - 2 * horizontalPaddingPx
+                    val paintForThis = if (available > 0f) {
+                        val textWidth = baseTextPaint.measureText(labelText)
+                        if (textWidth > available) {
+                            Paint(baseTextPaint).apply {
+                                textSize = baseTextPaint.textSize * (available / textWidth)
+                            }
+                        } else baseTextPaint
+                    } else {
+                        baseTextPaint
+                    }
+
                     val textY = (farmTop - 6.dp.toPx())
                         .coerceAtLeast(12.sp.toPx())
                     drawContext.canvas.nativeCanvas.drawText(
                         labelText,
                         x,
                         textY,
-                        textPaint
+                        paintForThis
                     )
                 }
 
@@ -249,30 +257,62 @@ fun RiverSceneCanvas(
                     rect = Rect(0f, 0f, w, h)
                 )
             }
-            drawPath(river, color = Color(0xFF005188), style = Stroke(2.dp.toPx()))
+            drawPath(river, color = androidx.compose.ui.graphics.Color(0xFF005188), style = Stroke(2.dp.toPx()))
 
-            // ---------- LAKES (drawn after river, same as before) ----------
+            // ---------- LAKES (ONLY OUTGOING) + DATE BELOW ----------
             transactions.forEachIndexed { idx, t ->
-                if (!t.direction.getValue()) {
-                    val x = leftPad + idx * step + step / 2f
+                if (t.direction.getValue()) return@forEachIndexed  // skip incoming here
 
-                    val lakeHeight = h * 0.35f
-                    val lakeWidth = lakeHeight * 1.3f
-                    val lakeTop = riverBaseline
-                    val lakeBottom = (lakeTop + lakeHeight).coerceAtMost(h)
+                val x = leftPad + idx * step + step / 2f
 
-                    val lakeRect = Rect(
-                        left = x - lakeWidth / 2f,
-                        top = lakeTop,
-                        right = x + lakeWidth / 2f,
-                        bottom = lakeBottom
+                val lakeHeight = h * 0.35f
+                val lakeWidth = lakeHeight * 1.3f
+                val lakeTop = riverBaseline
+                val lakeBottom = (lakeTop + lakeHeight).coerceAtMost(h)
+
+                val lakeRect = Rect(
+                    left = x - lakeWidth / 2f,
+                    top = lakeTop,
+                    right = x + lakeWidth / 2f,
+                    bottom = lakeBottom
+                )
+
+                drawLake(image = lakeBitmap, rect = lakeRect)
+
+                // date BELOW lake (money "going back" out) – also squished
+                val raw = dates.getOrNull(idx)
+                val labelText = raw?.takeIf { it.length >= 10 }?.let { ds ->
+                    val yearShort = ds.substring(2, 4)
+                    val month = ds.substring(5, 7)
+                    val day = ds.substring(8, 10)
+                    "☀️ $day / 🌙 $month / ⭐ $yearShort"
+                } ?: ""
+
+                if (labelText.isNotEmpty()) {
+                    val available = lakeWidth - 2 * horizontalPaddingPx
+                    val paintForThis = if (available > 0f) {
+                        val textWidth = baseTextPaint.measureText(labelText)
+                        if (textWidth > available) {
+                            Paint(baseTextPaint).apply {
+                                textSize = baseTextPaint.textSize * (available / textWidth)
+                            }
+                        } else baseTextPaint
+                    } else {
+                        baseTextPaint
+                    }
+
+                    val textY = (lakeBottom + 8.dp.toPx())
+                        .coerceAtMost(h - 4.dp.toPx())
+                    drawContext.canvas.nativeCanvas.drawText(
+                        labelText,
+                        x,
+                        textY,
+                        paintForThis
                     )
-
-                    drawLake(image = lakeBitmap, rect = lakeRect)
-
-                    // lake clickable too
-                    hitAreas += lakeRect to t
                 }
+
+                // lake clickable too
+                hitAreas += lakeRect to t
             }
         }
     }
@@ -339,6 +379,7 @@ private fun DrawScope.drawLake(
         dstSize = IntSize(dw.toInt(), dh.toInt())
     )
 }
+
 // preview -----------------------------------------------------------
 
 @Preview(
@@ -389,7 +430,7 @@ fun RiverCanvasPreview() {
             )
         )
 
-        val formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val dateStrings = fakeTranx.map { it.datetime.fmtString(formatter) }
 
         RiverSceneCanvas(
