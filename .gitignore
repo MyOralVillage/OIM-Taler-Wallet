@@ -175,3 +175,5 @@ http-client.private.env.json
 
 ## DOCS / GENERATED ##
 docs/build/
+#mk docs autogen site stuff
+site/

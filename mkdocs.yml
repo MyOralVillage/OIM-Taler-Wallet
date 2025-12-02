@@ -1,0 +1,7 @@
+site_name: Orali Money
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - User Guide: user-guide.md
+  - Developer Guide: developer-guide.md
