@@ -1,5 +1,5 @@
 # Orali Money for Android
-
+## THIS VERSION IS NOT MAINTAINED; PLEASE SEE MOST UP-TO-DATE FORK
 ## Please note that...
 
 This is an **EXPERIMENTAL IMPLEMENTATION** of the [the GNU Taler Android wallet](https://git.taler.net/taler-android.git/):
