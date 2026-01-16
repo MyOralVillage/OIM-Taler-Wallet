@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+        <title>Developer Guide - Orali Money for Android</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        
+        
+        
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+            <link rel="stylesheet" href="../assets/css/darcula-highlight.min.css">
+
+        <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+        <link rel="stylesheet" href="../assets/css/dracula-ui.min.css">
+        <link rel="stylesheet" href="../assets/css/mkdocs.min.css">
+
+        
+            <link  rel="icon" type="image/x-icon" href="../assets/img/favicon.ico">
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+                <script>hljs.initHighlightingOnLoad();</script>
+
+</head>
+
+<body class="drac-bg-black-secondary drac-text-grey-ternary drac-text drac-scrollbar-purple">
+
+    <main class="d-flex">
+
+        <!-- block sidebar -->
+            <nav id="sidebar" class="sidebar drac-bg-black">
+    <div class="custom-menu">
+        <button type="button" id="sidebarCollapse" class="btn btn-primary">
+            <i class="fa fa-bars"></i>
+            <span class="sr-only">Menu</span>
+        </button>
+    </div>
+
+    <div class="p-4">
+        
+
+        <div class="drac-text-center">
+            
+                <span class="drac-text drac-line-height drac-text-white">Orali Money for Android</span>
+            
+        </div>
+
+        <div class="drac-box flex-column">
+            <ul class="dot-ul">
+                <li><div class="dot-li drac-bg-cyan"></div></li>
+                <li><div class="dot-li drac-bg-green"></div></li>
+                <li><div class="dot-li drac-bg-orange"></div></li>
+                <li><div class="dot-li drac-bg-pink"></div></li>
+                <li><div class="dot-li drac-bg-purple"></div></li>
+                <li><div class="dot-li drac-bg-red"></div></li>
+                <li><div class="dot-li drac-bg-yellow"></div></li>
+            </ul>
+        </div>
+
+        <hr class="drac-divider" />
+
+        <!-- block menu -->
+        <ul class="mb-5 drac-list drac-list-none">
+            
+            <li class="drac-box">
+                <a href=".."
+                    class="
+                    drac-anchor d-inline-flex align-items-center border-0 drac-text-purple--hover">
+                    Home
+                </a>
+            </li>
+            <li class="drac-box">
+                <a href="../user-guide/"
+                    class="
+                    drac-anchor d-inline-flex align-items-center border-0 drac-text-purple--hover">
+                    User Guide
+                </a>
+            </li>
+            <li class="drac-box">
+                <a href="./"
+                    class=" active 
+                    drac-anchor d-inline-flex align-items-center border-0 drac-text-purple--hover">
+                    Developer Guide
+                </a>
+            </li>
+            <li class="drac-box">
+                <a href=".."
+                    class="
+                    drac-anchor btn-toggle d-inline-flex align-items-center border-0 drac-text-purple--hover collapsed"
+                    data-bs-toggle="collapse" data-bs-target="#archive-collapse" aria-expanded="false">
+                    Archive
+                </a>
+                <div class="collapse" id="archive-collapse">
+                    <ul class="mb-5 drac-list drac-list-none">
+                            
+    <li class="drac-box-ternary">
+        <a href="#" class="
+            drac-anchor-secondary btn-toggle d-inline-flex align-items-center border-0 drac-text-purple--hover collapsed"
+            data-bs-toggle="collapse" data-bs-target="#2025-collapse" aria-expanded="false">
+            2025
+        </a>
+
+        <div class="collapse" id="2025-collapse">
+            <ul class="mb-5 drac-list drac-list-none">
+                    
+    <li class="drac-box-ternary">
+        <a href="https://drive.google.com/file/d/1nl4uekp8RCbaSlEl8Ue2o4zpHzlB7GTU/view"
+            class="
+            drac-anchor d-inline-flex align-items-center border-0 drac-text-purple--hover">
+            Demo
+        </a>
+    </li>
+                    
+    <li class="drac-box-ternary">
+        <a href="../foobaz-contrib/"
+            class="
+            drac-anchor d-inline-flex align-items-center border-0 drac-text-purple--hover">
+            fooBaz Contrib
+        </a>
+    </li>
+                    
+    <li class="drac-box-ternary">
+        <a href="../ai-integration-report.html"
+            class="
+            drac-anchor d-inline-flex align-items-center border-0 drac-text-purple--hover">
+            AI Integration
+        </a>
+    </li>
+                    
+    <li class="drac-box-ternary">
+        <a href="../initial-mockup/"
+            class="
+            drac-anchor d-inline-flex align-items-center border-0 drac-text-purple--hover">
+            Initial Mockup
+        </a>
+    </li>
+            </ul>
+        </div>
+    </li>
+                            
+    <li class="drac-box-ternary">
+        <a href="#" class="
+            drac-anchor-secondary btn-toggle d-inline-flex align-items-center border-0 drac-text-purple--hover collapsed"
+            data-bs-toggle="collapse" data-bs-target="#2024-collapse" aria-expanded="false">
+            2024
+        </a>
+
+        <div class="collapse" id="2024-collapse">
+            <ul class="mb-5 drac-list drac-list-none">
+                    
+    <li class="drac-box-ternary">
+        <a href="../gsoc-24-amr-salah-report/"
+            class="
+            drac-anchor d-inline-flex align-items-center border-0 drac-text-purple--hover">
+            GSOC 2024
+        </a>
+    </li>
+            </ul>
+        </div>
+    </li>
+                            
+    <li class="drac-box-ternary">
+        <a href="#" class="
+            drac-anchor-secondary btn-toggle d-inline-flex align-items-center border-0 drac-text-purple--hover collapsed"
+            data-bs-toggle="collapse" data-bs-target="#2023-collapse" aria-expanded="false">
+            2023
+        </a>
+
+        <div class="collapse" id="2023-collapse">
+            <ul class="mb-5 drac-list drac-list-none">
+                    
+    <li class="drac-box-ternary">
+        <a href="../gsoc-23-ivan-avalos-report/"
+            class="
+            drac-anchor d-inline-flex align-items-center border-0 drac-text-purple--hover">
+            GSOC 2023
+        </a>
+    </li>
+            </ul>
+        </div>
+    </li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+        <!-- endblock -->
+    </div>
+</nav>
+        <!-- endblock -->
+
+        <nav class="divider drac-bg-purple-cyan"></nav>
+
+        <div class="content">
+            <!-- block header -->
+                <header>
+    <nav class="navbar navbar-expand-xl drac-bg-purple">
+        <div class="container-fluid">
+            
+            <button class="navbar-toggler w-100 text-center" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsMenu"
+                aria-controls="navbarsMenu" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse flex-column ml-auto" id="navbarsMenu">
+                <ul class="navbar-nav text-md-center">
+
+                    <!-- block preview -->
+                    <li class="nav-item">
+                            
+        <div class="container">
+            <div class="row row-preview">
+                <div class="col">
+                    <a href="../user-guide/"
+                        class="btn-preview drac-btn drac-btn-outline drac-text-white drac-text-cyan-green--hover">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="../foobaz-contrib/"
+                        class="btn-preview drac-btn drac-btn-outline drac-text-white drac-text-cyan-green--hover" style="padding-left: 3%;">
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+                    </li>
+                    <!--  endblock -->
+
+                    <!-- block search -->
+                    <li class="nav-item"><div role="search" class="search-box">
+	<form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+		<input type="text" name="q" class="drac-input drac-input-search drac-input-white drac-text-white drac-bg-black-secondary"
+		placeholder="Search docs" title="Type search term here" />
+	</form>
+</div>
+                    </li>
+                    <!--  endblock -->
+
+                    <!-- block source -->
+                    <li class="nav-item">
+                        
+                    </li>
+                    <!--  endblock -->
+
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+</header>
+            <!-- endblock -->
+
+            <!-- block content -->
+                <section class="p-md-5 section-content">
+    <article>
+        <p><h1 id="developer-guide">Developer Guide</h1>
+<h2 id="installation-for-developers">Installation (For Developers)</h2>
+<h3 id="1-clone-the-repository">1. Clone the Repository</h3>
+<details>
+    <summary> By HTTPS </summary>
+
+##### HTTPS
+
+
+<pre><code class="language-bash">git clone https://github.com/csc301-2025-f/project-9-Orali-Project-for-Android.git
+cd project-9-Orali-Project-for-Android
+</code></pre>
+
+
+Note that you may need to authenticate with your GitHub credentials.
+</details>
+
+<details>
+    <summary> By SSH </summary>
+
+##### SSH
+
+
+<pre><code class="language-bash">git clone git@github.com:csc301-2025-f/project-9-Orali-Project-for-Android.git
+cd project-9-Orali-Project-for-Android
+</code></pre>
+
+</details>
+
+<h3 id="2-build-the-project">2. Build the Project</h3>
+<p>Ensure the Java Development Kit 17 (JDK 17) is installed before running the Gradle commands below.</p>
+<details>
+    <summary> Windows (Command Prompt and Powershell) </summary>
+
+##### Windows (Command Prompt)
+
+
+<pre><code class="language-cmd">gradlew.bat :wallet:build
+</code></pre>
+
+
+#### Windows (Powershell)
+
+
+<pre><code class="language-powershell">.\gradlew.bat :wallet:build
+</code></pre>
+
+</details>
+
+<details>
+    <summary> Linux and Mac </summary>
+
+##### Linux / Mac
+
+<pre><code class="language-bash">./gradlew :wallet:build
+</code></pre>
+
+</details>
+
+<h2 id="tech-stack">Tech Stack</h2>
+<p><strong>Languages</strong>
+- Kotlin (JVM 17)
+- Jetpack Compose (UI)
+- Kotlin Serialization</p>
+<p><strong>Build &amp; Tooling</strong>
+- Gradle
+- Android Gradle Plugin 8.9.2
+- Protobuf (Lite runtime)
+- Git (commit-based nightly versioning)</p>
+<p><strong>Android</strong>
+- minSdk 26
+- targetSdk 35
+- compileSdk 35
+- ViewBinding + Compose
+- Product Flavors: <code>fdroid</code>, <code>google</code>, <code>nightly</code>
+- ABI Splits: <code>armeabi-v7a</code>, <code>arm64-v8a</code>, <code>x86</code>, <code>x86_64</code></p>
+<p><strong>Major Libraries</strong>
+- Compose BOM 2025.05.00
+- Material3
+- ConstraintLayout
+- Lifecycle ViewModel + LiveData
+- Navigation Component (Safe Args plugin)
+- DataStore + Protobuf
+- Coil (images)
+- ZXing (QR)
+- Markwon (Markdown rendering)
+- Ktor Client (Networking)
+- Qtart AAR (Crypto / Logic)
+- JNA
+- Apache Commons Text</p>
+<p><strong>Testing</strong>
+- JUnit 4.13.2
+- org.json</p>
+<h2 id="architecture-diagram">Architecture Diagram</h2>
+<p><img alt="Architecture Diagram" src="../assets/Arch-Diagram.png" />
+<em>High-level architecture of the Orali Money Android application.</em></p>
+<p><strong>Architecture Overview</strong></p>
+<p>The application follows a clean separation of concerns, organized into three main layers:</p>
+<ol>
+<li>
+<p><strong>Orchestration Layer</strong>:</p>
+<ul>
+<li><strong>MainFragment</strong>: Acts as the central orchestrator, managing the overall state and transitions between different modes (Standard vs. OIM).</li>
+</ul>
+</li>
+<li>
+<p><strong>OIM Context (UI Layer)</strong>:</p>
+<ul>
+<li>Operates exclusively in <strong>Landscape Orientation</strong>.</li>
+<li><strong>Screens</strong>: <code>OIMHomeScreen</code> (entry), <code>OIMChestScreen</code> (main dashboard), <code>OimSendApp</code> (sending flow), and <code>OIMReceiveScreen</code> (receiving flow).</li>
+<li><strong>Visual Components</strong>: <code>StackedNotes</code> handles the rendering of currency stacks. Users can interact with these stacks to view details via <code>NotePreviewOverlay</code> or expand them using <code>NotesGalleryOverlay</code>.</li>
+<li><strong>History</strong>: <code>TransactionHistoryView</code> visualizes past transactions (e.g., the River View).</li>
+</ul>
+</li>
+<li>
+<p><strong>Data &amp; Logic Layer</strong>:</p>
+<ul>
+<li><strong>MainViewModel</strong>: Serves as the bridge between the UI and the underlying data managers.</li>
+<li><strong>Managers</strong>:<ul>
+<li><code>PeerManager</code>: Handles P2P communication (Push/Pull).</li>
+<li><code>BalanceManager</code>: Manages the current wallet state and funds.</li>
+<li><code>TransactionManager</code>: Handles transaction history and persistence.</li>
+<li><code>WithdrawManager</code>: Manages withdrawal operations (specifically for Test KUDOS).</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p>This architecture ensures that UI components remain lightweight and focused on presentation, while business logic and data management are centralized in the ViewModel and Managers.</p>
+<h2 id="design-rationale">Design Rationale</h2>
+<h3 id="concurrency-performance-and-real-world-devices">Concurrency, Performance, and Real-World Devices</h3>
+<p>OIM is designed for environments where devices are modest and resources are limited. The goal was to build something that behaves the same way on a modern phone and on older devices such as <strong>Tecno Spark 7</strong>, <strong>Itel A56</strong>, <strong>Tecno Pop series</strong>, <strong>Samsung J2</strong>, <strong>Samsung A10</strong>, and similar models that are still heavily used across West Africa. Many of these phones run with 1 GB or 2 GB of RAM, limited CPU power, and storage that becomes slow when the device fills up. These constraints shaped the entire architecture.</p>
+<h4 id="minimal-threading-for-predictability">Minimal Threading for Predictability</h4>
+<p>The app uses a mostly single thread model, because the dataset is small and does not justify multiple threads. A simple architecture works better when the hardware is not powerful.</p>
+<ul>
+<li>It avoids complicated coordination between coroutines.</li>
+<li>Lifecycle events are easier to reason about.</li>
+<li>UI updates always occur in a predictable sequence.</li>
+<li>There is less chance of race conditions or partial updates.</li>
+<li>Debugging becomes straightforward because logic runs in a single flow.</li>
+</ul>
+<p>This approach reduces surprises and ensures that the interface feels stable even on phones that struggle under heavier workloads.</p>
+<h4 id="how-older-phones-influence-the-design">How Older Phones Influence the Design</h4>
+<p>In the communities where OIM will be used, users often rely on slow devices that are several years old. These devices typically have:</p>
+<ul>
+<li>limited RAM</li>
+<li>slower multi core processors</li>
+<li>weak GPU pipelines</li>
+<li>slow eMMC storage</li>
+<li>fragile thermal performance</li>
+</ul>
+<p>Running several asynchronous tasks at once can cause stutters or frame drops. Even lightweight background work can cause delays if the device is already under strain from Android services or Google Play components. Keeping OIM lightweight avoids these issues and keeps the experience smooth.</p>
+<h4 id="safe-use-of-background-work">Safe Use of Background Work</h4>
+<p>Some operations still run off the main thread, such as small parsing tasks or loading local note images. However:</p>
+<ul>
+<li>these are short lived</li>
+<li>they never involve heavy computation</li>
+<li>they avoid adding pressure to the system</li>
+</ul>
+<p>This maintains consistent rendering and protects the user from slowdowns.</p>
+<h3 id="backend-limitations-and-on-device-processing">Backend Limitations and On Device Processing</h3>
+<p>The backend that powers OIM is managed by partner organizations and cannot be modified. The OIM team could not change any schema, add metadata, or restructure responses. This imposed several limitations.</p>
+<h4 id="what-could-not-be-changed">What Could Not Be Changed</h4>
+<ul>
+<li>backend response format</li>
+<li>transaction structure</li>
+<li>available fields</li>
+<li>metadata support</li>
+<li>categorization</li>
+<li>additional endpoints</li>
+</ul>
+<p>Since the backend could not be touched, the app performs all computation for the river view on the device itself.</p>
+<h4 id="what-the-device-computes">What the Device Computes</h4>
+<ul>
+<li>transaction grouping</li>
+<li>scaling</li>
+<li>layout logic</li>
+<li>metaphor mapping</li>
+<li>date and time translation</li>
+<li>amount based sizing</li>
+</ul>
+<p>The river view works fully offline using only the minimal transaction data provided. This allows total independence from backend capabilities while still maintaining visual richness.</p>
+<h3 id="why-the-app-does-not-use-ai">Why the App Does Not Use AI</h3>
+<p>There were several reasons why AI was intentionally excluded, even though it could help with categorization and insights.</p>
+<h4 id="no-backend-compute">No Backend Compute</h4>
+<p>The backend environment does not have the CPU or GPU capacity to run even small AI models. There was no space to deploy transformers or even lightweight models.</p>
+<h4 id="running-ai-on-the-device-is-not-practical">Running AI on the Device Is Not Practical</h4>
+<p>Most users rely on low budget devices that cannot support quantized neural networks. Running inference on these devices would lead to:</p>
+<ul>
+<li>slow interfaces</li>
+<li>memory exhaustion</li>
+<li>thermal issues</li>
+<li>battery drain</li>
+</ul>
+<p>The risk outweighed the benefit.</p>
+<h4 id="no-ai-ready-data">No AI Ready Data</h4>
+<p>Because backend endpoints cannot be changed, the app receives no metadata about:</p>
+<ul>
+<li>transaction type</li>
+<li>category</li>
+<li>merchant</li>
+<li>labels</li>
+<li>description structure</li>
+</ul>
+<p>AI systems need structured data to generate meaningful insights. Without it, they would perform poorly.</p>
+<h4 id="stability-comes-first">Stability Comes First</h4>
+<p>The project prioritizes predictable behavior. Heavy AI computation contradicts that goal. Simplicity makes the application more reliable.</p>
+<h3 id="architecture-and-code-structure">Architecture and Code Structure</h3>
+<p>The app uses an architecture that emphasizes clarity and maintainability.</p>
+<h4 id="separation-of-responsibilities">Separation of Responsibilities</h4>
+<ul>
+<li>The MainViewModel manages state and data.</li>
+<li>Screens display the UI and contain no business logic.</li>
+<li>Composable components are reusable and lightweight.</li>
+</ul>
+<p>This creates a clean, understandable flow for future contributors.</p>
+<h4 id="reusable-ui-components">Reusable UI Components</h4>
+<p>The app uses unified components across multiple screens.</p>
+<p>Examples include:</p>
+<ul>
+<li>stacked note renderer</li>
+<li>notes gallery overlay</li>
+<li>amount parser</li>
+<li>transaction mapping utilities</li>
+</ul>
+<p>Whenever assets or logic change, these updates propagate everywhere automatically.</p>
+<h4 id="resource-mapping">Resource Mapping</h4>
+<p>All currency, note denominations, and transaction purposes map through a single place. This prevents errors and simplifies updates.</p>
+<h4 id="mock-database">Mock Database</h4>
+<p>During development, the biggest structural limitation was the fact that the backend environment could not be consistently accessed, modified, or extended by the OIM engineering team. The partner organizations controlled the database schema, API endpoints, migration schedule, and infrastructure uptime. This created a situation where development needed to proceed at full speed without depending on backend availability.</p>
+<p>Because of this, OIM required a <strong>fully standalone, schema-accurate mock database</strong> that could act as a drop-in replacement for the real database during development. The motivation for this choice was much deeper than simply wanting “offline testing”. It emerged from a combination of practical, operational, and architectural needs.</p>
+<h5 id="ensuring-development-continuity">Ensuring Development Continuity</h5>
+<p>The backend environment was frequently inaccessible due to:</p>
+<ul>
+<li>limited uptime during certain hours</li>
+<li>shared testing environments with other partner teams</li>
+<li>network instability when working from field locations</li>
+<li>maintenance windows and database resets outside our control</li>
+</ul>
+<p>Without a local mock database, UI development would have stalled for days at a time. The mock DB ensured that:</p>
+<ul>
+<li>developers could continue working when the real backend was offline</li>
+<li>UI prototypes were testable even during infrastructure outages</li>
+<li>QA could reproduce cases without needing to simulate server resets</li>
+<li>regressions could be caught without relying on backend data</li>
+</ul>
+<p>This decision protected the development timeline and allowed continuous iteration.</p>
+<h5 id="a-controlled-and-repeatable-data-environment">A Controlled and Repeatable Data Environment</h5>
+<p>The mock database also provided a stable sandbox. The real backend could not guarantee:</p>
+<ul>
+<li>consistent test data</li>
+<li>stable transaction IDs</li>
+<li>reproducible states for payment flows</li>
+<li>fixed balances for predictable screenshots</li>
+</ul>
+<p>The mock DB made it possible to create:</p>
+<ul>
+<li>deterministic test scenarios</li>
+<li>predictable transaction histories</li>
+<li>consistent wallet states</li>
+<li>reliable edge-case reproduction (zero balance, large inflows, rapid sends, etc.)</li>
+</ul>
+<p>This was essential for building and debugging features like the river view, note stacking animations, and consolidated purpose selection.</p>
+<h5 id="compatibility-with-the-real-schema">Compatibility With the Real Schema</h5>
+<p>The mock database was engineered to <strong>mirror the real schema exactly</strong>, including:</p>
+<ul>
+<li>field names</li>
+<li>field types</li>
+<li>table structures</li>
+<li>indexing assumptions</li>
+<li>timestamps</li>
+<li>transaction direction conventions</li>
+</ul>
+<p>This ensured that once the backend became available:</p>
+<ul>
+<li>integration required almost no changes</li>
+<li>switching from mock → real DB was a one-line swap</li>
+<li>every piece of UI logic already matched the real data model</li>
+<li>no mass refactoring was necessary</li>
+</ul>
+<p>The mock DB therefore served as a long-term investment in stability, not just a temporary convenience.</p>
+<h5 id="enabling-visual-feature-development-without-backend-support">Enabling Visual Feature Development Without Backend Support</h5>
+<p>Several features in OIM, such as:</p>
+<ul>
+<li>the river view</li>
+<li>scaling farms and lakes</li>
+<li>stacked note consolidation</li>
+<li>amount mapping into denominations</li>
+<li>date icon assignment</li>
+</ul>
+<p>all required <strong>derived</strong> or <strong>aggregated</strong> data that the backend did not provide.</p>
+<p>The mock DB allowed local generation of:</p>
+<ul>
+<li>synthetic transaction histories</li>
+<li>large sequences of inflows and outflows</li>
+<li>stress test cases</li>
+<li>unusual patterns (e.g., clustered sends, missing purposes, extreme amounts)</li>
+</ul>
+<p>Without this, it would have been impossible to test the visual design under realistic workloads.</p>
+<h5 id="protecting-the-backend-from-accidental-load">Protecting the Backend From Accidental Load</h5>
+<p>During development, UI screens refresh state frequently, especially when testing animation loops or rapid interactions. Running these tests directly against the real backend could have:</p>
+<ul>
+<li>created unnecessary load</li>
+<li>polluted production-adjacent logs</li>
+<li>generated accidental transactions</li>
+<li>triggered rate-limit or throttle protections</li>
+<li>introduced audit noise for partner teams</li>
+</ul>
+<p>The mock DB acted as a safety barrier, absorbing all local experimentation and ensuring the backend remained stable and clean.</p>
+<h5 id="future-integration-safety">Future Integration Safety</h5>
+<p>Because the mock DB is <strong>structurally identical</strong> to the partner database, any future backend improvements or migrations will only require:</p>
+<ul>
+<li>updating a single mapping layer</li>
+<li>reusing all existing UI logic</li>
+<li>leaving the composables and ViewModel untouched</li>
+</ul>
+<p>This makes the architecture long-lived and maintainable.</p>
+<h2 id="automated-testing-and-deployment">Automated Testing and Deployment</h2>
+<p>This repository does not have automated testing. The Taler wallet depends on legacy code to run, and large scale unit testing was out of the scope of this project.</p>
+<p>Orali Money contains developer releases on this repository and will have official releases on the F-Droid store.</p>
+<h2 id="coding-guidelines">Coding Guidelines</h2>
+<p>We follow <a href="https://developer.android.com/kotlin/style-guide">Kotlin style guidelines</a> and <a href="https://developer.android.com/topic/architecture">Android Best Practices</a>. In addition, we use <a href="https://github.com/pinterest/ktlint">ktlint</a>.</p>
+<h2 id="documentation-deployment">Documentation Deployment</h2>
+<p>This documentation is built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+<h3 id="local-development">Local Development</h3>
+<p>To preview the documentation locally:</p>
+<ol>
+<li>Install MkDocs and Material theme:
+   <code>bash
+   pip install mkdocs mkdocs-material</code></li>
+<li>Run the development server:
+   <code>bash
+   mkdocs serve</code></li>
+<li>Open <code>http://127.0.0.1:8000</code> in your browser.</li>
+</ol>
+<h3 id="deploying-to-github-pages">Deploying to GitHub Pages</h3>
+<p>To deploy the documentation to GitHub Pages:</p>
+<ol>
+<li>Ensure you have permissions to push to the repository.</li>
+<li>Run the deployment command:
+   <code>bash
+   mkdocs gh-deploy</code>
+This will build the static site and push it to the <code>gh-pages</code> branch. Ensure GitHub Pages is configured to serve from this branch in the repository settings.</li>
+</ol></p>
+    </article>
+</section>
+            <!-- endblock -->
+
+            <!-- block footer -->
+                <footer>
+    <div class="d-flex flex-sm-row justify-content-between py-2 border-top drac-text-black drac-bg-cyan-green">
+        <a href="https://github.com/dracula/mkdocs" target="_blank" style="padding-left: 1%;"
+            class="footer-text drac-anchor drac-text-black drac-text-purple--hover">
+            Made with Dracula Theme for MkDocs
+        </a>
+    </div>
+</footer>
+            <!-- endblock -->
+        </div>
+
+    </main>
+
+        <script>var base_url = '..';</script>
+        <script src="../assets/js/jquery-3.3.1.slim.min.js"></script>
+        <script src="../assets/js/bootstrap.bundle.min.js"></script>
+        <script src="../assets/js/mkdocs.js"></script>
+			<script src="../search/main.js" defer></script>
+
+</body>
+
+</html>
