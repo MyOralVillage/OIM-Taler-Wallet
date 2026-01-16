@@ -6,6 +6,19 @@ Orali Money is a collaboration between [GNU Taler](https://www.taler.net/en/inde
 
 This repository is responsible for the Android version of Orali Money which has two interfaces: a standard interface adopted from Taler and an interface built on [OIM (Oral Information Management)](https://myoralvillage.org/our-model-oim/) principles, allowing for illiterate and innumerate adults to interact with the application.
 
+
+## Installation
+
+### **For non developers**
+[Please navigate to our  most recent release page and download one of the debug APKs. They can be found under the "Assets" tab.](https://github.com/MyOralVillage/OIM-Taler-Wallet/releases)
+
+- x86_64 (for Windows emulation)
+- arm64 (for native Android phones (Android 8+) or MacOS emulation)
+- armeabi/x86 (for deprecated Android phones; *this is rarely needed*)
+
+The OIM mode for Android is still in pre-release, therefore there is no official signed release on FDroid/Play store/Nightly as of now. Since full apk optimizations are not run for debugs, the APK sizes are on the larger side (around 40mb).
+
+
 ## Features
 
 1. Sending Money
@@ -26,17 +39,6 @@ This repository is responsible for the Android version of Orali Money which has 
 
 ### Transaction History (Column View)
 ![Transaction History (Column view)](assets/column_view_demo.gif)
-
-## Installation
-
-### **For non developers**
-[Please navigate to our  most recent release page and download one of the debug APKs.](https://github.com/csc301-2025-f/project-9-Orali-Project-for-Android/releases/)
-
-- x86_64 (for Windows emulation)
-- arm64 (for native Android phones (Android 8+) or MacOS emulation)
-- armeabi/x86 (for deprecated Android phones; *these are rarely needed*)
-
-The OIM mode for Android is still in pre-release, therefore there is no official signed release on FDroid/Play store/Nightly as of now. Since full apk optimizations are not run for debugs, the APK sizes are on the larger side (around 40mb).
 
 ## Design Rationale
 

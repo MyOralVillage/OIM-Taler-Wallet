@@ -107,6 +107,7 @@ replay_pid*
 .gradletasknamecache
 gradle-app.setting
 local.properties
+gradle-warnings.txt
 
 # Gradle wrapper
 !gradle-wrapper.jar

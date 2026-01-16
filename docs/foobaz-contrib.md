@@ -1,0 +1,6 @@
+![commits_top_contributors](assets/foobaz-contrib/commits_top_contributions.png)
+![commit_statistics_1](assets/foobaz-contrib/commit_statistics_1.png)
+![commit_statistics_2](assets/foobaz-contrib/commit_statistics_2.png)
+![loc_added](assets/foobaz-contrib/loc_added.png)
+![loc_removed](assets/foobaz-contrib/loc_removed.png)
+![num_commits](assets/foobaz-contrib/num_commits.png)

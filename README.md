@@ -1,8 +1,7 @@
 # Orali Money for Android
-## THIS VERSION IS NOT MAINTAINED; PLEASE SEE MOST UP-TO-DATE FORK
 ## Please note that...
 
-This is an **EXPERIMENTAL IMPLEMENTATION** of the [the GNU Taler Android wallet](https://git.taler.net/taler-android.git/):
+This is an **EXPERIMENTAL IMPLEMENTATION** of the [the GNU Taler Android wallet](https://git.taler.net/):
 
 Under no circumstances should it be used for real financial transactions, sensitive financial information, nor as a supplement to any existing
 GNU Taler Android libraries. **USE AT YOUR OWN RISK, IT MAY BREAK EXISTING GNU TALER ANDROID BUILDS!**
@@ -14,10 +13,8 @@ for more information.
 
 Detailed documentation is available in the links below:
 
-- **[User Guide](https://csc301-2025-f.github.io/project-9-Orali-Project-for-Android/user-guide/)**: Learn how to access, install, and use the application.
-- **[Developer Guide](https://csc301-2025-f.github.io/project-9-Orali-Project-for-Android/developer-guide/)**: Learn about the architecture, setup, and development process.
-
-*(Note: These links point to our hosted documentation site.)*
+- **[User Guide](https://myoralvillage.github.io/OIM-Taler-Wallet/user-guide/)**: Learn how to access, install, and use the application.
+- **[Developer Guide](https://myoralvillage.github.io/OIM-Taler-Wallet/developer-guide/)**: Learn about the architecture, setup, and development process.
 
 ## Contact
 

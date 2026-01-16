@@ -1,7 +1,17 @@
-site_name: Orali Money
+site_name: Orali Money for Android
 theme:
-  name: material
+  name: dracula
 nav:
   - Home: index.md
   - User Guide: user-guide.md
   - Developer Guide: developer-guide.md
+  - Archive:
+    - "2025":
+      - Demo:   https://drive.google.com/file/d/1nl4uekp8RCbaSlEl8Ue2o4zpHzlB7GTU/view
+      - fooBaz Contrib: foobaz-contrib.md
+      - AI Integration: ai-integration-report.html
+      - Initial Mockup: initial-mockup.md
+    - "2024":
+      - GSOC 2024: gsoc-24-amr-salah-report.md
+    - "2023":
+      - GSOC 2023: gsoc-23-ivan-avalos-report.md
