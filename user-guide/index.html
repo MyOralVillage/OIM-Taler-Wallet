@@ -260,6 +260,15 @@
 <h2 id="about">About</h2>
 <p>Orali Money is a collaboration between <a href="https://www.taler.net/en/index.html">GNU Taler</a> and <a href="https://myoralvillage.org/">My Oral Village</a> to create a mobile wallet that empowers people traditionally excluded from financial systems.</p>
 <p>This repository is responsible for the Android version of Orali Money which has two interfaces: a standard interface adopted from Taler and an interface built on <a href="https://myoralvillage.org/our-model-oim/">OIM (Oral Information Management)</a> principles, allowing for illiterate and innumerate adults to interact with the application.</p>
+<h2 id="installation">Installation</h2>
+<h3 id="for-non-developers"><strong>For non developers</strong></h3>
+<p><a href="https://github.com/MyOralVillage/OIM-Taler-Wallet/releases">Please navigate to our  most recent release page and download one of the debug APKs. They can be found under the "Assets" tab.</a></p>
+<ul>
+<li>x86_64 (for Windows emulation)</li>
+<li>arm64 (for native Android phones (Android 8+) or MacOS emulation)</li>
+<li>armeabi/x86 (for deprecated Android phones; <em>this is rarely needed</em>)</li>
+</ul>
+<p>The OIM mode for Android is still in pre-release, therefore there is no official signed release on FDroid/Play store/Nightly as of now. Since full apk optimizations are not run for debugs, the APK sizes are on the larger side (around 40mb).</p>
 <h2 id="features">Features</h2>
 <ol>
 <li>Sending Money</li>
@@ -276,15 +285,6 @@
 <p><img alt="Transaction History (River view) " src="../assets/river_view_demo.gif" /></p>
 <h3 id="transaction-history-column-view">Transaction History (Column View)</h3>
 <p><img alt="Transaction History (Column view)" src="../assets/column_view_demo.gif" /></p>
-<h2 id="installation">Installation</h2>
-<h3 id="for-non-developers"><strong>For non developers</strong></h3>
-<p><a href="https://github.com/csc301-2025-f/project-9-Orali-Project-for-Android/releases/">Please navigate to our  most recent release page and download one of the debug APKs.</a></p>
-<ul>
-<li>x86_64 (for Windows emulation)</li>
-<li>arm64 (for native Android phones (Android 8+) or MacOS emulation)</li>
-<li>armeabi/x86 (for deprecated Android phones; <em>these are rarely needed</em>)</li>
-</ul>
-<p>The OIM mode for Android is still in pre-release, therefore there is no official signed release on FDroid/Play store/Nightly as of now. Since full apk optimizations are not run for debugs, the APK sizes are on the larger side (around 40mb).</p>
 <h2 id="design-rationale">Design Rationale</h2>
 <h3 id="the-river-view-and-metaphor-driven-visualization">The River View and Metaphor Driven Visualization</h3>
 <p>The river view is one of the most distinctive features of OIM. It comes from extensive research performed by our partners in Sierra Leone who studied how individuals with lower levels of literacy or numeracy understand money. Traditional interfaces filled with numbers, charts, or lists create unnecessary barriers. Highly visual metaphors remove those barriers.</p>
